@@ -1,0 +1,137 @@
+% Vector comparison plate. Coordinates are centimetres; no raster assets.
+\begin{tikzpicture}[x=1cm,y=1cm,>=Stealth,
+  every node/.style={font=\small,inner sep=0pt}]
+\definecolor{bitblue}{RGB}{38,79,113}
+\definecolor{bitred}{RGB}{151,59,55}
+\definecolor{bitgray}{RGB}{85,85,85}
+
+\node[font=\Large\bfseries,anchor=north] at (7.65,0)
+  {Two bits. Two geometries.};
+\node[font=\small,anchor=north] at (7.65,-.65)
+  {From the binary record to the relationships its comparison uses};
+
+\draw[black!45,rounded corners=2pt] (0,-1.25) rectangle (7.45,-20.4);
+\draw[bitblue!80,rounded corners=2pt] (7.85,-1.25) rectangle (15.3,-20.4);
+
+\node[font=\large\bfseries,anchor=north] at (3.725,-1.55) {Shannon's bit};
+\node[anchor=north] at (3.725,-2.12) {A $0$--$1$ line};
+\node[font=\large\bfseries,bitblue,anchor=north] at (11.575,-1.55)
+  {The geometric bit};
+\node[anchor=north] at (11.575,-2.12) {A circle --- Euler's relationship};
+
+% The elementary pictures occupy equal-height panels.
+\draw[thick,->] (1,-4.2)--(6.4,-4.2);
+\fill[bitgray] (1.45,-4.2) circle (2.5pt);
+\fill[bitred] (5.8,-4.2) circle (2.5pt);
+\draw[densely dashed,bitgray,->] (5.8,-4.2)--(5.8,-2.95);
+\draw[bitgray] (5.6,-4.2)--(5.6,-4)--(5.8,-4);
+\node[anchor=east,align=right,font=\footnotesize,bitgray]
+  at (5.6,-3.05) {Perpendicular\\reference direction};
+\node[anchor=north,align=center] at (1.45,-4.45) {$0$\\reference};
+\node[anchor=north,align=center] at (5.8,-4.45) {$1$\\alternative};
+
+\begin{scope}[shift={(11.575,-3.95)},scale=.9]
+\draw[black!50,->] (-1.7,0)--(1.7,0);
+\draw[black!50,->] (0,-1.5)--(0,1.6);
+\draw[thick,bitblue] (0,0) circle (1.15);
+\draw[black!45] (.14,0)--(.14,.14)--(0,.14);
+\draw[bitblue,->] (18:1.42) arc (18:70:1.42);
+\fill[bitred] (-1.15,0) circle (2.2pt);
+\fill[bitred] (1.15,0) circle (2.2pt);
+\fill[bitblue] (0,1.15) circle (2.2pt);
+\fill[bitblue] (0,-1.15) circle (2.2pt);
+\node[bitred,anchor=north east] at (-1.23,-.12) {$-1$};
+\node[bitred,anchor=north west] at (1.23,-.12) {$1$};
+\node[bitblue,anchor=south east] at (-.12,1.23) {$i$};
+\node[bitblue,anchor=north east] at (-.12,-1.23) {$-i$};
+\node[bitblue,anchor=west] at (1.25,.9) {$\theta$};
+\end{scope}
+
+\node[anchor=north,align=center,font=\small\itshape] at (3.725,-5.65)
+  {Which alternative?};
+\node[anchor=north,align=center,font=\small\itshape] at (11.575,-5.65)
+  {What makes it the same through change?};
+
+% Aligned bands preserve the reading order of the author's comparison image.
+\foreach \yy in {-6.2,-9.4,-11.9,-14.5,-17.8} {
+  \draw[black!35] (.3,\yy)--(7.15,\yy);
+  \draw[bitblue!45] (8.15,\yy)--(15,\yy);
+}
+
+\node[anchor=north west,font=\bfseries] at (.35,-6.43) {What it encodes};
+\node[anchor=north west,font=\bfseries,bitblue] at (8.2,-6.43) {What it encodes};
+\node[anchor=north west,text width=6.65cm,align=left] at (.35,-7.02)
+  {\textbullet\ Discreteness: $0$ or $1$.\\[4pt]
+   \textbullet\ Difference: reference and alternative.\\[4pt]
+   \textbullet\ One binary coordinate.};
+\node[anchor=north west,text width=6.65cm,align=left] at (8.2,-7.02)
+  {\fontsize{9}{10.5}\selectfont \textbullet\ Discreteness: inside and outside.\\[0pt]
+   \textbullet\ Difference: perpendicular directions.\\[0pt]
+   \textbullet\ Symmetry: opposite poles.\\[0pt]
+   \textbullet\ Space: $\pi$ relates path and diameter.\\[0pt]
+   \textbullet\ Time: $e^{i\omega t}$ accumulates rotation.\\[0pt]
+   \textbullet\ Identity: the relationship is preserved.};
+
+\node[anchor=north west,font=\bfseries] at (.35,-9.63) {Geometric interpretation};
+\node[anchor=north west,font=\bfseries,bitblue] at (8.2,-9.63) {Geometric interpretation};
+\node[anchor=north west,text width=6.65cm,align=left] at (.35,-10.22)
+  {A distinction along a line.\\[5pt]
+   The reading fixes a reference and records\\
+   which of the two states is selected.};
+\node[anchor=north west,text width=6.65cm,align=left] at (8.2,-10.22)
+  {A comparison around a circle.\\[5pt]
+   Radius and right angles are preserved.\\
+   Opposite poles remain opposite.};
+
+\node[anchor=north west,font=\bfseries] at (.35,-12.13) {Composition};
+\node[anchor=north west,font=\bfseries,bitblue] at (8.2,-12.13) {Composition};
+\node[anchor=north,text width=6.5cm,align=center] at (3.725,-12.76)
+  {Bits $\longrightarrow$ registers\\[5pt]
+   Gates $\longrightarrow$ computations};
+\node[anchor=north,text width=6.5cm,align=center] at (11.575,-12.76)
+  {Circular rotations $\longrightarrow$ spatial rotations\\[5pt]
+   Algebraic extension: $\R\subset\C\subset\HH\subset\mathbb O$};
+
+\node[anchor=north west,font=\bfseries] at (.35,-14.73) {Resulting geometry};
+\node[anchor=north west,font=\bfseries,bitblue] at (8.2,-14.73) {Resulting geometry};
+\node[anchor=north west,text width=4.35cm,align=left] at (.35,-15.4)
+  {Hypercubes\\[5pt]
+   Square $\longrightarrow$ cube $\longrightarrow\cdots$\\[5pt]
+   $n$ bits: $2^n$ vertices.};
+\begin{scope}[shift={(5.35,-16.75)},scale=.72]
+\draw[black!70] (0,0) rectangle (1.45,1.45);
+\draw[black!70] (.5,.5) rectangle (1.95,1.95);
+\foreach \x/\y in {0/0,1.45/0,0/1.45,1.45/1.45} {
+ \draw[black!70] (\x,\y)--({\x+.5},{\y+.5});
+ \fill[bitgray] (\x,\y) circle (1.8pt);
+ \fill[bitgray] ({\x+.5},{\y+.5}) circle (1.8pt);
+}
+\end{scope}
+\node[anchor=north west,text width=4.65cm,align=left] at (8.2,-15.4)
+  {Spheres and Hopf projections\\[5pt]
+   $S^1,\ S^3,\ S^7,\ S^{15}$\\[5pt]
+   $S^3\to S^2,\quad S^7\to S^4,\ldots$};
+\begin{scope}[shift={(14.0,-16.2)}]
+\draw[bitblue,thick] (0,0) circle (.72);
+\foreach \rr in {.24,.49} {\draw[bitblue!65] (0,0) ellipse (\rr cm and .72cm);}
+\draw[bitblue!65] (0,0) ellipse (.72cm and .22cm);
+\draw[bitblue!65] (0,.32) ellipse (.64cm and .17cm);
+\draw[bitblue!65] (0,-.32) ellipse (.64cm and .17cm);
+\end{scope}
+\node[anchor=north west,font=\footnotesize,bitgray] at (8.2,-17.17)
+  {Spheres drawn schematically.};
+
+\node[anchor=north west,font=\bfseries] at (.35,-18.03) {What it gives us};
+\node[anchor=north west,font=\bfseries,bitblue] at (8.2,-18.03) {What it gives us};
+\node[anchor=north west,text width=6.65cm,align=left] at (.35,-18.65)
+  {\textbullet\ Classical information measures.\\[4pt]
+   \textbullet\ Digital computation.\\[4pt]
+   \textbullet\ Discrete state machines.};
+\node[anchor=north west,text width=6.65cm,align=left] at (8.2,-18.65)
+  {\textbullet\ A geometric account of identity.\\[4pt]
+   \textbullet\ Comparison through transformation.\\[4pt]
+   \textbullet\ Identity, measurement, and meaning.};
+
+\node[anchor=north,font=\bfseries] at (7.65,-20.75)
+  {The binary record and its geometric ground.};
+\end{tikzpicture}

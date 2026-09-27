@@ -1,0 +1,279 @@
+/* A Geometrical Theory of Communication — presentation styles.
+ *
+ * Layout: a full-screen snap deck (#deck) of steps sits over a fixed particle
+ * canvas (#stage). Figure labels live in their own fixed layer (#labels) so
+ * they share the canvas coordinates (see engine.js).
+ * Palette: the ORI night theme, darker and toward cyan. Each field of study
+ * has one colour, used the same way in the text and in the figures.
+ */
+
+/* ---------- tokens ---------- */
+:root {
+  color-scheme: dark;
+  --night: #03080b;
+  --paper: #eef1ea;
+  --soft: #c9d4d0;
+  --dim: #7f9692;
+  --line: rgba(160, 214, 214, 0.16);
+  /* fields */
+  --cyan: #45dcff;    /* physics, and the argument's own accent */
+  --brass: #e3b36e;   /* computing, engineering, Shannon's side */
+  --coral: #ff9676;   /* biology */
+  --violet: #b298ff;  /* linguistics */
+  --mint: #7ae0b0;    /* philosophy, epistemology */
+  --math: #ffde6e;    /* mathematics, always gold */
+  --serif: "EB Garamond", Georgia, "Times New Roman", serif;
+  --label: "Segoe UI", Ubuntu, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --halo: 0 0 5px #03080b, 0 0 10px #03080b, 0 0 18px rgba(3, 8, 11, 0.9);
+}
+
+/* ---------- base ---------- */
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; overflow: hidden; }
+body {
+  background:
+    radial-gradient(circle at 72% 42%, rgba(38, 96, 112, 0.14), transparent 38rem),
+    radial-gradient(circle at 18% 78%, rgba(30, 60, 80, 0.12), transparent 30rem),
+    var(--night);
+  color: var(--paper);
+  font-family: var(--serif);
+  font-variant-numeric: lining-nums;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--cyan); text-underline-offset: 3px; }
+:focus-visible { outline: 1.5px solid var(--cyan); outline-offset: 3px; }
+
+#stage { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+#labels { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+
+/* ---------- top bar ---------- */
+.topbar {
+  position: fixed; z-index: 5; top: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: space-between; gap: 18px;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) clamp(16px, 3vw, 34px) 16px;
+  background: linear-gradient(rgba(3, 8, 11, 0.86), rgba(3, 8, 11, 0));
+  pointer-events: none;
+}
+.topbar > * { pointer-events: auto; }
+.brand { display: flex; align-items: center; gap: 13px; color: var(--paper); text-decoration: none; }
+.brand strong { display: block; font: 600 12.5px/1.25 var(--label); letter-spacing: 0.14em; text-transform: uppercase; }
+.brand small { display: block; font: 12px/1.3 var(--label); letter-spacing: 0.08em; color: var(--dim); }
+/* The ring's point goes once around as the reader scrolls the whole deck (--p is set in engine.js). */
+.ring { position: relative; width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid rgba(69, 220, 255, 0.45); flex: none; }
+.ring i {
+  position: absolute; left: 50%; top: 50%; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--cyan); box-shadow: 0 0 10px var(--cyan);
+  transform-origin: 0 0;
+  transform: rotate(calc(var(--p, 0) * 360deg - 90deg)) translate(13.3px) translate(-3.5px, -3.5px);
+}
+.small-button {
+  white-space: nowrap; flex: none;
+  font: 13px var(--label); letter-spacing: 0.04em; color: var(--soft); text-decoration: none;
+  border: 1px solid var(--line); padding: 8px 14px; background: rgba(5, 12, 16, 0.6);
+}
+.small-button:hover { color: var(--cyan); border-color: rgba(69, 220, 255, 0.5); }
+
+/* ---------- chapter rail ---------- */
+.rail { position: fixed; z-index: 5; right: 18px; top: 50%; transform: translateY(-50%); display: grid; gap: 11px; }
+.rail button { appearance: none; border: 0; background: none; padding: 0; display: flex; align-items: center; justify-content: flex-end; gap: 9px; cursor: pointer; }
+.rail span {
+  color: transparent; max-width: 0; overflow: hidden; white-space: nowrap;
+  font: 12px var(--label); letter-spacing: 0.1em; text-transform: uppercase; transition: 0.25s;
+}
+.rail i { display: block; width: 7px; height: 7px; border: 1px solid var(--dim); border-radius: 50%; transition: 0.25s; }
+.rail button:hover span, .rail button:focus-visible span { color: var(--soft); max-width: 260px; }
+.rail button[aria-current="true"] i { background: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 12px rgba(69, 220, 255, 0.55); }
+
+/* ---------- deck and step layouts ---------- */
+#deck {
+  position: fixed; inset: 0; z-index: 1; overflow-y: auto; overflow-x: hidden;
+  scroll-snap-type: y mandatory; scrollbar-width: none; outline: none;
+}
+#deck::-webkit-scrollbar { display: none; }
+.step { position: relative; height: 100svh; scroll-snap-align: start; scroll-snap-stop: always; }
+
+/* default: words on the left, figure on the right */
+.copy {
+  position: absolute; z-index: 3;
+  left: clamp(24px, 6vw, 104px); top: 50%;
+  width: min(31rem, 34vw);
+  opacity: 0.22; transform: translateY(calc(-50% + 22px));
+  transition: opacity 0.6s ease, transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.step.is-active .copy { opacity: 1; transform: translateY(-50%); }
+
+/* full: the opening question alone */
+.step[data-layout="full"] .copy { left: 50%; top: 50%; width: min(92vw, 1180px); text-align: center; transform: translate(-50%, calc(-50% + 22px)); }
+.step[data-layout="full"].is-active .copy { transform: translate(-50%, -50%); }
+
+/* center: figure above, words just below it */
+.step[data-layout="center"] .copy { left: 50%; top: 66svh; width: min(42rem, 86vw); text-align: center; transform: translate(-50%, 22px); }
+.step[data-layout="center"].is-active .copy { transform: translate(-50%, 0); }
+
+/* ---------- text ---------- */
+h1 { font: 400 clamp(58px, 9.6vw, 156px)/0.95 var(--serif); letter-spacing: -0.03em; margin: 0; text-wrap: balance; }
+.copy h2 { font: 400 clamp(36px, 3.6vw, 56px)/1 var(--serif); letter-spacing: -0.025em; margin: 0 0 22px; color: var(--paper); text-wrap: balance; }
+.copy p { font: 400 clamp(19px, 1.45vw, 23px)/1.52 var(--serif); color: var(--soft); margin: 0 0 0.85em; text-wrap: pretty; }
+.copy.dense p { font-size: clamp(17px, 1.3vw, 21px); }
+.copy p:last-child { margin-bottom: 0; }
+.copy p strong { color: var(--paper); font-weight: 500; }
+.copy p.plain { color: var(--paper); font-weight: 600; }
+.copy em.q { color: var(--paper); }
+.m { font-style: italic; color: var(--paper); white-space: nowrap; }
+.kicker { display: block; font: 600 12.5px/1 var(--label); letter-spacing: 0.14em; text-transform: uppercase; color: var(--cyan); margin-bottom: 22px; }
+
+/* field names in the text */
+.c-cyan { color: var(--cyan); }
+.c-brass { color: var(--brass); }
+.c-coral { color: var(--coral); }
+.c-violet { color: var(--violet); }
+.c-mint { color: var(--mint); }
+.c-math { color: var(--math); }
+.copy :is(.c-cyan, .c-brass, .c-coral, .c-violet, .c-mint, .c-math) { font-weight: 500; }
+
+/* opening: the scroll hint and the Latin root */
+.hint { margin-top: 9svh; font: 600 11.5px var(--label); letter-spacing: 0.28em; text-transform: uppercase; color: var(--dim); }
+.hint::after { content: ""; display: block; width: 1px; height: 38px; margin: 14px auto 0; background: linear-gradient(var(--dim), transparent); animation: drip 2.4s ease-in-out infinite; }
+.etym { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 4.5svh auto 0; padding-top: 14px; position: relative; }
+.etym::before { content: ""; position: absolute; top: 0; left: 50%; width: 36px; height: 1px; margin-left: -18px; background: rgba(69, 220, 255, 0.6); }
+.etym-word { font: italic 400 clamp(24px, 2.2vw, 34px)/1.1 var(--serif); color: var(--paper); letter-spacing: 0.01em; }
+.etym-gloss { font: 600 11px/1.4 var(--label); letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); }
+
+/* the definition: its own lines, and A = A breathing because it is a process */
+.def { margin: 26px 0 24px; padding: 16px 0 16px 20px; border-left: 2px solid var(--cyan); display: grid; gap: 6px; }
+.copy .def .def-main { font: 500 clamp(22px, 1.9vw, 30px)/1.25 var(--serif); color: var(--paper); margin: 0; }
+.copy .def .def-eq {
+  font: italic 400 clamp(30px, 2.8vw, 44px)/1.1 var(--serif); color: var(--cyan); margin: 4px 0;
+  animation: breathe 2.4s ease-in-out infinite;
+}
+.copy .def .def-note { font: 400 clamp(16px, 1.15vw, 18.5px)/1.4 var(--serif); color: var(--dim); margin: 0; }
+
+/* term lists: a small-caps name, then its gloss */
+.terms { list-style: none; padding: 0; margin: 0 0 18px; display: grid; gap: 7px; }
+.terms li { font: 400 clamp(16px, 1.2vw, 19px)/1.4 var(--serif); color: var(--soft); display: grid; grid-template-columns: 7.2em 1fr; gap: 12px; }
+.terms b { font: 600 11.5px/1.9 var(--label); letter-spacing: 0.14em; text-transform: uppercase; color: var(--cyan); }
+.terms.bit-terms b { color: var(--brass); }
+
+/* the three questions, one per line */
+.copy .qs { display: grid; gap: 4px; padding-left: 16px; border-left: 1px solid rgba(69, 220, 255, 0.45); font-style: italic; color: var(--paper); }
+
+/* phrases that open a definition floater */
+.hotlist { list-style: none; padding: 0; margin: 4px 0 0; display: grid; gap: 8px; }
+.hotlist li { padding-left: 18px; position: relative; font: 400 clamp(16px, 1.2vw, 19px)/1.4 var(--serif); color: var(--soft); }
+.hotlist li::before { content: ""; position: absolute; left: 0; top: 0.7em; width: 7px; height: 1px; background: var(--brass); }
+#entropy-fields .hotlist { gap: 5px; }
+.hotword { cursor: help; border-bottom: 1px dotted rgba(227, 179, 110, 0.7); }
+.hotword:hover, .hotword:focus-visible { color: var(--brass); outline: none; }
+
+/* placeholder chapters */
+.step.todo .copy { width: min(44rem, 60vw); }
+.notes { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.notes li { font: 400 clamp(16px, 1.15vw, 18.5px)/1.5 var(--serif); color: var(--soft); padding-left: 18px; position: relative; }
+.notes li::before { content: ""; position: absolute; left: 0; top: 0.72em; width: 7px; height: 1px; background: var(--cyan); }
+.draft { display: inline-block; margin-top: 22px; font: 600 11px var(--label); letter-spacing: 0.16em; text-transform: uppercase; color: var(--brass); border: 1px solid rgba(227, 179, 110, 0.4); padding: 6px 10px; }
+.colophon { margin-top: 26px; display: grid; gap: 6px; font: 13px/1.5 var(--label); color: var(--dim); }
+
+/* ---------- figure labels ---------- */
+.lbl { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; opacity: 0; transition: opacity 0.7s 0.25s, color 0.4s, text-shadow 0.4s, filter 0.4s; }
+.lbl.in { opacity: 1; }
+.lbl.left { transform: translate(0, -50%); }
+.lbl.right { transform: translate(-100%, -50%); }
+
+.lbl.word { font: italic 400 clamp(18px, 1.65vw, 27px)/1 var(--serif); color: var(--paper); text-shadow: var(--halo); }
+.lbl.word.small { font-size: clamp(15px, 1.25vw, 20px); }
+.lbl.word b { font-style: normal; font-weight: 500; color: var(--cyan); }
+.lbl.tag { font: 600 11px/1 var(--label); letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); }
+.lbl.role { font: 600 12.5px/1 var(--label); letter-spacing: 0.18em; text-transform: uppercase; color: var(--cyan); text-shadow: 0 0 12px rgba(69, 220, 255, 0.45); }
+.lbl.field { font: 600 11.5px/1 var(--label); letter-spacing: 0.16em; text-transform: uppercase; }
+.lbl.slot { font: 400 clamp(17px, 1.4vw, 22px)/1 var(--serif); color: var(--soft); }
+.lbl.math { font: italic 400 clamp(26px, 2.4vw, 38px)/1 var(--serif); color: var(--paper); }
+.lbl.example { font: italic 400 clamp(14px, 1.1vw, 17px)/1 var(--serif); color: var(--dim); }
+
+/* label states and colours */
+.lbl.dimmed { color: var(--dim); }
+.lbl.lit { color: var(--cyan); text-shadow: 0 0 14px rgba(69, 220, 255, 0.45); }
+.lbl.cyan, .lbl.c-cyan { color: var(--cyan); }
+.lbl.brass, .lbl.c-brass { color: var(--brass); }
+.lbl.c-coral { color: var(--coral); }
+.lbl.c-violet { color: var(--violet); }
+.lbl.c-mint { color: var(--mint); }
+.lbl.c-math { color: var(--math); }
+.lbl.fuzzy { color: var(--mint); filter: blur(0.7px); }
+.lbl.fuzzy.in { opacity: 0.85; }
+.lbl.role.c-brass { text-shadow: 0 0 12px rgba(227, 179, 110, 0.35); }
+.lbl.role.c-coral { text-shadow: 0 0 12px rgba(255, 150, 118, 0.35); }
+.lbl.role.c-violet { text-shadow: 0 0 12px rgba(178, 152, 255, 0.35); }
+.lbl.role.c-mint { text-shadow: 0 0 12px rgba(122, 224, 176, 0.35); }
+.lbl.role.c-math { text-shadow: 0 0 12px rgba(255, 222, 110, 0.35); }
+
+/* labels grouped for a pulse: the lit group brightens, the rest step back */
+.lbl.pulse-lit { filter: brightness(1.35); }
+#labels:has(.pulse-lit) .lbl[data-g]:not(.pulse-lit) { opacity: 0.45; }
+
+/* words that open a definition */
+.lbl.hot { pointer-events: auto; cursor: help; padding: 4px 6px; border-bottom: 1px dotted rgba(69, 220, 255, 0.55); }
+.lbl.hot:hover, .lbl.hot:focus-visible { color: var(--cyan); text-shadow: 0 0 5px #03080b, 0 0 16px rgba(69, 220, 255, 0.55); outline: none; }
+
+/* Weaver's three levels, quoted inside their boxes */
+.lbl.level { white-space: normal; display: grid; gap: 6px; }
+.lv-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.lv-head b { font: 600 12px/1 var(--label); letter-spacing: 0.16em; text-transform: uppercase; color: var(--soft); }
+.lv-head span { font: 400 12.5px/1 var(--label); letter-spacing: 0.04em; color: var(--dim); }
+.lv-q { font: 400 clamp(17px, 1.45vw, 23px)/1.3 var(--serif); color: var(--paper); }
+.lbl.level.lit .lv-head b, .lbl.level.lit .lv-head span { color: var(--cyan); }
+
+/* ---------- definition floater ---------- */
+#floater {
+  position: fixed; z-index: 8; width: min(340px, calc(100vw - 32px)); pointer-events: none;
+  background: rgba(5, 13, 18, 0.94); border: 1px solid rgba(69, 220, 255, 0.35);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.55), 0 0 24px rgba(69, 220, 255, 0.08);
+  padding: 16px 18px 14px; backdrop-filter: blur(6px);
+}
+#floater .f-word { display: block; font: 600 11px var(--label); letter-spacing: 0.18em; text-transform: uppercase; color: var(--cyan); margin-bottom: 8px; }
+#floater .f-title { font: italic 400 20px/1.3 var(--serif); color: var(--paper); margin: 0 0 8px; }
+#floater .f-body { font: 400 15.5px/1.5 var(--serif); color: var(--soft); margin: 0 0 10px; }
+#floater .f-src { font: 12px/1.45 var(--label); color: var(--dim); margin: 0; letter-spacing: 0.02em; }
+
+/* ---------- motion ---------- */
+@keyframes drip { 0%, 100% { transform: scaleY(0.4); transform-origin: top; opacity: 0.4; } 50% { transform: scaleY(1); transform-origin: top; opacity: 1; } }
+@keyframes breathe { 0%, 100% { opacity: 0.7; text-shadow: 0 0 10px rgba(69, 220, 255, 0.25); } 50% { opacity: 1; text-shadow: 0 0 26px rgba(69, 220, 255, 0.7); } }
+
+/* ---------- phones: figure on top, words over a fade below ---------- */
+@media (max-width: 879px) {
+  .rail { display: none; }
+  .brand small { display: none; }
+  .step::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 58%; z-index: 2; pointer-events: none;
+    background: linear-gradient(rgba(3, 8, 11, 0), rgba(3, 8, 11, 0.9) 30%);
+  }
+  .step[data-layout="full"]::after { display: none; }
+  .copy, .step[data-layout="center"] .copy, .step.todo .copy {
+    left: 16px; right: 16px; width: auto; top: auto; bottom: calc(4svh + env(safe-area-inset-bottom, 0px));
+    text-align: left; transform: translateY(22px);
+  }
+  .step.is-active .copy, .step[data-layout="center"].is-active .copy { transform: none; }
+  .copy p { font-size: 18px; }
+  .copy h2 { font-size: 32px; }
+  .copy.dense p { font-size: 16.5px; }
+  .copy.dense h2 { font-size: 26px; margin-bottom: 12px; }
+  .notes li { font-size: 15.5px; }
+  .def { margin: 16px 0; padding: 10px 0 10px 14px; }
+  .copy .def .def-main { font-size: 17px; }
+  .copy .def .def-eq { font-size: 26px; }
+  .copy .def .def-note { font-size: 14px; }
+  #gbit .copy.dense > p, #geometric .copy.dense > p, #alphabet .copy.dense > p, #entropy .copy.dense > p { font-size: 15px; line-height: 1.45; }
+  .terms li { grid-template-columns: 6.6em 1fr; font-size: 15px; }
+  .hotlist li { font-size: 15px; }
+  .lbl.example { font-size: 12.5px; }
+  .lbl.role, .lbl.field { font-size: 10.5px; }
+  .lv-head b, .lv-head span { font-size: 10px; }
+  .lv-q { font-size: 13.5px; }
+  .lbl.level { gap: 3px; }
+}
+
+/* ---------- reduced motion, and ?still for screenshots ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .copy, .lbl { transition: none; }
+  .hint::after, .copy .def .def-eq { animation: none; }
+}
+.still .copy, .still .lbl { transition: none !important; }

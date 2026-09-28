@@ -6,7 +6,10 @@
  * as dust. Figure labels are HTML placed in the same coordinates.
  *
  * ?still, or a reduced-motion preference, snaps every figure into place and
- * freezes animated scenes at their stillT frame.
+ * freezes animated scenes at their stillT frame. One wheel or trackpad gesture
+ * moves one step; topic steps after the map stay hidden until a link from the
+ * map of the thesis (map.html) opens one. The Light/Dark button swaps both the
+ * page palette and the particle palette.
  */
 (function () {
   "use strict";
@@ -24,10 +27,19 @@
   const NP = 1800;                                // particles
   const SPRING = 0.07, DAMP = 0.84, BURST = 4.2;  // pull to target, velocity kept per frame, kick on step change
   const NARROW = 880;                             // below this width, figure on top and words below
-  const COLORS = {
-    cyan: [69, 220, 255], ice: [184, 234, 244], brass: [227, 179, 110], dim: [96, 132, 138], paper: [238, 241, 234],
-    violet: [178, 152, 255], mint: [122, 224, 176], coral: [255, 150, 118], gold: [255, 222, 110]
+  /* Two palettes under the same names. Night draws light on black and adds light where
+     particles overlap; the light theme draws ink and gold on paper and lays them over each other. */
+  const PALETTES = {
+    dark: { cyan: [69, 220, 255], ice: [184, 234, 244], brass: [227, 179, 110], dim: [96, 132, 138], paper: [238, 241, 234],
+            violet: [178, 152, 255], mint: [122, 224, 176], coral: [255, 150, 118], gold: [255, 222, 110] },
+    light: { cyan: [168, 120, 27], ice: [58, 56, 52], brass: [122, 90, 30], dim: [150, 144, 130], paper: [22, 22, 20],
+             violet: [93, 79, 147], mint: [58, 115, 89], coral: [169, 75, 54], gold: [196, 150, 40] }
   };
+  const root = document.documentElement;
+  let theme = "dark";
+  try { if (localStorage.getItem("gtc-theme") === "light") theme = "light"; } catch (e) {}
+  root.dataset.theme = theme;
+  let COLORS = PALETTES[theme];
 
   /* Particle state. mode: 0 dust, 1 fixed point, 2 flow. pk: index into the
      scene's points; order: a fixed shuffle so figures draw from mixed particles. */
@@ -144,8 +156,6 @@
   }
   /* phrases in the text that carry a definition */
   document.querySelectorAll(".copy [data-def]").forEach(el => { if (DEFS[el.dataset.def]) bindFloat(el, DEFS[el.dataset.def]); });
-  /* labels sit above the deck, so pass their wheel events on to it */
-  labelLayer.addEventListener("wheel", e => deck.scrollBy({ top: e.deltaY }), { passive: true });
 
   let labelEls = [];
   function renderLabels(list) {
@@ -159,6 +169,12 @@
       if (l.g !== undefined) el.dataset.g = l.g;
       if (l.live) el._live = l.live;                         // text recomputed each frame from the scene's time
       if (l.at) el._at = l.at;                               // position recomputed each frame, for labels riding a moving figure
+      if (l.on) {                                            // labels that act as buttons: hover and click handlers from the scene
+        el.classList.add("act"); el.tabIndex = 0; el.setAttribute("role", "button");
+        if (l.on.enter) { el.addEventListener("mouseenter", l.on.enter); el.addEventListener("focus", l.on.enter); }
+        if (l.on.leave) { el.addEventListener("mouseleave", l.on.leave); el.addEventListener("blur", l.on.leave); }
+        if (l.on.click) { el.addEventListener("click", l.on.click); el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); l.on.click(); } }); }
+      }
       if (l.def) {
         el.classList.add("hot"); el.tabIndex = 0; el.setAttribute("role", "button");
         el.setAttribute("aria-label", l.def.w + ": " + l.def.t);
@@ -183,7 +199,7 @@
   let last = performance.now(), running = true;
   function tick(now) {
     if (!running) return;
-    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    const dt = Math.max(0, Math.min(0.05, (now - last) / 1000)); last = now;   // the first frame can stamp slightly before start
     render(now / 1000, dt, STILL);
     requestAnimationFrame(tick);
   }
@@ -198,7 +214,7 @@
     const dyn = spec.dynamic ? spec.dynamic(tc) : null;
 
     ctx.clearRect(0, 0, W, H);
-    ctx.globalCompositeOperation = "lighter";
+    ctx.globalCompositeOperation = theme === "light" ? "source-over" : "lighter";
     for (let i = 0; i < NP; i++) {
       let gx, gy, depth = 1;
       if (mode[i] === 2) {                                   // flows: move along their path
@@ -256,8 +272,11 @@
 
   /* ---------- deck: the chapter rail, the active step, the ring ---------- */
 
+  /* Topic steps sit after the map, hidden until a link from the map of the thesis opens one
+     (index.html#topic); the deck, the keys and the wheel only ever move between visible steps. */
   const parts = [];
   steps.forEach((s, i) => {
+    if (s.classList.contains("topic")) return;
     if (!parts.length || parts[parts.length - 1].id !== s.dataset.part) parts.push({ id: s.dataset.part, label: s.dataset.partLabel, num: s.dataset.partNum, first: i });
   });
   rail.innerHTML = parts.map(p => `<button type="button" data-first="${p.first}"><span>${p.num} ${p.label}</span><i></i></button>`).join("");
@@ -278,21 +297,71 @@
     i = Math.max(0, Math.min(steps.length - 1, i));
     deck.scrollTo({ top: steps[i].offsetTop, behavior: STILL ? "auto" : "smooth" });
   }
+  /* the nearest visible step from i in direction dir, or the current one if there is none */
+  function visibleFrom(i, dir) {
+    for (let j = i; j >= 0 && j < steps.length; j += dir) if (!steps[j].hidden) return j;
+    return activeIndex;
+  }
+  const step = dir => goTo(visibleFrom(activeIndex + dir, dir));
+  function openTopic(id, jump) {
+    let target = -1;
+    steps.forEach((s, j) => { if (s.classList.contains("topic")) { s.hidden = s.id !== id; if (s.id === id) target = j; } });
+    if (target < 0) return;
+    if (jump) deck.scrollTop = steps[target].offsetTop;             // reading offsetTop lays the newly shown step out first
+    else goTo(target);
+    onScroll();                                                    // the next topic can open exactly where the last one was
+  }
+  /* the light and dark themes: recolour the particles by re-handing them the current scene */
+  const themeButton = document.getElementById("theme");
+  function setTheme(t) {
+    theme = t; root.dataset.theme = t; COLORS = PALETTES[t];
+    themeButton.textContent = t === "light" ? "Dark" : "Light";
+    themeButton.setAttribute("aria-label", t === "light" ? "Switch to the dark theme" : "Switch to the light theme");
+    try { localStorage.setItem("gtc-theme", t); } catch (e) {}
+    for (let i = 0; i < NP; i++) if (mode[i] === 0) setColor(i, "dim");
+    if (activeIndex >= 0) setScene(steps[activeIndex].dataset.scene, false);
+  }
+  themeButton.addEventListener("click", () => setTheme(theme === "light" ? "dark" : "light"));
+  themeButton.textContent = theme === "light" ? "Dark" : "Light";
+
   /* The step under the middle of the screen is active; the ring shows how far through the deck we are. */
   function onScroll() {
     const middle = deck.scrollTop + deck.clientHeight / 2;
     let idx = 0;
-    for (let i = 0; i < steps.length; i++) if (steps[i].offsetTop <= middle) idx = i;
+    for (let i = 0; i < steps.length; i++) if (!steps[i].hidden && steps[i].offsetTop <= middle) idx = i;
     activate(idx);
     const max = deck.scrollHeight - deck.clientHeight;
     ring.style.setProperty("--p", max > 0 ? (deck.scrollTop / max).toFixed(4) : 0);
   }
   deck.addEventListener("scroll", onScroll, { passive: true });
+
+  /* One wheel or trackpad gesture moves exactly one step. Deltas add up until they pass a
+     threshold; then the deck moves and further events are absorbed until the gesture ends
+     (no events for a moment) and the smooth scroll has had time to land. Touch and keys
+     keep the native snap. Labels sit above the deck, so they route their wheel here too. */
+  let wheelSum = 0, wheelLock = false, lastWheel = 0, lastStep = 0;
+  function onWheel(e) {
+    if (e.ctrlKey) return;                                     // pinch zoom
+    e.preventDefault();
+    const now = performance.now();
+    if (now - lastWheel > 220) { wheelSum = 0; if (now - lastStep > 650) wheelLock = false; }
+    lastWheel = now;
+    if (wheelLock) return;
+    const d = e.deltaMode === 1 ? e.deltaY * 32 : e.deltaY;
+    wheelSum += d;
+    if (Math.abs(wheelSum) >= 40) {
+      step(wheelSum > 0 ? 1 : -1);
+      wheelSum = 0; wheelLock = true; lastStep = now;
+    }
+  }
+  deck.addEventListener("wheel", onWheel, { passive: false });
+  labelLayer.addEventListener("wheel", onWheel, { passive: false });
   window.addEventListener("keydown", e => {
-    if (["ArrowDown", "PageDown", " "].includes(e.key)) { e.preventDefault(); goTo(activeIndex + 1); }
-    else if (["ArrowUp", "PageUp"].includes(e.key)) { e.preventDefault(); goTo(activeIndex - 1); }
+    if (e.target.closest && e.target.closest("a, button, [role=button]") && [" ", "Enter"].includes(e.key)) return;
+    if (["ArrowDown", "PageDown", " "].includes(e.key)) { e.preventDefault(); step(1); }
+    else if (["ArrowUp", "PageUp"].includes(e.key)) { e.preventDefault(); step(-1); }
     else if (e.key === "Home") { e.preventDefault(); goTo(0); }
-    else if (e.key === "End") { e.preventDefault(); goTo(steps.length - 1); }
+    else if (e.key === "End") { e.preventDefault(); goTo(visibleFrom(steps.length - 1, -1)); }
   });
   window.addEventListener("resize", () => { resize(); onScroll(); });
 
@@ -300,7 +369,8 @@
 
   resize();
   const start = steps.findIndex(s => s.id === location.hash.slice(1));
-  if (start > 0) deck.scrollTop = steps[start].offsetTop;
+  if (start > 0 && steps[start].classList.contains("topic")) openTopic(steps[start].id, true);
+  else if (start > 0) deck.scrollTop = steps[start].offsetTop;
   onScroll();
   requestAnimationFrame(tick);
 

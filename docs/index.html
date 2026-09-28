@@ -20,7 +20,10 @@
     <span class="ring" id="ring"><i></i></span>
     <span><strong>A Geometrical Theory of Communication</strong><small>Working draft · Walter Henrique Alves da Silva</small></span>
   </a>
-  <a class="small-button" href="https://github.com/faltz009/geometrical-theory-of-communication">The paper</a>
+  <div class="actions">
+    <button class="small-button" id="theme" type="button" aria-label="Switch to the light theme">Light</button>
+    <a class="small-button" href="https://github.com/faltz009/geometrical-theory-of-communication">The paper</a>
+  </div>
 </header>
 <nav class="rail" id="rail" aria-label="Chapters"></nav>
 
@@ -40,7 +43,7 @@
       <span class="kicker">01 / The question</span>
       <h2>Something you didn’t know before</h2>
       <p>Asking what information is already assumes the question has an object: that the word points to something, whether we call it data or knowledge, something that exists in some sense, even if abstract.</p>
-      <p>Let us say it does, and let us say that I, the author, have seen it and measured it, and so I know what information is. How do I transfer that knowledge to you, the reader? How do I give you information about information? And how do you know that knowledge is true?</p>
+      <p>So let us say information exists, and assume I’ve seen it and measured it, and I absolutely know what it is. How do I transfer that knowledge to you, the reader? <em>How do I give you information about information?</em> And how do you know that knowledge is true?</p>
     </div>
   </section>
 
@@ -49,7 +52,9 @@
       <span class="kicker">01 / The question</span>
       <h2>Everything is written in information</h2>
       <p>Every science records what it observes and passes on what it knows through descriptions, so every field has its own answer to the question.</p>
-      <p>Each answer works inside its field, and what the answers share is hard to see from any one of them.</p>
+      <p>Heinrich Hertz opened <i>The Principles of Mechanics</i> by saying, “We form for ourselves images or symbols of external objects.” We reason with those descriptions, then compare their consequences with what happens in the world.</p>
+      <p>But the description is also information. How do we check that it carries what it describes? Every science faces this question, including a science of information, and we will return to it.</p>
+      <p class="citation"><a href="https://en.wikisource.org/wiki/Page:The_principles_of_mechanics_presented_in_a_new_form_(Hertz,_1894).pdf/35" target="_blank" rel="noopener">Hertz, <i>The Principles of Mechanics</i>, introduction, 1894 (English translation, 1899).</a></p>
     </div>
   </section>
 
@@ -59,25 +64,17 @@
       <span class="kicker">02 / One relation</span>
       <p>Say I point to a lighter on the desk between us: we both see it, and we both know it is there. What does that mean?</p>
       <p>The word <em class="q">lighter</em> points to an object in the world, and our two perspectives on that object still point the same word at the same thing. I could call it an <em class="q">igniter</em> and you would receive the same information through a different symbol: the word carries a meaning we can both already reach.</p>
-      <p><strong>Information about what?</strong> Always about a thing, and always carried by a sign.</p>
+      <p><strong>Information about what?</strong> Always a relation: a thing, how we observe it, and the sign we use to convey it. <span class="hotword" data-def="self-reference" tabindex="0" role="button">Otherwise, we get paradoxes and tautologies.</span></p>
     </div>
   </section>
 
   <section class="step" id="roles" data-part="relation" data-part-num="02" data-part-label="One relation" data-scene="roles">
-    <div class="copy">
+    <div class="copy dense">
       <span class="kicker">02 / One relation</span>
-      <p>Through all of that, one thing holds: the lighter stays the same while the views, the words and the people change.</p>
-      <div class="def">
-        <p class="def-main">Information is invariance over change.</p>
-        <p class="def-eq">A = A</p>
-        <p class="def-note">It is a process: from the thing, to a sign, and back.</p>
-      </div>
-      <ul class="terms">
-        <li><b>meaning</b><span>what the sign carries</span></li>
-        <li><b>identity</b><span>what the thing keeps</span></li>
-        <li><b>information</b><span>what travels between them</span></li>
-        <li><b>knowledge</b><span>the return that checks it</span></li>
-      </ul>
+      <p>When you look at the lighter there are three parts: you, the lighter and your looking at it, the <span class="hotword" data-def="peirce-relation" tabindex="0" role="button">observer, the observed and the observation</span>.</p>
+      <p>Nothing exists in isolation: a number is a point, the origin it is counted from and the line on which it is drawn; a message needs a sender, a receiver and the signal between them; and a particle’s mass is how it resists a push, its charge how it pulls and repels other charges.</p>
+      <p><i>A Mathematical Theory of Communication</i> defines information in terms of difference or change: a string of only 0s is the same as a single 0, and a string of only 1s the same as a single 1.</p>
+      <p>Once both appear, the string holds the 0s, the 1s and the relations between them, and that is where information lives, in the difference.</p>
     </div>
   </section>
 
@@ -92,10 +89,13 @@
 
   <!-- ===================== 03 · A communication problem ===================== -->
   <section class="step" id="communicate" data-part="communication" data-part-num="03" data-part-label="A communication problem" data-scene="communicate">
-    <div class="copy">
+    <div class="copy dense">
       <span class="kicker">03 / A communication problem</span>
+      <h2>Meta-language</h2>
       <p>As soon as I know something and set out to tell you, we are inside a communication problem. What I know about the lighter reaches you only as a sign, and you have to be able to check it.</p>
+      <p>But a single sign can point to different things: a <em class="q">bank</em> can be where you keep your money or where you sit beside a river. You can hear the word perfectly and still need to know which one I mean.</p>
       <p>The same holds for every measurement, proof and book: everything we know has to be communicated.</p>
+      <p>Here, we use language to talk about language itself. <em>How do I convey to you information about information?</em></p>
     </div>
   </section>
 
@@ -184,15 +184,27 @@
     </div>
   </section>
 
+  <section class="step" id="structure" data-part="bit" data-part-num="04" data-part-label="Shannon’s bit" data-scene="gstructure" data-fig="compact">
+    <div class="copy dense">
+      <span class="kicker">04 / Shannon’s bit</span>
+      <h2>A signal has a structure</h2>
+      <p>110 and 011 hold the same symbols in a different order, and read from 000, one bit per axis, they end on different corners of the cube.</p>
+      <p><strong>Read as a whole</strong>, a string is a place in a structure: 10 and 01 are different corners of the square, and 1101 and 1110 different corners of the four-dimensional cube, so the order carries the meaning.</p>
+      <p class="plain">Information is that structure.</p>
+      <p><strong>Read linearly</strong>, one symbol at a time, the same string is a line of yes-or-no choices, and counting those choices is what Shannon measured.</p>
+    </div>
+  </section>
+
   <section class="step" id="entropy" data-part="bit" data-part-num="04" data-part-label="Shannon’s bit" data-scene="questions" data-fig="compact">
     <div class="copy dense">
       <span class="kicker">04 / Shannon’s bit</span>
       <h2>Shannon’s entropy</h2>
       <div class="def">
-        <p class="def-main">Entropy is the number of yes-or-no questions it takes, on average, to find out which message was sent.</p>
-        <p class="def-note">Each question is one bit, answered 0 or 1.</p>
+        <p class="def-main">Entropy measures how hard a source is to predict.</p>
+        <p class="def-note">In bits, it is the number of yes-or-no questions it takes, on average, to find what was sent.</p>
       </div>
-      <p>With eight equally likely messages, three questions always find the one that was sent, each answer halving what remains, and the three answers together spell its corner of the cube. When some messages are more likely than others we can ask about those first, so a predictable source needs fewer questions on average and a surprising one needs more.</p>
+      <p>A coin that always lands heads tells you nothing when it lands, since you knew the answer before it fell, and a fair coin tells you one full bit, since you could not have guessed it.</p>
+      <p>With eight equally likely messages, three questions always find the one that was sent, and when some are more likely than others, asking about those first takes fewer questions on average. The count never depends on what the messages say, only on how many there could be and how likely each one is.</p>
     </div>
   </section>
 
@@ -200,35 +212,53 @@
     <div class="copy dense">
       <span class="kicker">04 / Shannon’s bit</span>
       <h2>Entropy across the sciences</h2>
-      <div class="def">
-        <p class="def-main">Entropy counts the ways a thing can be arranged while looking the same from outside.</p>
-      </div>
-      <p>The messages that could have been sent are one case of those arrangements. A drop of ink spreads through water and never gathers back because far more arrangements of its molecules look spread than gathered, and fields that give different answers to what information is all use this same count.</p>
-      <ul class="hotlist">
-        <li><span class="hotword" data-def="heat" tabindex="0" role="button">heat flows from hot to cold, and time runs one way</span></li>
-        <li><span class="hotword" data-def="life" tabindex="0" role="button">living things keep their order by giving disorder away</span></li>
-        <li><span class="hotword" data-def="holes" tabindex="0" role="button">a black hole holds as much of it as any region of space can</span></li>
-        <li><span class="hotword" data-def="diversity" tabindex="0" role="button">ecologists measure the diversity of a forest with it</span></li>
-        <li><span class="hotword" data-def="language" tabindex="0" role="button">language models learn by lowering it</span></li>
+      <p>Shannon took the name from physics, where Boltzmann had already written the same count for gas molecules, and since then entropy has become a measure every science uses on its own subject.</p>
+      <ul class="hotlist tagged">
+        <li><b class="tagf c-cyan">Thermodynamics</b><span class="hotword" data-def="heat" tabindex="0" role="button">heat flows from hot to cold, and time runs one way</span></li>
+        <li><b class="tagf c-coral">Biology</b><span class="hotword" data-def="life" tabindex="0" role="button">living things keep their order by giving disorder away</span></li>
+        <li><b class="tagf c-brass">Cosmology</b><span class="hotword" data-def="holes" tabindex="0" role="button">a black hole holds as much of it as any region of space can</span></li>
+        <li><b class="tagf c-mint">Ecology</b><span class="hotword" data-def="diversity" tabindex="0" role="button">the diversity of a forest is measured with it</span></li>
+        <li><b class="tagf c-violet">Machine learning</b><span class="hotword" data-def="language" tabindex="0" role="button">language models learn by lowering it</span></li>
       </ul>
     </div>
   </section>
 
-  <section class="step" id="gives" data-part="bit" data-part-num="04" data-part-label="Shannon’s bit" data-scene="levels">
+  <section class="step" id="gives" data-part="bit" data-part-num="04" data-part-label="Shannon’s bit" data-scene="gave" data-fig="compact">
     <div class="copy dense">
       <span class="kicker">04 / Shannon’s bit</span>
-      <h2>What the bit gives us</h2>
-      <ul class="terms bit-terms">
-        <li><b>encodes</b><span>a difference, 0 or 1, measured from a fixed reference</span></li>
-        <li><b>composes</b><span>one perpendicular direction per bit, into squares, cubes and hypercubes</span></li>
-        <li><b>gives us</b><span>classical information theory, digital computation, and every machine built on discrete states</span></li>
-        <li><b>assumes</b><span>that both sides already agree on what each corner selects</span></li>
-      </ul>
-      <p>Every transmitted bit therefore depends on two checks: the receiver has to recognize the state that arrived as the one that was sent, which Shannon solved, and both sides have to agree on what that state selects, which is Level B. How can that agreement become something we perform and check, instead of something we assume when we assign the labels?</p>
+      <h2>What the bit gave us</h2>
+      <p>Level A was solved: as long as both sides agree beforehand on what each symbol stands for, any message can cross any distance and arrive symbol for symbol, and that one idea built digital communication.</p>
+      <div class="levelbars">
+        <div class="lb solved"><span>Level A · the technical problem</span><em>solved, 1948</em></div>
+        <div class="lb open"><span>Level B · the semantic problem</span><em>open</em></div>
+        <div class="lb"><span>Level C · the effectiveness problem</span><em>open</em></div>
+      </div>
+      <p>How do we make sure the meaning is carried with the sign? That is Level B, and it is now the open problem.</p>
     </div>
   </section>
 
   <!-- ===================== 05 · The geometric bit ===================== -->
+  <section class="step" id="information" data-part="gbit" data-part-num="05" data-part-label="The geometric bit" data-scene="summary">
+    <div class="copy dense">
+      <span class="kicker">05 / The geometric bit</span>
+      <h2>So, what is information?</h2>
+      <p>What is a thing? What is a number? What is an identity? What is the meaning of something? And what do you know about it? These questions are signs that point to the same object:</p>
+      <div class="def">
+        <p class="def-main">Information is invariance over change.</p>
+        <p class="def-eq">A = A</p>
+        <p class="def-note">Change over invariance is the same relation read from its other end: what changes is measured against what stays, and what stays is recognized through what changes.</p>
+      </div>
+      <p>Shannon’s bit keeps the change and assumes the invariance, agreed beforehand when the labels are assigned, and the rest of this work gives that invariance a form we can check.</p>
+    </div>
+  </section>
+
+  <section class="step" id="shape-intro" data-part="gbit" data-part-num="05" data-part-label="The geometric bit" data-layout="full" data-scene="gintro">
+    <div class="copy">
+      <p class="intro-q">What is the shape of information?</p>
+      <h1 class="intro-title">The Geometric Bit</h1>
+    </div>
+  </section>
+
   <section class="step" id="shape" data-part="gbit" data-part-num="05" data-part-label="The geometric bit" data-scene="gmap">
     <div class="copy dense">
       <span class="kicker">05 / The geometric bit</span>
@@ -238,50 +268,65 @@
     </div>
   </section>
 
-  <section class="step" id="geometric-bit" data-part="gbit" data-part-num="05" data-part-label="The geometric bit" data-scene="gcircle">
-    <div class="copy dense">
-      <span class="kicker">05 / The geometric bit</span>
-      <h2>Drawing the perpendicular</h2>
-      <p>Any point one unit from 0 could serve as 1, and all of them together make a circle around 0. The perpendicular the bit left undrawn stands at each of those points as the circle’s tangent, the direction in which that point’s reading holds.</p>
-      <p>If we mark a starting point and follow the circle round, the mark changes position the whole way and after a full turn is back at the start, where we can compare the two. That change, which returns what it started from and lets us check the return, is the unit we identify as the geometric bit.</p>
-    </div>
-  </section>
-
   <section class="step" id="alphabet" data-part="gbit" data-part-num="05" data-part-label="The geometric bit" data-scene="galphabet" data-fig="compact">
     <div class="copy dense">
       <span class="kicker">05 / The geometric bit</span>
       <h2>The alphabet of space</h2>
-      <p>The alphabet of binary is 0 and 1, and the alphabet of DNA is four bases. The alphabet of space is perpendicularity and symmetry, and the circle’s four poles carry both, since 1 and −1 are symmetric, the same unit on opposite sides of the centre, and 1 and <i>i</i> are perpendicular, a quarter turn apart.</p>
+      <p>The alphabet of binary is 0 and 1, and the alphabet of DNA is four bases (A, T, C, G) and their folding organization. The alphabet of space is perpendicularity and symmetry, and the circle’s four poles carry both, since 1 and −1 are symmetric, the same unit on opposite sides of the centre, and 1 and <i>i</i> are perpendicular, a quarter turn apart.</p>
       <p>Perpendicularity separates two changes, which is difference, and symmetry keeps every length and right angle while the whole circle turns, which is sameness.</p>
       <p class="plain">Both perpendicularity and symmetry exist as physical phenomena in space before we assign symbols to them.</p>
-      <p>Physics writes both down as law, since entropy counts the ways a system can be arranged, each independent two-state part doubling them, and Emmy Noether showed in 1918 that every continuous symmetry carries a conserved quantity, so turning gives angular momentum and the passing of time gives energy.</p>
+      <p>Perpendicularity and symmetry are what physics writes as thermodynamics and conservation laws, since entropy counts the independent ways a system can vary, each perpendicular to the others, and Emmy Noether showed in 1918 that every continuous symmetry carries a conserved quantity.</p>
     </div>
   </section>
 
-  <section class="step" id="two-references" data-part="gbit" data-part-num="05" data-part-label="The geometric bit" data-scene="gobs" data-fig="compact">
+  <section class="step" id="checks" data-part="gbit" data-part-num="05" data-part-label="The geometric bit" data-scene="gchecks">
     <div class="copy dense">
       <span class="kicker">05 / The geometric bit</span>
-      <h2>Two references, one turn</h2>
-      <p>Put your reference at the top of the circle while I put mine on the right, and let us both make a quarter turn in the same direction. Our marks finish in different places, yet each has turned through the same angle from its own reference, because turning a reference together with its reading adds the same angle to both and leaves their difference fixed.</p>
-      <p>Your circle can also be larger than mine: circumference and diameter grow together, keeping the ratio π, while the right angles and the fraction of a turn stay the same, so what we share is the comparison we perform, whatever drawing each of us holds.</p>
+      <h2>How do we check that A = A?</h2>
+      <p>Checking an identity takes two checks, telling the thing apart from everything else, this and not that, and recognizing it again somewhere else or in another form, this here equals this there. Perpendicularity performs the first check and symmetry the second, and together they give the invariance over change we saw with the lighter, where the views, the words and the people changed while the lighter stayed the same.</p>
+      <p>Shannon’s bit implies the perpendicular and throws away the angle, keeping only which side of the line a reading falls on. The circle keeps the angle, so it lets us quantize both relationships precisely, how far a reading has turned from its reference and when it has come back to it, and transmit them.</p>
+    </div>
+  </section>
+
+  <section class="step" id="bridge" data-part="gbit" data-part-num="05" data-part-label="The geometric bit" data-scene="gbridge" data-fig="compact">
+    <div class="copy dense">
+      <span class="kicker">05 / The geometric bit</span>
+      <h2>Continuous and discrete</h2>
+      <p>We write the turn with π and <i>e</i>, π for how far it has gone in space and <i>e</i> for how it accumulates in time. Both are transcendental, which means no arithmetic of whole numbers ever reaches them, so they belong wholly to the continuous, and yet together they give <span class="m c-math">e<sup>2πi</sup> = 1</span>, a whole number exactly, so the circle passes from the continuous to the discrete with no approximation.</p>
+      <p>Shannon’s bit goes the other way, reaching toward the continuous by composing discreteness, since each added bit doubles the levels and a continuous quantity is approached by ever more of them.</p>
+    </div>
+  </section>
+
+  <section class="step" id="two-references" data-part="gbit" data-part-num="05" data-part-label="The geometric bit" data-scene="glighter" data-fig="compact">
+    <div class="copy dense">
+      <span class="kicker">05 / The geometric bit</span>
+      <h2>The turn preserves identity</h2>
+      <p>Say we both look at the lighter from different places, and as we move around it our views keep changing, yet at every moment the angle between us is an exact quantity, so turning your view back by that angle gives mine, and the lighter each of us sees is the same lighter.</p>
+      <p>At Level B, the meaning I send has to arrive as the meaning you understand, and here that meaning is the lighter itself, which stays the same while our places, our views and our words for it change. Since the angle between our frames can be stated exactly, you can undo it and reach what I meant, so the identity arrives as it was sent.</p>
+      <p>This is a simplified explanation, <span class="hotword" data-def="frames" tabindex="0" role="button">more technically</span>.</p>
     </div>
   </section>
 
   <section class="step" id="counting" data-part="gbit" data-part-num="05" data-part-label="The geometric bit" data-scene="gcount" data-fig="compact">
     <div class="copy dense">
       <span class="kicker">05 / The geometric bit</span>
-      <h2>Counting turns</h2>
-      <p>Let 1 mark the starting radius and let multiplication by <i>i</i> make a positive quarter turn. Two turns reach the opposite pole, so <span class="m">i² = −1</span>, the third reaches −<i>i</i>, and the fourth returns to 1, where the count carries on, so <i>i</i><sup>4</sup> and <i>i</i><sup>8</sup> land where <i>i</i><sup>0</sup> began and every power of <i>i</i> lands on one of the four poles.</p>
-      <p>One movement then gives two readings, where the point is and how many turns it has made, the first continuous and the second a count of completed returns. Multiplication and addition set how the poles combine, since multiplying by <i>i</i> adds a quarter turn and adding two perpendicular poles, 1 + <i>i</i>, reaches the corner of the square between them.</p>
+      <h2>What is a number?</h2>
+      <p>Let 1 mark the starting radius and let multiplication by <i>i</i> make a quarter turn. Two turns reach the opposite pole, so <span class="m">i² = −1</span>, the third reaches −<i>i</i>, and the fourth returns to 1, where the count carries on, so <i>i</i><sup>4</sup> and <i>i</i><sup>8</sup> land where <i>i</i><sup>0</sup> began.</p>
+      <p>The same movement gives two readings, where the point is and how many times it has come back, and every return meets the same criterion, arriving back at the reference, just as every step along the number line has the same length.</p>
+      <div class="def">
+        <p class="def-main">A number is a closed distinction, a one.</p>
+        <p class="def-eq">e<sup>2πin</sup> = 1 ⟺ n ∈ ℤ</p>
+        <p class="def-note">Physical reality presents it as a count of completed returns, in every oscillation, every orbit and every tick of a clock.</p>
+      </div>
     </div>
   </section>
 
   <section class="step" id="euler" data-part="gbit" data-part-num="05" data-part-label="The geometric bit" data-scene="geuler" data-fig="compact">
     <div class="copy dense">
       <span class="kicker">05 / The geometric bit</span>
-      <h2>Euler writes it down</h2>
-      <p>Euler’s formula <span class="m c-math">e<sup>iθ</sup></span> follows the turn through every angle between the poles, and at the half turn and the full turn it reads <span class="m c-math">e<sup>iπ</sup> + 1 = 0</span> and <span class="m c-math">e<sup>2πi</sup> = 1</span>, the first recording opposition as cancellation and the second the completed return.</p>
-      <p>Its π measures the turn in space and its <i>e</i> the accumulation in time, so at a steady rate the angle grows with elapsed time, <span class="m">θ = ωt</span>, and each completed return is an event we can count. Classical mechanics, quantum mechanics and relativity describe their oscillations, phases and rotations with it.</p>
+      <h2>Reading Euler’s identity</h2>
+      <p>Euler’s identity is a sentence about something we can do. Start at 1, the reference, and let the change always point at a right angle to where we are, which is what <i>i</i> asks for, accumulating continuously, which is what <i>e</i> describes, until the turn has gone half way round, π in lengths of the radius: we arrive at −1, and adding where we started to where we arrived leaves nothing, <span class="m c-math">e<sup>iπ</sup> + 1 = 0</span>.</p>
+      <p>Every symbol names a step of that operation, so anyone who performs it recovers the identity whatever notation they learned, and its full-turn form, <span class="m c-math">e<sup>2πi</sup> = 1</span>, is the check that the operation closes.</p>
     </div>
   </section>
 
@@ -298,126 +343,304 @@
     </div>
   </section>
 
-  <section class="step" id="reading" data-part="gbit" data-part-num="05" data-part-label="The geometric bit" data-scene="greading">
+  <!-- ===================== 06 · Conclusion ===================== -->
+  <section class="step" id="reading" data-part="conclusion" data-part-num="06" data-part-label="Conclusion" data-scene="greading">
     <div class="copy dense">
-      <span class="kicker">05 / The geometric bit</span>
+      <span class="kicker">06 / Conclusion</span>
       <h2>Shannon’s bit is a reading of it</h2>
       <p>Recording which side of a diameter holds the mark gives one bit, and two perpendicular diameters give four quadrants, the four corners of the square, whose labels we can keep while setting the exact angle aside.</p>
-      <p>Once those alternatives and their probabilities are given, Shannon’s measure applies to the choice among them. The bit is the circle read at its quadrants, with the turn and the reference set aside, and the circle keeps both.</p>
+      <p>Once those alternatives and their probabilities are given, Shannon’s measure applies to the choice among them, and the square, the cube and every computation on their corners follow as before. The bit is the circle read at its quadrants, with the turn and the reference set aside, and the circle keeps both.</p>
     </div>
   </section>
 
-  <section class="step todo" id="first-row" data-part="first-row" data-part-num="06" data-part-label="Shannon's bit is the first row" data-scene="dust">
-    <div class="copy">
-      <span class="kicker">06 / Shannon's bit is the first row</span>
-      <h2>Shannon's bit is the first row</h2>
-      <ul class="notes">
-        <li>Centre the bit: −1 and +1, joined by the half turn <span class="m">e<sup>iπ</sup> = −1</span>.</li>
-        <li>Squaring the circle sends <i>z</i> and −<i>z</i> to one point: the fibre S⁰, a bit's two alternatives.</li>
-        <li>The Hopf table: each whole space becomes the next fibre. The circle is the second row's fibre.</li>
-        <li>Structural fractality; the sedenions end it.</li>
+  <section class="step" id="composing" data-part="conclusion" data-part-num="06" data-part-label="Conclusion" data-scene="spheres" data-fig="compact">
+    <div class="copy dense">
+      <span class="kicker">06 / Conclusion</span>
+      <h2>Composing geometric bits</h2>
+      <p>Shannon’s bits compose into cubes, one perpendicular direction for each bit, and geometric bits compose into spheres. A pair of circles, two complex numbers held together to one unit of length, makes the three-dimensional sphere of the quaternions, whose turns keep the order in which they happen, and doubling again gives the seven-dimensional sphere of the octonions.</p>
+      <p>This is the tower of algebras, the real numbers, the complex numbers, the quaternions and the octonions, each carrying the circle inside it, and at every level a Hopf map reads the larger sphere down onto a smaller one, the way Shannon’s bit reads the circle at its quadrants.</p>
+    </div>
+  </section>
+
+  <section class="step" id="physics" data-part="conclusion" data-part-num="06" data-part-label="Conclusion" data-scene="phasor" data-fig="compact">
+    <div class="copy dense">
+      <span class="kicker">06 / Conclusion</span>
+      <h2>Physics already runs like this</h2>
+      <p>A turn watched from the side is an oscillation, since the height of the turning point rises and falls as a wave and the speed of the turn is the wave’s frequency. Wherever physics describes something that repeats, it writes the turn, <span class="m c-math">e<sup>iωt</sup></span>, and measures its shadow.</p>
+      <p>Classical mechanics, quantum mechanics and relativity all work on this circle.</p>
+      <ul class="hotlist">
+        <li><span class="hotword" data-def="osc" tabindex="0" role="button">springs, pendulums and circuits oscillate as the shadow of a turn</span></li>
+        <li><span class="hotword" data-def="amplitudes" tabindex="0" role="button">every quantum possibility carries a turning arrow, and opposite arrows cancel</span></li>
+        <li><span class="hotword" data-def="quantization" tabindex="0" role="button">atoms keep only the orbits where the turn closes</span></li>
+        <li><span class="hotword" data-def="relativity" tabindex="0" role="button">changing speed is turning in spacetime</span></li>
+        <li><span class="hotword" data-def="signals" tabindex="0" role="button">every signal is a sum of turns, and phones send bits as points on the circle</span></li>
       </ul>
-      <span class="draft">Draft notes · in progress</span>
     </div>
   </section>
 
-  <section class="step todo" id="exists" data-part="exists" data-part-num="07" data-part-label="What exists?" data-scene="dust">
-    <div class="copy">
-      <span class="kicker">07 / What exists?</span>
-      <h2>What exists?</h2>
-      <ul class="notes">
-        <li>To exist is to be available to interaction; every interaction is a comparison.</li>
-        <li>A bare “10” needs a thing, a reference and a comparison: the triad.</li>
-        <li>The cup: one object, changing views. Three dimensions of space, watched through time.</li>
-        <li>The plane can show the unit and cannot test it (Poincaré–Bendixson); three dimensions can.</li>
-        <li>Carrots in a blender give carrots: whatever we can think or imagine is made of spacetime and its constituents, so blue horses, never an unimaginable colour.</li>
+  <section class="step" id="law" data-part="conclusion" data-part-num="06" data-part-label="Conclusion" data-scene="exps" data-fig="compact">
+    <div class="copy dense">
+      <span class="kicker">06 / Conclusion</span>
+      <h2>Euler’s identity is a law</h2>
+      <p>Why recognize Newton’s law or the laws of thermodynamics as physical while treating Euler’s identity as a mathematical convenience? The standard should be the same for both, identify the quantities, measure their relationship and check that the description preserves what the measurements establish, and the ratio of the circle, the perpendicular turn and the return all pass it.</p>
+      <div class="def">
+        <p class="def-main">Euler’s identity is a physical law: it records the measured relationship of continuous turning and closure.</p>
+        <p class="def-note">Accounts of the same physical turn must agree about its result, in any notation.</p>
+      </div>
+      <p>Thermodynamics uses the same exponential for its own composition, since independent systems at one temperature add their energies while their weights, <span class="m c-math">e<sup>−E/kT</sup></span>, multiply, just as turns add their angles while their exponentials multiply.</p>
+    </div>
+  </section>
+
+  <section class="step" id="closure" data-part="conclusion" data-part-num="06" data-part-label="Conclusion" data-scene="closure">
+    <div class="copy dense">
+      <span class="kicker">06 / Conclusion</span>
+      <h2>Closure, the counterpart of entropy</h2>
+      <div class="def">
+        <p class="def-main">Closure is the return of a distinction to its reference, which makes an identity repeatable.</p>
+      </div>
+      <p>Entropy counts the arrangements a state could have been, and closure keeps the one it is, so information lives between them, since what only spreads keeps nothing to recognize and what only returns tells us nothing new.</p>
+      <p>Schrödinger called what a living thing takes in to keep its order negative entropy, and in 1953 Brillouin identified information with it, so physics has carried this counterpart all along under the name negentropy. Causality needs it as well, because a cause has to stay itself to be the same cause while its effect differs from it, so closure is the condition for anything to be carried from one state to the next.</p>
+    </div>
+  </section>
+
+  <section class="step" id="levelc" data-part="conclusion" data-part-num="06" data-part-label="Conclusion" data-scene="loop">
+    <div class="copy dense">
+      <span class="kicker">06 / Conclusion</span>
+      <h2>Level C: did it work?</h2>
+      <p>Weaver’s third level asks whether the meaning that arrived affects conduct in the way the sender intended, and that is the check of Level B. If I ask you for the lighter and you hand me the lighter, your action has brought the meaning back to me, and I can compare what came back with what I meant.</p>
+      <p>It is the same return as the full turn: the signal crosses at Level A, the meaning is recovered at Level B, and the action closes the loop at Level C, where the sender recognizes A = A, so with the geometric bit all three levels become checks we can perform.</p>
+    </div>
+  </section>
+
+  <section class="step" id="gbit-gives" data-part="conclusion" data-part-num="06" data-part-label="Conclusion" data-scene="levels2">
+    <div class="copy dense">
+      <span class="kicker">06 / Conclusion</span>
+      <h2>What the geometric bit gives us</h2>
+      <ul class="terms bit-terms">
+        <li><b>encodes</b><span>a difference and a sameness, measured from a reference that travels with them</span></li>
+        <li><b>composes</b><span>turns that add continuously and close in whole returns</span></li>
+        <li><b>gives us</b><span>Shannon’s bit as one of its readings, the tower of algebras, and the physics already written in turns</span></li>
+        <li><b>checks</b><span>that what arrives is what was sent, A = A</span></li>
       </ul>
-      <span class="draft">Draft notes · in progress</span>
+      <p>Every check now travels with the unit: the receiver recognizes the state that arrived, as Shannon’s theory already guarantees, turns back through the reference it came with to recover what that state meant, and acts, and the action brings the meaning back to the sender to be recognized. What is there to be carried, what do we measure when we check it, and how do we convey it?</p>
     </div>
   </section>
 
-  <section class="step todo" id="metre" data-part="metre" data-part-num="08" data-part-label="The metre was a quarter turn" data-scene="dust">
+  <!-- ===================== 07 · Going forward: the map ===================== -->
+  <section class="step" id="map" data-part="map" data-part-num="07" data-part-label="Going forward" data-layout="full" data-scene="dust">
     <div class="copy">
-      <span class="kicker">08 / The metre was a quarter turn</span>
+      <span class="kicker">07 / Going forward</span>
+      <h2>The map of the thesis</h2>
+      <p>Beyond the explanation, the questions the geometric bit reaches, from Euclid’s fifth postulate and the Riemann Hypothesis to the Standard Model and the mind, each with the papers where it is worked out in full.</p>
+      <p><a class="mapopen" href="map.html">Open the map →</a></p>
+      <p class="mapnote">AI curated based on the author’s thesis, human review is a work in progress.</p>
+    </div>
+  </section>
+
+  <!-- ===================== topics, opened from the map ===================== -->
+  <section class="step topic" id="exists" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="interact">
+    <div class="copy dense">
+      <span class="kicker">What exists?</span>
+      <h2>To exist is to interact</h2>
+      <p>The lighter on the desk reflects light, resists a hand, exchanges heat and can produce a flame, and those interactions are how we encounter it. What would it mean to say that something existed physically if it could enter no interaction at all?</p>
+      <div class="def">
+        <p class="def-main">Something exists physically when it is available to interaction.</p>
+        <p class="def-note">The lighter stays on the desk when we turn away, and its relationships with the desk, the air and the light carry on.</p>
+      </div>
+      <p>The observer belongs to the same picture, since the person, the instrument, the inscription and the act of thinking all happen in spacetime. Imagination works the same way: a blender full of carrots gives carrots, so we can imagine a blue lighter out of blue things and lighters we have met, and never a colour no interaction ever gave us.</p>
+      <nav class="topicnav"><a href="map.html">← The map of the thesis</a></nav>
+    </div>
+  </section>
+
+  <section class="step topic" id="truth" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="cascade">
+    <div class="copy dense">
+      <span class="kicker">What exists?</span>
+      <h2>How do you know I am telling the truth?</h2>
+      <p>The same way you check A = A. Every relationship this argument starts from can be reproduced with a string, a cup or a pizza, and every consequence drawn from it is written so that you can follow it, so measurement tests where we begin and reasoning lets you check each step from there.</p>
+      <p>Philosophy, logic and mathematics are one investigation at different levels, and asking what a number is belongs to the first of them, where an error carries into everything built on numbers, the way a small change in initial conditions grows along every path that starts from it.</p>
+      <p class="plain">The foundations have to be the most precise part of an argument, because everything else inherits their errors.</p>
+      <nav class="topicnav"><a href="map.html">← The map of the thesis</a></nav>
+    </div>
+  </section>
+
+  <section class="step topic" id="goedel" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="coding">
+    <div class="copy dense">
+      <span class="kicker">What can be proved?</span>
+      <h2>What did Gödel prove?</h2>
+      <p>Gödel asked whether a formal system could establish its own truth. Inside the system, his sentence is an ordinary statement about numbers, that no number has a certain arithmetic property, and it says I am unprovable only through the coding Gödel invented, the map from sentences to numbers. That map is not in the system. Gödel holds it, so the self-reference is a relation of three parts, the sign, its object and Gödel reading one as the other, presented as a sign referring to itself.</p>
+      <p>The proof needs Gödel at every step, to build the coding, to read the sentence as being about itself and to see that it is true, and then its conclusion is stated about the system with Gödel removed. Incompleteness belongs to that stripped object, a formal system treated as closed, and putting the checker back puts the check back, since it is how Gödel knew his sentence was true.</p>
+      <p class="plain">Notation hides the reference, and Gödel’s notation hid Gödel.</p>
+      <nav class="topicnav"><a href="map.html">← The map of the thesis</a></nav>
+    </div>
+  </section>
+
+  <section class="step topic" id="closed" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="selfref">
+    <div class="copy dense">
+      <span class="kicker">What can be proved?</span>
+      <h2>There are no closed systems</h2>
+      <p class="plain">A closed system cannot verify its own truth, but there are no closed systems.</p>
+      <p>Turing climbed the open tower in 1939, adding the consistency of each system to the next, and Feferman proved in 1962 that such a climb, built on reflection, reaches every true sentence of arithmetic. The path up cannot be chosen mechanically, and Turing named what the climb needs, ingenuity and intuition, the second being the step taken from outside, the checker. Tarski had already placed the truth of each language in the next one up, so every whole becomes part of something larger that can check it.</p>
+      <p><span class="hotword" data-def="paradoxes" tabindex="0" role="button">The paradoxes</span> appear exactly where something is treated as closed: the liar, a sign pointing only at itself, which Kripke called ungrounded in 1975, Russell’s set of all sets, Burali-Forti’s greatest ordinal. So the framework predicts where paradox will appear, wherever a totality or a self-referring sign is taken as a finished thing, and that is the only place it appears.</p>
+      <nav class="topicnav"><a href="map.html">← The map of the thesis</a></nav>
+    </div>
+  </section>
+
+  <section class="step topic" id="three" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="three">
+    <div class="copy dense">
+      <span class="kicker">What exists?</span>
+      <h2>Why 3 + 1?</h2>
+      <p>In two dimensions a smooth motion that stays bounded and never settles at a resting point must approach a repeating cycle, which is the Poincaré–Bendixson theorem. Three dimensions allow bounded motion that never repeats, as in the Lorenz system, whose strange attractor Warwick Tucker proved in 2002.</p>
+      <p>So the plane can show the unit, a turn that returns, and three dimensions followed through time can test it, because a comparison that lasts has to stay usable while the process it compares never comes back.</p>
+      <nav class="topicnav"><a href="map.html">← The map of the thesis</a></nav>
+    </div>
+  </section>
+
+  <section class="step topic" id="hamilton" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="stone">
+    <div class="copy dense">
+      <span class="kicker">What is matter made of?</span>
+      <h2>Hamilton’s search</h2>
+      <p>For more than a decade William Rowan Hamilton tried to do for space what the circle does for the plane, to find numbers whose multiplication turns directions in three dimensions, and triples of numbers would not work. On 16 October 1843, walking along the Royal Canal in Dublin, he saw that it takes four, and carved the rule into the stone of Broom Bridge.</p>
+      <p>Quaternions keep the circle inside them, since every quaternion turn is a circle about some axis, and they add what space needs, the order of the turns: turn a cup about one axis and then another, reverse the order, and it ends facing a different way, so <span class="m">ij = k</span> while <span class="m">ji = −k</span>.</p>
+      <nav class="topicnav"><a href="map.html">← The map of the thesis</a></nav>
+    </div>
+  </section>
+
+  <section class="step topic" id="split" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="split">
+    <div class="copy dense">
+      <span class="kicker">What is matter made of?</span>
+      <h2>What the notation split</h2>
+      <p>Multiply two directions as quaternions and one product gives two answers at once, a number measuring how much the directions agree and a new direction perpendicular to both, <span class="m c-math">pq = −p·q + p×q</span>.</p>
+      <p>Maxwell wrote parts of his electromagnetism in quaternions, and in the 1880s Gibbs and Heaviside split the product into two notations, the dot product and the cross product, which physics still teaches separately. The split made calculation easier and hid the single operation, a turn, that both halves come from.</p>
+      <nav class="topicnav"><a href="map.html">← The map of the thesis</a></nav>
+    </div>
+  </section>
+
+  <section class="step topic" id="tower" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="tower">
+    <div class="copy dense">
+      <span class="kicker">What is matter made of?</span>
+      <h2>The tower</h2>
+      <p>Doubling a number system while keeping its norm rule, where the length of a product is the product of the lengths, gives exactly four systems, the real numbers, the complex numbers, the quaternions and the octonions, as Hurwitz proved in 1898. Each doubling gives something up: the complex numbers lose the order of the line, the quaternions lose commutativity, and the octonions lose associativity, so even the grouping of a product can change its result.</p>
+      <p>The next doubling, the sedenions, loses the norm rule itself, and two nonzero sedenions can multiply to zero. For communication this means a message and a code can combine into nothing, so decode(encode(A)) = A can no longer be guaranteed, and the tower ends exactly where the identity check stops working.</p>
+      <nav class="topicnav"><a href="map.html">← The map of the thesis</a></nav>
+    </div>
+  </section>
+
+  <section class="step topic" id="perpendicular" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="gcircle">
+    <div class="copy dense">
+      <span class="kicker">What is matter made of?</span>
+      <h2>A perpendicular at every point</h2>
+      <p>Every point one unit from 0 carries its own perpendicular, the circle’s tangent, and only three spheres can carry a full set of perpendicular directions at every point at once: the circle carries one, the three-dimensional sphere of the quaternions carries three, from <i>i</i>, <i>j</i> and <i>k</i>, and the seven-dimensional sphere of the octonions carries seven.</p>
+      <p>Bott, Milnor and Kervaire proved in 1958 that there are no others, and Adams proved in 1960 that the maps joining these spheres exist only in dimensions 1, 2, 4 and 8, the same limit the tower reaches through its algebra. The everyday version is the hairy ball: hair growing around a circle can be combed flat all the way round, and a ball of hair always leaves a tuft.</p>
+      <nav class="topicnav"><a href="map.html">← The map of the thesis</a></nav>
+    </div>
+  </section>
+
+  <section class="step topic" id="matter" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="mobius">
+    <div class="copy dense">
+      <span class="kicker">What is matter made of?</span>
+      <h2>Matter turns twice</h2>
+      <p>Spacetime is written in quaternions, one reference and three perpendicular directions, the 3 + 1 of the cup, and the changes of frame in relativity act on it through the complex quaternions. Particles of spin one half take this further: their state comes back to itself only after two full turns, since after one it returns with its sign reversed, and neutron experiments measured that reversal in 1975.</p>
+      <p>Cohl Furey has shown that one generation of quarks and leptons, with their charges, appears in the algebra of the complex octonions, and has been rebuilding the symmetries of the Standard Model from the tower acting together, the complex numbers, the quaternions and the octonions at once.</p>
+      <nav class="topicnav"><a href="map.html">← The map of the thesis</a></nav>
+    </div>
+  </section>
+
+  <section class="step topic" id="hopf" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="hopf">
+    <div class="copy dense">
+      <span class="kicker">What do we measure?</span>
+      <h2>Shannon’s bit is the first row</h2>
+      <p>The Hopf maps take each sphere of the tower onto a smaller one, and the points that land in the same place form a fibre, the alternatives that reading leaves unresolved. Read as information, the rows are units we already use.</p>
+      <table class="htable">
+        <thead><tr><th>Algebra</th><th>Fibre</th><th>Sphere</th><th>Reading</th><th>Unit</th></tr></thead>
+        <tbody>
+          <tr><td>ℝ</td><td>S⁰</td><td>S¹</td><td>S¹</td><td>one bit</td></tr>
+          <tr><td>ℂ</td><td>S¹</td><td>S³</td><td>S²</td><td>one qubit</td></tr>
+          <tr><td>ℍ</td><td>S³</td><td>S⁷</td><td>S⁴</td><td>two qubits</td></tr>
+          <tr><td>𝕆</td><td>S⁷</td><td>S¹⁵</td><td>S⁸</td><td>three qubits</td></tr>
+        </tbody>
+      </table>
+      <p>In each row the whole sphere of the row above returns as the fibre, the same shape Tarski gave truth, so the construction repeats itself at every level, and the geometric bit is the circle in the second row, the phase of a qubit that a measurement cannot see. Mosseri and Dandoloff read two qubits in the quaternionic row in 2001, Bernevig and Chen read three in the octonionic row in 2003, and the table stops there.</p>
+      <nav class="topicnav"><a href="map.html">← The map of the thesis</a></nav>
+    </div>
+  </section>
+
+  <section class="step topic" id="measure" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="unroll">
+    <div class="copy dense">
+      <span class="kicker">What do we measure?</span>
+      <h2>What do we measure?</h2>
+      <p>To measure is to ask a question in a form an interaction can answer. Wrap a string around a round cup, measure the circumference and the diameter and divide, then repeat with a larger cup: within the accuracy of the cup and the string the ratio stays the same, and measuring in inches instead of centimetres changes both lengths together and leaves the ratio alone.</p>
+      <p>The exact circle gives π, and the physical measurement tells us how closely the cup realizes it, so a measurement is a comparison another person can repeat, and what it returns is the relationship the comparison preserves.</p>
+      <nav class="topicnav"><a href="map.html">← The map of the thesis</a></nav>
+    </div>
+  </section>
+
+  <section class="step topic" id="cup" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="cup">
+    <div class="copy dense">
+      <span class="kicker">What exists?</span>
+      <h2>Three dimensions, watched through time</h2>
+      <p>Look straight down at a round cup and its rim is a circle; tilt it and the rim becomes an ellipse, and nearly edge on the opening becomes a narrow line. The cup has not changed, a single picture cannot tell us from which direction it was taken, and moving around the cup gives further pictures whose agreement lets us recognize one object through its changing appearances.</p>
+      <p>This is the 3 + 1 encounter in ordinary terms, three directions of space read against one common reference as the object changes through time, and the circle on the page is one view of a relationship realized there.</p>
+      <nav class="topicnav"><a href="map.html">← The map of the thesis</a></nav>
+    </div>
+  </section>
+
+  <section class="step topic" id="metre" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="earth">
+    <div class="copy dense">
+      <span class="kicker">What do we measure?</span>
       <h2>The metre was a quarter turn</h2>
-      <ul class="notes">
-        <li>1791: one ten-millionth of the pole-to-equator meridian, a quarter of the Earth.</li>
-        <li>Bars, then krypton light, caesium cycles, the speed of light, and in 2019 constants of nature.</li>
-        <li>The full turn is its own standard: it never needed an outside reference.</li>
-        <li>A law of the zeroth-law kind: it licenses angle.</li>
-      </ul>
-      <span class="draft">Draft notes · in progress</span>
+      <p>In 1791 the metre was defined as one ten-millionth of the distance from the North Pole to the equator, a quarter turn of the Earth, and the second was a fraction of the Earth’s turns, first about its axis and then around the Sun. Since 1967 the second has been 9,192,631,770 cycles of the caesium atom, a count of completed returns, and since 1983 the metre has followed from the second through the speed of light.</p>
+      <p>In 2019 every unit of the SI came to rest on fixed constants of nature that any laboratory can reproduce, which fulfils the metric system’s founding motto, for all times, for all peoples, and solves Level B for measurement with invariants anyone can recover.</p>
+      <p>The one quantity metrology still treats as a bare number is the turn itself, since the SI counts angle as dimensionless and the factor 2π between hertz and radians per second, or between <i>h</i> and <i>ħ</i>, remains a known source of error, while here the full turn is the unit that needs no outside reference.</p>
+      <nav class="topicnav"><a href="map.html">← The map of the thesis</a></nav>
     </div>
   </section>
 
-  <section class="step todo" id="measure" data-part="measure" data-part-num="09" data-part-label="What we measure" data-scene="dust">
-    <div class="copy">
-      <span class="kicker">09 / What we measure</span>
-      <h2>What we measure</h2>
-      <ul class="notes">
-        <li>A string around any cup: π at every size, for anyone who repeats it.</li>
-        <li>One motion, two readings: where in the turn, and how many turns.</li>
-        <li>A number is a closed distinction; physical reality presents it as a count of complete returns.</li>
-      </ul>
-      <span class="draft">Draft notes · in progress</span>
+  <section class="step topic" id="convey" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="frames">
+    <div class="copy dense">
+      <span class="kicker">How do minds mean?</span>
+      <h2>How do we convey it?</h2>
+      <p>A receiver who reads 90 as radians can receive every character and perform the wrong turn, since the transmission succeeded and the comparison did not. So how do we tell whether a person understood a relation? We ask what they can do with it: if one object is larger than another, can they recognize the reverse, smaller than, and given a second comparison, can they combine the two?</p>
+      <p>Relational Frame Theory studies exactly these, mutual entailment, combinatorial entailment and the way what a stimulus does changes through its relations. Understanding a relation is recognizing what stays the same through the right change of expression or direction, which is the identity check performed in language, visible in what the person does.</p>
+      <nav class="topicnav"><a href="map.html">← The map of the thesis</a></nav>
     </div>
   </section>
 
-  <section class="step todo" id="represent" data-part="represent" data-part-num="10" data-part-label="How we represent it" data-scene="dust">
-    <div class="copy">
-      <span class="kicker">10 / How we represent it</span>
-      <h2>How we represent it</h2>
-      <ul class="notes">
-        <li>Doing and then describing must match describing and then doing: 90° against 90 radians.</li>
-        <li>Saussure, Peirce, Wittgenstein: meaning as difference, the triad, shared form.</li>
-        <li>Relational Frame Theory: going back and adding turns, measured in people.</li>
-      </ul>
-      <span class="draft">Draft notes · in progress</span>
+  <section class="step topic" id="language" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="anysize">
+    <div class="copy dense">
+      <span class="kicker">What can be proved?</span>
+      <h2>Mathematics is language made precise</h2>
+      <p>Mathematics and language describe the same object at different precision, and a mathematical symbol records an operation, what it compares, from which reference and what the comparison preserves. Read that way, Euler’s identity is the record of a turn, and the symbols can change while the operation stays available.</p>
+      <p>Anyone, anywhere in the universe, who compares the way around a circle with the way across it finds π, and anyone who can turn and count returns recovers Euler’s identity, so the invariant relationships are what a message to a stranger can rely on, and the notation is what we agree on afterwards.</p>
+      <nav class="topicnav"><a href="map.html">← The map of the thesis</a></nav>
     </div>
   </section>
 
-  <section class="step todo" id="goedel" data-part="goedel" data-part-num="11" data-part-label="Gödel, with the checker put back" data-scene="dust">
-    <div class="copy">
-      <span class="kicker">11 / Gödel, with the checker put back</span>
-      <h2>Gödel, with the checker put back</h2>
-      <ul class="notes">
-        <li>Incompleteness is what you get when you delete the interpretant from the triad and ask the sign to check itself.</li>
-        <li>The proof needs Gödel at every step: to build the coding, to read the sentence as self-referring, to see that it is true.</li>
-        <li>The liar points only at itself and fails “what exists” first; Kripke (1975) calls it ungrounded.</li>
-        <li>Turing (1939) and Feferman (1962): the open tower of checks reaches every true sentence of arithmetic.</li>
+  <section class="step topic" id="next" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="tests">
+    <div class="copy dense">
+      <span class="kicker">What can we build?</span>
+      <h2>What we can test next</h2>
+      <p>Each part of the argument leads to a test that can succeed or fail.</p>
+      <ul class="terms bit-terms">
+        <li><b>people</b><span>learn degrees, fractions of a turn or a small alphabet of operation symbols for the same turns, then reverse and compose them without training, with a perfect copy of the symbols scored apart from the right turn</span></li>
+        <li><b>machines</b><span>language models already encode the position of a word as a rotation, and a representation can be tested for recovering answers and for turning consistently when its input turns</span></li>
+        <li><b>physics</b><span>each level of the tower has to show which new comparison it makes possible and why the level below cannot preserve it</span></li>
       </ul>
-      <span class="draft">Draft notes · in progress</span>
+      <nav class="topicnav"><a href="map.html">← The map of the thesis</a></nav>
     </div>
   </section>
 
-  <section class="step todo" id="everywhere" data-part="everywhere" data-part-num="12" data-part-label="Already running everywhere" data-scene="dust">
-    <div class="copy">
-      <span class="kicker">12 / Already running everywhere</span>
-      <h2>Already running everywhere</h2>
-      <ul class="notes">
-        <li>Your phone sends bits as points on Euler's circle: BPSK and QPSK phases, Fourier.</li>
-        <li>Quantization is the return test; Aharonov–Bohm; spinors return at 720°.</li>
-        <li>Holography and crystallography's phase problem recover a lost reference.</li>
-        <li>Nyquist stability counts windings; Shor's algorithm finds a return; RoPE encodes position as rotation.</li>
-        <li>Head-direction cells on a ring; the circle of fifths misses closing by the Pythagorean comma.</li>
-      </ul>
-      <span class="draft">Draft notes · in progress</span>
-    </div>
-  </section>
-
-  <section class="step todo" id="coda" data-part="coda" data-part-num="13" data-part-label="When I say A, you get A" data-scene="dust">
-    <div class="copy">
-      <span class="kicker">13 / When I say A, you get A</span>
+  <section class="step topic" id="coda" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="coda">
+    <div class="copy dense">
+      <span class="kicker">When I say A, you get A</span>
       <h2>When I say A, you get A</h2>
-      <ul class="notes">
-        <li>Back to the lighter: igniter and lighter, the words differ and the comparison holds.</li>
-        <li>Shannon's bit answers how to tell things apart. The circle answers what a thing is.</li>
-      </ul>
-      <span class="draft">Draft notes · in progress</span>
+      <p>The lighter on the desk has not been replaced by its name, its image or its measurements, since each gives access to relationships in the same encounter, and knowing what a description means is knowing how to bring it back to them.</p>
+      <p>Shannon’s bit answers how to tell things apart, and the circle answers what a thing is, by carrying the reference, the turn and the check that recognizes the result, so the demand on communication is direct: changing the description must preserve the comparisons it is meant to carry.</p>
+      <p class="plain">The shape of information is the structure of the comparisons that remain possible after the message has made the trip.</p>
       <div class="colophon">
         <span>Working draft · <a href="https://github.com/faltz009/geometrical-theory-of-communication">github.com/faltz009/geometrical-theory-of-communication</a></span>
         <span>Continues <a href="https://doi.org/10.5281/zenodo.15715747">The Geometrical Theory of Communication (2025)</a> · CC BY-NC-SA 4.0</span>
       </div>
+      <nav class="topicnav"><a href="map.html">← The map of the thesis</a></nav>
     </div>
   </section>
 

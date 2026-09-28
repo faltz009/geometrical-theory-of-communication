@@ -14,8 +14,10 @@
  *            w = width in stage units, def = {w, t, d, s} opens the definition floater,
  *            live = t -> html recomputes the text every frame (readouts),
  *            at = t -> [x, y] moves the label with a turning figure
+ *            on = {enter, leave, click}: the label becomes a button with these handlers
  *   pulse    {count, period}: cycles emphasis through groups 0..count-1
- * Colours: cyan, ice, brass, dim, paper, violet, mint, coral, gold (see COLORS in engine.js).
+ * Colours: cyan, ice, brass, dim, paper, violet, mint, coral, gold (see PALETTES in engine.js,
+ *          one set of values for the dark theme and one for the light).
  */
 (function () {
   "use strict";
@@ -204,10 +206,9 @@
     ];
   }
 
-  /* A sign pointing at a thing. With roles: the four places on the relation and
-     the return arc (A = A). With fields: the field that works from each place,
-     lit in turn. Groups: 0 sign, 1 thing, 2 what travels, 3 the check. */
-  function relation({ roles = false, fields = false } = {}) {
+  /* A sign and thing, with optional observation above the line and a return
+     below it. Named roles show meaning, identity, information and knowledge. */
+  function relation({ roles = false, fields = false, defined = false, observation = true } = {}) {
     const g = k => (roles ? { g: k } : {});
     const points = [
       ...S.rect(-1.05, 0, 0.95, 0.6, 110, { c: "ice", a: 0.8, ...g(0) }),
@@ -223,6 +224,14 @@
       { x: -1.05, y: -0.42, html: "sign", cls: "tag" },
       { x: 1.05, y: -0.42, html: "thing", cls: "tag" }
     ];
+    if (observation) {
+      points.push(
+        ...S.line(-0.64, 0.3, -0.06, 0.73, 32, { c: "mint", a: 0.45, ...g(3) }),
+        ...S.line(0.06, 0.73, 0.64, 0.3, 32, { c: "mint", a: 0.45, ...g(3) }),
+        ...S.arc(0, 0.75, 0.055, 0, TAU, 22, { c: "mint", a: 0.85, ...g(3) })
+      );
+      labels.push({ x: 0, y: 0.96, html: "observation · measurement", cls: "role c-mint", ...g(3) });
+    }
     if (roles) {
       points.push(
         ...S.line(-1.5, 0.36, -0.6, 0.36, 44, { c: "cyan", a: 0.9, g: 0 }),
@@ -231,12 +240,12 @@
         ...S.head(-0.72, -0.31, Math.PI / 2 + 0.25, 0.08, 8, { c: "cyan", a: 0.9, g: 3 })
       );
       labels.push(
-        { x: -1.05, y: 0.52, html: "meaning", cls: "role", g: 0 },
-        { x: 1.05, y: 0.52, html: "identity", cls: "role", g: 1 },
-        { x: 0, y: 0.17, html: "information", cls: "role", g: 2 },
-        { x: 0, y: -0.9, html: "knowledge", cls: "role", g: 3 },
-        { x: 0, y: -0.5, html: "<i>A</i> = <i>A</i>", cls: "math", g: 3 }
+        { x: -1.05, y: 0.52, html: defined ? "meaning" : "what I say", cls: "role", g: 0 },
+        { x: 1.05, y: 0.52, html: defined ? "identity" : "what we see", cls: "role", g: 1 },
+        { x: 0, y: 0.17, html: defined ? "information" : "points to", cls: "role", g: 2 },
+        { x: 0, y: -0.9, html: defined ? "knowledge" : "what you can check", cls: "role", g: 3 }
       );
+      if (defined) labels.push({ x: 0, y: -0.5, html: "<i>A</i> = <i>A</i>", cls: "math", g: 3 });
     }
     if (fields) labels.push(
       { x: -1.05, y: 0.68, html: "linguistics", cls: "field c-violet", g: 0 },
@@ -247,31 +256,108 @@
     return { points, flows, labels, pulse: fields ? { count: 4, period: 2.4 } : null };
   }
   SCENES.relation = () => relation();
-  SCENES.roles = () => relation({ roles: true });
+  /* The triad above; below, three signals: all 0s is one 0, all 1s is one 1, and the
+     mixed string carries its 0s, its 1s and the relations between them, arcs where they differ. */
+  SCENES.roles = () => {
+    const by = 0.46, rows = [["000000", -0.22, "= 0"], ["111111", -0.52, "= 1"], ["011010", -0.84, ""]];
+    const X = k => -0.72 + k * 0.24;
+    const mixed = rows[2][0], diffs = [];
+    for (let k = 0; k < 5; k++) if (mixed[k] !== mixed[k + 1]) diffs.push(k);
+    return {
+      points: [
+        ...S.rect(-1.05, by, 0.8, 0.44, 90, { c: "ice", a: 0.75 }),
+        ...S.rect(1.05, by, 0.8, 0.44, 90, { c: "ice", a: 0.75 }),
+        ...lighterAt(1.05, by, 0.8),
+        ...S.line(-0.6, by, 0.6, by, 60, { c: "paper", a: 0.4 }),
+        ...S.line(-0.66, by + 0.23, -0.06, 0.94, 30, { c: "mint", a: 0.55 }),
+        ...S.line(0.06, 0.94, 0.66, by + 0.23, 30, { c: "mint", a: 0.55 }),
+        ...S.arc(0, 0.96, 0.05, 0, TAU, 20, { c: "mint", a: 0.85 }),
+        ...diffs.flatMap(k => S.arc((X(k) + X(k + 1)) / 2, rows[2][1] - 0.1, 0.11, Math.PI + 0.25, TAU - 0.25, 18, { c: "cyan", a: 0.95, s: 1 }))
+      ],
+      labels: [
+        { x: 0, y: 1.1, html: "observation", cls: "role c-mint", def: DEFS["peirce-relation"] },
+        { x: -1.05, y: by, html: "you", cls: "word" },
+        { x: -1.05, y: by - 0.34, html: "observer", cls: "tag" },
+        { x: 1.05, y: by - 0.34, html: "observed", cls: "tag" },
+        ...rows.flatMap(([str, y], r) => [...str].map((ch, k) => ({ x: X(k), y, html: ch, cls: "math" + (r === 2 ? "" : " dimmed") }))),
+        ...rows.filter(r => r[2]).map(([, y, eq]) => ({ x: 0.82, y, html: eq, cls: "math left dimmed" })),
+        { x: 0.82, y: rows[2][1], html: "0s, 1s and<br>their relations", cls: "example left c-cyan" }
+      ]
+    };
+  };
   SCENES.fields = () => relation({ roles: true, fields: true });
+  /* The answer, from both ends of one relation. Left: the change Shannon counts, a mixed string
+     with its differences marked against a fixed reference. Right: the invariance Level B needs,
+     two signs arriving at the same lighter. */
+  SCENES.summary = () => {
+    const X = k => -1.36 + k * 0.21, sy = 0.08, str = "011010", diffs = [];
+    for (let k = 0; k < 5; k++) if (str[k] !== str[k + 1]) diffs.push(k);
+    const L = [1.2, 0.08], W = [[0.46, 0.36], [0.46, -0.2]];
+    return {
+      points: [
+        ...S.line(-1.46, sy - 0.2, -0.2, sy - 0.2, 50, { c: "dim", a: 0.4, s: 0.75 }),
+        ...diffs.flatMap(k => S.arc((X(k) + X(k + 1)) / 2, sy - 0.07, 0.1, Math.PI + 0.25, TAU - 0.25, 16, { c: "cyan", a: 0.95, s: 1 })),
+        ...S.line(0, -0.42, 0, 0.62, 40, { c: "dim", a: 0.25, s: 0.7 }),
+        ...lighterAt(L[0], L[1], 1.25),
+        ...W.flatMap(([x, y]) => S.line(x + 0.28, y, L[0] - 0.16, L[1] + (y > 0 ? 0.05 : -0.02), 28, { c: "mint", a: 0.6, s: 0.85 }))
+      ],
+      flows: W.map(([x, y]) => ({ n: 5, path: u => [x + 0.28 + (L[0] - 0.44 - x) * u, y + (L[1] + (y > 0 ? 0.05 : -0.02) - y) * u], speed: 0.25, c: "mint", a: 1, s: 1.2 })),
+      labels: [
+        { x: -0.78, y: 0.7, html: "change", cls: "role" },
+        { x: -0.78, y: 0.54, html: "what Shannon counts", cls: "example" },
+        { x: 0.82, y: 0.7, html: "invariance", cls: "role c-mint" },
+        { x: 0.82, y: 0.54, html: "what meaning keeps", cls: "example" },
+        ...[...str].map((b, k) => ({ x: X(k), y: sy + 0.06, html: b, cls: "math" })),
+        { x: -0.78, y: sy - 0.34, html: "measured against a fixed reference", cls: "tag" },
+        { x: W[0][0], y: W[0][1], html: "“lighter”", cls: "word" },
+        { x: W[1][0], y: W[1][1], html: "“igniter”", cls: "word" },
+        { x: 0, y: -0.74, html: "<i>A</i> = <i>A</i>", cls: "math c-math" },
+        { x: 0, y: -0.93, html: "one relation, read from its two ends", cls: "example" }
+      ]
+    };
+  };
 
   /* ================= 03 · A communication problem ================= */
 
-  /* I and you, one lighter above both, and the sign passing between us. */
+  /* The word arrives intact while its two possible referents remain visible. */
   SCENES.communicate = () => {
-    const I = [-1.12, -0.5], U = [1.12, -0.5], thing = [0, 0.52];
+    const I = [-1.12, -0.5], U = [1.12, -0.5];
+    const river = { c: "mint", a: 0.8, s: 0.95 };
+    const bank = { c: "ice", a: 0.85, s: 0.95 };
     return {
       points: [
-        ...lighterAt(thing[0], thing[1], 1.3),
+        // A sloping shore and three ripples on the river.
+        ...S.bezier([-1.06, 0.77], [-0.79, 0.81], [-0.84, 0.48], [-0.31, 0.46], 55, river),
+        ...[0.37, 0.47, 0.57].flatMap(y => S.bezier([-1.05, y], [-0.89, y + 0.08], [-0.73, y - 0.08], [-0.58, y], 28, river)),
+        ...S.line(-0.51, 0.58, -0.51, 0.72, 12, river),
+        ...S.line(-0.51, 0.58, -0.58, 0.68, 10, river),
+        ...S.line(-0.51, 0.58, -0.43, 0.67, 10, river),
+        // A bank's pediment, columns and steps.
+        ...S.line(0.34, 0.7, 0.69, 0.91, 26, bank),
+        ...S.line(0.69, 0.91, 1.04, 0.7, 26, bank),
+        ...S.line(0.34, 0.7, 1.04, 0.7, 40, bank),
+        ...[0.43, 0.69, 0.95].flatMap(x => S.rect(x, 0.51, 0.075, 0.3, 30, bank)),
+        ...S.line(0.34, 0.33, 1.04, 0.33, 40, bank),
+        ...S.line(0.28, 0.27, 1.1, 0.27, 44, bank),
         ...S.arc(I[0], I[1], 0.17, 0, TAU * 0.98, 56, { c: "ice", a: 0.85 }),
         ...S.arc(U[0], U[1], 0.17, 0, TAU * 0.98, 56, { c: "ice", a: 0.85 }),
         ...S.line(-0.9, -0.5, 0.88, -0.5, 70, { c: "paper", a: 0.45, s: 0.85 }),
         ...S.head(0.9, -0.5, 0, 0.08, 9, { c: "paper", a: 0.7 }),
-        ...S.line(-1.0, -0.33, -0.2, 0.36, 34, { c: "cyan", a: 0.5, s: 0.85 }),
-        ...S.line(1.0, -0.33, 0.2, 0.36, 34, { c: "cyan", a: 0.5, s: 0.85 })
+        ...S.line(-1.0, -0.33, -0.06, 0.02, 34, { c: "cyan", a: 0.4, s: 0.85 }),
+        ...S.line(1.0, -0.33, 0.06, 0.02, 34, { c: "cyan", a: 0.4, s: 0.85 }),
+        ...S.line(-0.08, 0.13, -0.33, 0.29, 16, { c: "mint", a: 0.5 }),
+        ...S.line(0.08, 0.13, 0.33, 0.29, 16, { c: "ice", a: 0.5 })
       ],
       flows: [{ n: 26, path: u => [-0.9 + 1.78 * u, -0.5], speed: 0.3, c: "cyan", a: 1, s: 1.5 }],
       labels: [
         { x: I[0], y: I[1], html: "I", cls: "word" },
         { x: U[0], y: U[1], html: "you", cls: "word" },
-        { x: 0, y: -0.36, html: "“lighter”", cls: "word" },
+        { x: 0, y: -0.36, html: "“bank”", cls: "word" },
         { x: 0, y: -0.66, html: "the sign", cls: "tag" },
-        { x: 0, y: 0.9, html: "the thing", cls: "tag" }
+        { x: 0, y: 0.08, html: "?", cls: "word" },
+        { x: -0.7, y: 0.13, html: "riverbank", cls: "example c-mint" },
+        { x: 0.7, y: 0.13, html: "financial bank", cls: "example" },
+        { x: 0, y: 1.08, html: "which bank?", cls: "tag" }
       ]
     };
   };
@@ -427,7 +513,9 @@
       },
       labels: [
         { x: 0, y: 0.98, html: "sixteen possible messages", cls: "tag" },
-        { x: 0, y: -1.0, html: "one of them is selected", cls: "example" }
+        { x: 0, y: -1.0, html: "one of them is selected", cls: "example" },
+        { x: 1.02, y: 0.12, html: "<i>H</i> = −Σ <i>p</i> log<sub>2</sub> <i>p</i>", cls: "slot left c-math" },
+        { x: 1.02, y: -0.08, html: "sixteen equal choices: 4 bits", cls: "example left" }
       ]
     };
   };
@@ -643,11 +731,11 @@
      counting its own arrangements and streaming into the same unit, one yes-or-no
      question, one bit. The fields light in turn. */
   const ENTROPY_FIELDS = [
-    { name: "heat", mean: "how molecules are arranged", c: "cyan", x: -1.12, y: 0.34 },
-    { name: "life", mean: "order kept, disorder given away", c: "coral", x: 0, y: 0.8 },
-    { name: "black holes", mean: "the area of the horizon", c: "brass", x: 1.12, y: 0.34 },
-    { name: "forests", mean: "how evenly species spread", c: "mint", x: 0.74, y: -0.64 },
-    { name: "language", mean: "which word comes next", c: "violet", x: -0.74, y: -0.64 }
+    { name: "thermodynamics", mean: "how molecules are arranged", c: "cyan", x: -1.12, y: 0.34 },
+    { name: "biology", mean: "order kept, disorder given away", c: "coral", x: 0, y: 0.8 },
+    { name: "cosmology", mean: "the area of a black hole’s horizon", c: "brass", x: 1.12, y: 0.34 },
+    { name: "ecology", mean: "how evenly species spread", c: "mint", x: 0.74, y: -0.64 },
+    { name: "machine learning", mean: "which word comes next", c: "violet", x: -0.74, y: -0.64 }
   ];
   function entropyIcon(k, x, y, c) {
     const o = { c, a: 0.9, s: 0.9, g: k };
@@ -692,27 +780,144 @@
     };
   };
 
-  /* What the bit gives us: Level A solved, Level B open. */
-  SCENES.levels = () => {
-    const bar = (y, n, o) => S.rect(0, y, 2.7, 0.3, n, o);
+  /* What the bit gave us: a bit at the centre, streaming out to what digital communication
+     built, each drawn in particles, lighting in turn. */
+  SCENES.gave = () => {
+    const ITEMS = [
+      { name: "the internet", x: 0, y: 0.78 },
+      { name: "cellphones", x: 1.1, y: 0.3 },
+      { name: "links to space", x: 0.72, y: -0.5 },
+      { name: "digital sound and video", x: -0.72, y: -0.5 },
+      { name: "every computer", x: -1.1, y: 0.3 }
+    ];
+    const icon = (k, x, y) => {
+      const o = { c: "ice", a: 0.85, s: 0.9, g: k };
+      if (k === 0) return [...S.arc(x, y, 0.17, 0, TAU * 0.99, 60, o), ...S.line(x - 0.17, y, x + 0.17, y, 16, { ...o, a: 0.5 }),
+        ...S.arc(x, y, 0.17, -Math.PI / 2, Math.PI / 2, 20, { ...o, a: 0.001 }),
+        ...[-0.08, 0.08].flatMap(dx => S.bezier([x + dx * 0.3, y + 0.17], [x + dx * 1.6, y + 0.08], [x + dx * 1.6, y - 0.08], [x + dx * 0.3, y - 0.17], 18, { ...o, a: 0.5 }))];
+      if (k === 1) return [...S.rect(x, y, 0.16, 0.3, 50, o), ...S.fill(x, y + 0.01, 0.1, 0.19, 24, { ...o, c: "cyan", a: 0.45 })];
+      if (k === 2) return [...S.fill(x, y, 0.08, 0.08, 14, o), ...S.rect(x - 0.13, y, 0.12, 0.06, 22, o), ...S.rect(x + 0.13, y, 0.12, 0.06, 22, o), ...S.arc(x - 0.02, y + 0.12, 0.05, Math.PI * 0.2, Math.PI * 0.8, 10, o)];
+      if (k === 3) return S.line(x - 0.2, y, x + 0.2, y, 44, o).map((p, i) => ({ ...p, y: y + 0.09 * Math.sin(i * 0.55) * Math.sin(i * 0.07) }));
+      return [...S.rect(x, y + 0.03, 0.3, 0.19, 50, o), ...S.line(x, y - 0.07, x, y - 0.13, 5, o), ...S.line(x - 0.08, y - 0.13, x + 0.08, y - 0.13, 8, o)];
+    };
+    const points = [
+      ...S.line(-0.16, 0, 0.16, 0, 22, { c: "paper", a: 0.6, s: 0.85 }),
+      ...S.blob(-0.16, 0, 0.05, 0.05, 24, { c: "ice", a: 1, s: 1 }),
+      ...S.blob(0.16, 0, 0.05, 0.05, 24, { c: "brass", a: 1, s: 1.1 }),
+      ...ITEMS.flatMap((it, k) => icon(k, it.x, it.y))
+    ];
+    const flows = ITEMS.map((it, k) => {
+      const len = Math.hypot(it.x, it.y), ex = it.x - (it.x / len) * 0.26, ey = it.y - (it.y / len) * 0.26, sx = (it.x / len) * 0.22, sy = (it.y / len) * 0.22;
+      return { n: 10, path: u => [sx + (ex - sx) * u, sy + (ey - sy) * u], speed: 0.3, c: "brass", a: 0.9, s: 1, g: k };
+    });
     return {
-      points: [
-        ...S.fill(0, 0.55, 2.7, 0.3, 360, { c: "brass", a: 0.42, s: 0.8 }),
-        ...bar(0.55, 110, { c: "brass", a: 0.9 }),
-        ...bar(0, 130, { c: "cyan", a: 0.75 }),
-        ...bar(-0.55, 110, { c: "dim", a: 0.55 })
-      ],
-      flows: [{ n: 60, path: S.rectPath(0, 0, 2.7, 0.3), speed: 0.05, c: "cyan", a: 1, s: 1.35 }],
+      points, flows, pulse: { count: 5, period: 2.4 },
       labels: [
-        { x: -1.26, y: 0.55, html: narrow() ? "Level A" : "Level A · the technical problem", cls: "slot left" },
-        { x: 1.26, y: 0.55, html: "solved, 1948", cls: "tag right brass" },
-        { x: -1.26, y: 0, html: narrow() ? "Level B" : "Level B · the semantic problem", cls: "slot left lit" },
-        { x: 1.26, y: 0, html: "open", cls: "tag right cyan" },
-        { x: -1.26, y: -0.55, html: narrow() ? "Level C" : "Level C · the effectiveness problem", cls: "slot left" }
+        { x: -0.16, y: -0.15, html: "0", cls: "slot" }, { x: 0.16, y: -0.15, html: "1", cls: "slot" },
+        { x: 0, y: 0.15, html: "the bit", cls: "role c-brass" },
+        ...ITEMS.map((it, k) => ({ x: it.x, y: it.y - (k === 3 ? 0.2 : 0.3), html: it.name, cls: "example", g: k })),
+        { x: 0, y: -1.02, html: "any message, any distance, symbol for symbol", cls: "tag" }
       ]
     };
   };
 
+
+  /* Two ways to read a signal. Left, as a whole: a turning cube where 110 and 011, read from
+     000 one bit per axis, end on different corners, each painting the face its 1s span.
+     Right, linearly: the same two strings as waves in time, with the reader moving along them
+     in step with the paths in the cube. */
+  SCENES.gstructure = () => {
+    const V = cubeVerts(3), E = cubeEdges(V), sc = 0.36, cx = -0.72, cy = 0.02, points = [], meta = [];
+    const add = (m, p) => { meta.push(m); points.push(p); };
+    const STR = [["110", "cyan", 0.46], ["011", "brass", -0.36]];
+    const wx0 = 0.32, ww = 0.34, wh = 0.26;
+    E.forEach(([a, b]) => { for (let k = 0; k < 16; k++) { const u = k / 15; add({ kind: "edge", p: V[a].map((x, j) => x + (V[b][j] - x) * u) }, { x: cx, y: cy, c: "dim", a: 0.3, s: 0.7 }); } });
+    V.forEach(p => { for (let k = 0; k < 4; k++) add({ kind: "vert", p: p.map(x => x + gauss() * 0.015) }, { x: cx, y: cy, c: "dim", a: 0.6, s: 0.8 }); });
+    const pathAt = (str, u) => {                                  // position after reading u of the string's bits
+      const p = [-1, -1, -1], n = u * 3;
+      for (let j = 0; j < 3; j++) if (str[j] === "1") p[j] += 2 * Math.max(0, Math.min(1, n - j));
+      return p;
+    };
+    const wave = (str, y0, u) => {                                // the step wave of a string, u along its length
+      const x = wx0 + u * 3 * ww, k = Math.min(2, Math.floor(u * 3));
+      return [x, y0 + (str[k] === "1" ? wh : 0)];
+    };
+    STR.forEach(([str, c, y0], si) => {
+      const ones = [...str].map((b, j) => (b === "1" ? j : -1)).filter(j => j >= 0);
+      for (let a = 0; a < 16; a++) for (let b = 0; b < 16; b++) {     // the face the string's 1s span
+        const p = [-1, -1, -1]; p[ones[0]] = -1 + (2 * a) / 15; p[ones[1]] = -1 + (2 * b) / 15;
+        add({ kind: "face", si, p }, { x: cx, y: cy, c, a: 0, s: 0.9 });
+      }
+      for (let w = 0; w < 3; w++) for (let k = 0; k < 60; k++) add({ kind: "path", si, u: k / 59, off: (w - 1) * 0.035 }, { x: cx, y: cy, c, a: 1, s: 1.3 });
+      for (let k = 0; k < 26; k++) add({ kind: "end", si, j: [gauss() * 0.05, gauss() * 0.05, gauss() * 0.05] }, { x: cx, y: cy, c, a: 1, s: 1.4 });
+      for (let k = 0; k < 90; k++) { const [x, y] = wave(str, y0, (k + 0.5) / 90); add({ kind: "fixed", x, y }, { x, y, c, a: 0.85, s: 0.95 }); }
+      for (let e = 1; e < 3; e++) if (str[e] !== str[e - 1]) for (let k = 0; k < 10; k++) { const x = wx0 + e * ww; add({ kind: "fixed", x, y: y0 + (wh * k) / 9 }, { x, y: y0, c, a: 0.85, s: 0.95 }); }
+      for (let k = 0; k < 40; k++) { const x = wx0 + (3 * ww * k) / 39; add({ kind: "fixed", x, y: y0 - 0.06, dim: 1 }, { x, y: y0, c: "dim", a: 0.3, s: 0.7 }); }
+      for (let k = 0; k < 12; k++) add({ kind: "reader", si, jx: gauss() * 0.018, jy: gauss() * 0.018 }, { x: wx0, y: y0, c: "gold", a: 1, s: 1.25 });
+    });
+    const P = (p, t) => { const [X, Y, d] = view3(p[0] * sc, p[1] * sc, p[2] * sc, 0.75 + 0.35 * Math.sin(t * 0.25), 0.5); return [cx + X, cy + Y, d]; };
+    const read = t => Math.min(1, Math.max(0, ((t % 9) - 1) / 4));
+    const out = new Array(points.length);
+    return {
+      points, stillT: 6,
+      dynamic: t => {
+        const r = read(t);
+        meta.forEach((m, i) => {
+          if (m.kind === "fixed") { out[i] = { x: m.x, y: m.y, a: m.dim ? 0.3 : 0.85 }; return; }
+          if (m.kind === "reader") { const [str, , y0] = STR[m.si], [x, y] = wave(str, y0, Math.min(0.999, r)); out[i] = { x: x + m.jx, y: y + m.jy, a: r > 0 && r < 1 ? 1 : 0.5 }; return; }
+          let p, a;
+          if (m.kind === "edge" || m.kind === "vert") { p = m.p; a = m.kind === "edge" ? 0.4 : 0.7; }
+          else if (m.kind === "face") { p = m.p; a = r >= 1 ? 0.55 : 0; }
+          else if (m.kind === "path") { p = pathAt(STR[m.si][0], Math.min(r, m.u)).map(x => x + m.off); a = m.u <= r ? 1 : 0; }
+          else { const q = pathAt(STR[m.si][0], r); p = q.map((x, j) => x + m.j[j]); a = 1; }
+          const [x, y, d] = P(p, t);
+          out[i] = { x, y, a: a * (0.6 + 0.4 * d) };
+        });
+        return out;
+      },
+      labels: [
+        { x: cx, y: 0.78, html: "read as a whole", cls: "tag" },
+        { x: wx0 + 1.5 * ww, y: 0.9, html: "read linearly", cls: "tag" },
+        ...STR.flatMap(([str, c, y0]) => [
+          { x: wx0 - 0.1, y: y0 + wh / 2, html: str, cls: `math right c-${c === "cyan" ? "cyan" : "brass"}` },
+          ...[...str].map((b, k) => ({ x: wx0 + (k + 0.5) * ww, y: y0 - 0.16, html: b, cls: "slot" }))
+        ]),
+        { x: cx, y: -0.72, html: "read over space", cls: "example" },
+        { x: wx0 + 1.5 * ww, y: -0.86, html: "read over time", cls: "example" }
+      ]
+    };
+  };
+
+  /* The transition into the geometric bit: the bit's segment rolls up onto a circle, its
+     length wrapping exactly into the circumference, and a mark runs once round and returns. */
+  SCENES.gintro = () => {
+    const R = 0.98, cy = 0, N = 460, points = [], meta = [];
+    const add = (m, p) => { meta.push(m); points.push(p); };
+    for (let k = 0; k < N; k++) add({ kind: "line", u: (k + 0.5) / N }, { x: 0, y: -R, c: "cyan", a: 0.6, s: 0.85 });
+    for (let k = 0; k < 20; k++) add({ kind: "mark", jx: gauss() * 0.02, jy: gauss() * 0.02 }, { x: 0, y: -R, c: "gold", a: 0, s: 1.3 });
+    for (let k = 0; k < 30; k++) add({ kind: "end", e: k < 15 ? 0 : 1, jx: gauss() * 0.02, jy: gauss() * 0.02 }, { x: 0, y: -R, c: "ice", a: 0.9, s: 1.05 });
+    const PER = 11, wrap = t => ease(Math.max(0, Math.min(1, (t - 1.2) / 3.2)));
+    const turn = t => TAU * ease(Math.max(0, Math.min(1, (t - 5) / 3.4)));
+    const L = TAU * R;                                              // the line's length, the circumference it becomes
+    const pos = (u, f) => {
+      const lx = -L / 2 + L * u, ly = -R;                           // flat: centred under the circle
+      const a = -Math.PI / 2 + (u - 0.5) * TAU, cx = R * Math.cos(a), cyy = cy + R * Math.sin(a);
+      return [lx + (cx - lx) * f, ly + (cyy - ly) * f];
+    };
+    const out = new Array(points.length);
+    return {
+      points, period: PER, stillT: 7.2,
+      dynamic: t => {
+        const f = wrap(t), m = turn(t), fade = t > PER - 0.8 ? (PER - t) / 0.8 : 1;
+        meta.forEach((p, i) => {
+          if (p.kind === "line") { const [x, y] = pos(p.u, f); out[i] = { x, y, a: (0.22 + 0.16 * f) * fade }; }
+          else if (p.kind === "end") { const [x, y] = pos(p.e ? 1 : 0, f); out[i] = { x: x + p.jx, y: y + p.jy, a: (1 - f) * 0.9 * fade }; }
+          else { const a = -Math.PI / 2 + m; out[i] = { x: R * Math.cos(a) + p.jx, y: cy + R * Math.sin(a) + p.jy, a: f > 0.98 ? 0.85 * fade : 0 }; }
+        });
+        return out;
+      }
+    };
+  };
 
   /* ================= 05 · The geometric bit ================= */
 
@@ -722,34 +927,41 @@
   const ease = f => f < 0.5 ? 2 * f * f : 1 - 2 * (1 - f) * (1 - f);
 
   /* The overview: Shannon's bit, the perpendicular it implies, the circle it draws, and
-     then each relationship the circle holds, lit one at a time as the labels map them. */
+     then each relationship the circle holds, lit one at a time as the labels map them.
+     π and e carry the continuous turn; discreteness is that turn closing on a whole number. */
   const MAP = [
-    { name: "perpendicularity", mean: "difference", c: "cyan", cls: "c-cyan" },
-    { name: "symmetry", mean: "sameness", c: "coral", cls: "c-coral" },
-    { name: "discreteness", mean: "integers, names, meaning", c: "mint", cls: "c-mint" },
-    { name: "space", mean: "π, one ratio at every size", c: "violet", cls: "c-violet" },
-    { name: "time", mean: "<i>e</i>, continuous turning", c: "brass", cls: "c-brass" },
-    { name: "identity", mean: "invariance over change", c: "gold", cls: "c-math" }
+    { name: "perpendicularity", mean: "difference", c: "cyan", cls: "c-cyan", cap: "two directions, each free of the other" },
+    { name: "symmetry", mean: "sameness", c: "coral", cls: "c-coral", cap: "opposite poles, the same after a half turn" },
+    { name: "space", mean: "π, continuous", c: "violet", cls: "c-violet", cap: "π measures the turn in space, through every angle" },
+    { name: "time", mean: "<i>e</i>, continuous", c: "brass", cls: "c-brass", cap: "<i>e</i> measures the turn as it accumulates in time" },
+    { name: "discreteness", mean: "integers, names, meaning", c: "mint", cls: "c-mint", cap: "no whole-number arithmetic reaches π or <i>e</i>, yet the full turn gives <i>e</i><sup>2<i>πi</i></sup> = 1" },
+    { name: "identity", mean: "invariance over change", c: "gold", cls: "c-math", cap: "<i>A</i> = <i>A</i>" }
   ];
   SCENES.gmap = () => {
     const nar = narrow(), R = nar ? 0.64 : 0.62, cy = nar ? 0 : 0.02, points = [], meta = [];
-    const BUILT = 4.6, PH = 2.2, clamp = v => Math.max(0, Math.min(1, v));
+    const BUILT = 4.6, PH = 2.8, END = BUILT + 6 * PH, clamp = v => Math.max(0, Math.min(1, v));
     const add = (m, p) => { meta.push(m); points.push(p); };
-    for (let k = 0; k < 190; k++) add({ kind: "ring", a: ((k + 0.5) / 190) * TAU, props: [2], base: "ice", ba: 0.45 }, { x: 0, y: cy, c: "ice", a: 0, s: 0.8 });
-    for (let k = 0; k < 34; k++) add({ kind: "seg", u: k / 33, props: [1], base: "paper", ba: 0.55 }, { x: 0, y: cy, c: "paper", a: 0, s: 0.8 });
+    for (let k = 0; k < 190; k++) add({ kind: "ring", a: ((k + 0.5) / 190) * TAU, props: [4], base: "ice", ba: 0.45 }, { x: R, y: cy, c: "ice", a: 0, s: 0.8 });
+    for (let k = 0; k < 34; k++) add({ kind: "seg", u: k / 33, props: [0, 1], base: "paper", ba: 0.55 }, { x: 0, y: cy, c: "paper", a: 0, s: 0.8 });
     for (let k = 0; k < 34; k++) add({ kind: "perp", u: k / 33, props: [0], base: "paper", ba: 0.55 }, { x: 0, y: cy, c: "paper", a: 0, s: 0.8 });
-    for (let d = 0; d < 2; d++) for (let k = 0; k < 34; k++) add({ kind: "ext", d, u: k / 33, props: [d ? 0 : 1], base: "paper", ba: 0.55 }, { x: 0, y: cy, c: "paper", a: 0, s: 0.8 });
+    for (let d = 0; d < 2; d++) for (let k = 0; k < 34; k++) add({ kind: "ext", d, u: (k + 1) / 34, props: [1], base: "paper", ba: 0.55 }, { x: 0, y: cy, c: "paper", a: 0, s: 0.8 });
     for (let k = 0; k < 14; k++) add({ kind: "corner", k, props: [0], base: "paper", ba: 0.6 }, { x: 0, y: cy, c: "paper", a: 0, s: 0.7 });
     for (let q = 0; q < 4; q++) for (let k = 0; k < 16; k++) add({ kind: "pole", q, jx: gauss() * 0.022, jy: gauss() * 0.022, props: [1], base: "paper", ba: 0.9 }, { x: 0, y: cy, c: "paper", a: 0, s: 1.05 });
-    for (let k = 0; k < 90; k++) add({ kind: "pi", u: k / 89, props: [3], base: "violet", ba: 0 }, { x: 0, y: cy, c: "violet", a: 0, s: 0.85 });
-    for (let k = 0; k < 100; k++) add({ kind: "trail", u: k / 99, props: [4, 5], base: "brass", ba: 0 }, { x: 0, y: cy, c: "brass", a: 0, s: 0.85 });
+    for (let k = 0; k < 90; k++) add({ kind: "pi", u: k / 89, props: [2], base: "violet", ba: 0 }, { x: 0, y: cy, c: "violet", a: 0, s: 0.85 });
+    for (let k = 0; k < 110; k++) add({ kind: "trail", a: ((k + 0.5) / 110) * TAU, props: [3, 4], base: "brass", ba: 0 }, { x: 0, y: cy, c: "brass", a: 0, s: 0.85 });
     for (let k = 0; k < 30; k++) add({ kind: "centre", jx: gauss() * 0.022, jy: gauss() * 0.022, props: [], base: "ice", ba: 0.9 }, { x: 0, y: cy, c: "ice", a: 0, s: 1 });
-    for (let k = 0; k < 18; k++) add({ kind: "mark", jx: gauss() * 0.02, jy: gauss() * 0.02, props: [4, 5], base: "gold", ba: 1 }, { x: R, y: cy, c: "gold", a: 0, s: 1.3 });
-    const phase = t => t < BUILT ? -1 : Math.floor((t - BUILT) / PH);
-    const swing = t => (Math.PI / 2) * ease(clamp((t - 1.4) / 1.2));              // the perpendicular swinging up from the bit
-    const sweep = t => TAU * ease(clamp((t - 2.8) / 1.8));                        // the circle drawn from 1 round to 1
-    const grow = t => ease(clamp((t - 3.4) / 1.1));                              // the diameters completed through the centre
-    const turn = t => TAU * ease(clamp((t - BUILT - 4 * PH) / (2 * PH - 0.3)));   // the mark's full turn, over the last two phases
+    for (let k = 0; k < 18; k++) add({ kind: "mark", jx: gauss() * 0.02, jy: gauss() * 0.02, props: [3, 4, 5], base: "gold", ba: 1 }, { x: R, y: cy, c: "gold", a: 0, s: 1.3 });
+
+    /* the animation plays once and rests; hovering a label previews its property.
+       hover: -1 none, 0..5 a property, 6 Shannon's bit (the circle projected onto one line) */
+    let offset = 0, last = 0, hover = -1, hoverStart = 0;
+    const local = t => { if (t < offset) offset = 0; last = t; return t - offset; };
+    const BIT = 6;
+    const phase = t => t < BUILT ? -1 : Math.min(5, Math.floor((t - BUILT) / PH));
+    const swing = t => (Math.PI / 2) * ease(clamp((t - 1.4) / 1.2));                  // the perpendicular swinging up from the bit
+    const sweep = t => TAU * ease(clamp((t - 2.8) / 1.8));                            // the circle drawn from 1 round to 1
+    const grow = t => ease(clamp((t - 3.4) / 1.1));                                  // the diameters completed through the centre
+    const turn = t => TAU * ease(clamp((t - BUILT - 3 * PH) / (2 * PH - 0.4)));       // the mark's full turn: continuous in time, closing as one
     const P = (r, a) => at(0, cy, r, a);
     const out = new Array(points.length);
     const vis = (on, m, ph) => {
@@ -758,17 +970,31 @@
       const lit = m.props.includes(ph);
       return { a: lit ? 1 : m.ba * 0.45, c: lit ? MAP[ph].c : m.base };
     };
-    const lit = (k, html) => t => { const ph = phase(t); return ph < 0 ? "" : `<span style="opacity:${ph === k ? 1 : 0.4}">${html}</span>`; };
+    const ended = t => t >= END;
+    const focus = t => t >= BUILT && hover >= 0 ? hover : ended(t) ? -1 : phase(t);  // which property is lit
+    const enter = k => () => { if (hover !== k) hoverStart = last; hover = k; }, leave = () => { hover = -1; };
+    const pill = (k, html) => `<span class="pill${hover === k ? " on" : ""}">${html}</span>`;
+    const name = (k, html) => t => { t = local(t); const f = focus(t);
+      if (t < BUILT) return "";
+      if (ended(t) || hover >= 0) return pill(k, html);
+      return `<span style="opacity:${f === k ? 1 : 0.4}">${html}</span>`; };
+    const mean = (k, html) => t => { t = local(t); if (t < BUILT) return ""; const f = focus(t);
+      return `<span style="opacity:${f === k || (ended(t) && f < 0) ? 1 : 0.4}">${html}</span>`; };
+    const BITCAP = "Shannon’s bit: 0 to 1, with its perpendicular";
     return {
-      points, period: BUILT + 6 * PH, stillT: BUILT + 5 * PH + 1.1,
+      points, stillT: END + 1,
       dynamic: t => {
-        const ph = phase(t), sw = swing(t), s = sweep(t), g = grow(t), mt = turn(t);
+        t = local(t);
+        const done = ended(t), f = focus(t), sw = swing(t), s = sweep(t), g = grow(t);
+        const flat = t >= BUILT && hover === BIT;
+        const mt = t >= BUILT && hover === 3 ? TAU * ((last - hoverStart) % 4) / 4 : done ? (f === 4 ? TAU : 0) : turn(t);
+        const ph = flat ? -1 : f;
         meta.forEach((m, i) => {
           let x, y, v;
-          if (m.kind === "ring") { const on = m.a <= s; [x, y] = on ? P(R, m.a) : P(R, s); v = vis(on && s > 0, m, ph); }
+          if (m.kind === "ring") { [x, y] = P(R, m.a); v = vis(m.a <= s, m, ph); }
           else if (m.kind === "seg") { [x, y] = P(R * m.u, 0); v = vis(true, m, ph); }
           else if (m.kind === "perp") { [x, y] = P(R * m.u, sw); v = vis(t > 1.4, m, ph); }
-          else if (m.kind === "ext") { [x, y] = P(R * m.u * g, m.d ? -Math.PI / 2 : Math.PI); v = vis(g > 0.01, m, ph); }
+          else if (m.kind === "ext") { [x, y] = P(R * m.u, m.d ? -Math.PI / 2 : Math.PI); v = vis(m.u <= g, m, ph); }
           else if (m.kind === "corner") {
             const u = (m.k % 7) / 6 * 0.11, side = m.k < 7;
             x = side ? 0.11 : u; y = cy + (side ? u : 0.11); v = vis(t > 2.6, m, ph);
@@ -776,30 +1002,41 @@
           else if (m.kind === "pole") {
             [x, y] = P(R, m.q * Math.PI / 2); x += m.jx; y += m.jy;
             const on = m.q === 0 || (m.q === 1 ? t > 2.6 : g > 0.9);
-            v = vis(on, m, ph); if (m.q === 0 && ph < 0) v.c = "brass";
+            v = vis(on, m, ph); if (m.q === 0 && t < BUILT) v.c = "brass";
           }
-          else if (m.kind === "pi") { [x, y] = P(R + 0.1, Math.PI * m.u); v = vis(ph === 3, m, ph); }
-          else if (m.kind === "trail") { [x, y] = P(R + 0.08, mt * m.u); v = vis(mt > 0.02, m, ph); if (v.a) v.a = Math.max(v.a, 0.5); }
+          else if (m.kind === "pi") { [x, y] = P(R + 0.1, Math.PI * m.u); v = vis(ph === 2, m, ph); }
+          else if (m.kind === "trail") { [x, y] = P(R + 0.08, m.a); v = vis(m.a <= mt && ph >= 3 && ph <= 4, m, ph); if (v.a) v.a = Math.max(v.a, 0.5); }
           else if (m.kind === "centre") { x = m.jx; y = cy + m.jy; v = vis(true, m, ph); }
-          else { [x, y] = P(R, mt); x += m.jx; y += m.jy; v = vis(ph >= 0, m, ph); }
+          else { [x, y] = P(R, mt); x += m.jx; y += m.jy; v = vis(t >= BUILT, m, ph); }
+          if (flat) {                                                            // retain only the positive radius and its right angle
+            const keep = m.kind === "seg" || m.kind === "perp" || m.kind === "corner" || m.kind === "centre" || (m.kind === "pole" && m.q === 0);
+            v = { a: keep ? 1 : 0, c: m.kind === "pole" ? "brass" : m.kind === "centre" ? "ice" : "paper" };
+          }
           out[i] = { x, y, a: v.a, c: v.c };
         });
         return out;
       },
       labels: [
-        { x: 0, y: cy - 0.15, html: "0", cls: "math", live: t => t < BUILT ? "0" : "" },
-        { x: R + 0.1, y: cy - 0.15, html: "1", cls: "math left", live: t => t < BUILT ? "1" : "" },
-        { x: 0, y: nar ? -1.02 : -1.0, html: "", cls: "example",
-          live: t => t < 1.4 ? "Shannon’s bit, 0 and 1" : t < 2.8 ? "the perpendicular it implies" : t < BUILT ? "the circle it draws" : "" },
+        { x: 0, y: cy - 0.15, html: "0", cls: "math", live: t => { t = local(t); return t < BUILT || hover === BIT ? "0" : ""; } },
+        { x: R + 0.1, y: cy - 0.15, html: "1", cls: "math left", live: t => { t = local(t); return t < BUILT || hover === BIT ? "1" : ""; } },
+        { x: 0, y: nar ? -1.48 : -0.98, html: "", cls: "example", ...(nar ? { w: 3.7 } : {}),
+          live: t => { t = local(t);
+            if (t < 1.4) return "Shannon’s bit, 0 and 1"; if (t < 2.8) return "the perpendicular it implies"; if (t < BUILT) return "the circle it draws";
+            if (hover < 0 && !ended(t)) return MAP[phase(t)].cap;
+            return hover === BIT ? BITCAP : hover >= 0 ? MAP[hover].cap : "hover a property to see it in the circle"; } },
+        { x: 0, y: nar ? 1.5 : 1.02, html: "", cls: "role", on: { enter: enter(BIT), leave },
+          live: t => local(t) >= BUILT ? pill(BIT, "Shannon’s bit") : "" },
+        { x: 0, y: nar ? -1.94 : -1.14, html: "", cls: "tag", on: { click: () => { offset = last; hover = -1; } },
+          live: t => ended(local(t)) ? `<span class="pill">↻ replay</span>` : "" },
         ...MAP.flatMap((p, k) => {
           if (nar) {
             const x = (k % 3 - 1) * 1.26, y = k < 3 ? 1.06 : -1.06;
-            return [{ x, y, html: "", cls: "example " + p.cls, live: lit(k, p.name) }];
+            return [{ x, y, html: "", cls: "example " + p.cls, live: name(k, p.name), on: { enter: enter(k), leave } }];
           }
           const left = k < 3, x = left ? -1.0 : 1.0, y = 0.58 - (k % 3) * 0.58;
           return [
-            { x, y, html: "", cls: "role " + p.cls + (left ? " right" : " left"), live: lit(k, p.name) },
-            { x, y: y - 0.14, html: "", cls: "example" + (left ? " right" : " left"), live: lit(k, p.mean) }
+            { x, y, html: "", cls: "role " + p.cls + (left ? " right" : " left"), live: name(k, p.name), on: { enter: enter(k), leave } },
+            { x: x + (left ? -0.04 : 0.04), y: y - 0.16, html: "", cls: "example" + (left ? " right" : " left"), live: mean(k, p.mean) }
           ];
         })
       ]
@@ -893,39 +1130,188 @@
     };
   };
 
-  /* Two observers: my small circle starts on the right, your larger one at the top;
-     both make the same quarter turn, measured from their own references. */
-  SCENES.gobs = () => {
-    const C = [{ cx: -0.86, cy: 0.05, r: 0.44, ref: 0, name: "mine" }, { cx: 0.74, cy: 0.05, r: 0.72, ref: Math.PI / 2, name: "yours" }];
+  /* A = A twice. On top, the letter-reading scene of chapter 03: tell it apart, recognize
+     it again. Below, the circle performs the same checks in step with it: difference, the
+     right angle between 1 and i; sameness, a half turn that leaves the circle as it was;
+     identity, a second half turn that brings the marked point A back to itself. */
+  const CHECKS = [
+    { name: "difference", mean: "this, not that", c: "cyan", cls: "c-cyan" },
+    { name: "sameness", mean: "this here equals this there", c: "coral", cls: "c-coral" },
+    { name: "identity", mean: "invariance over change", c: "gold", cls: "c-math" }
+  ];
+  SCENES.gchecks = () => {
+    const S0 = 3.5, S1 = 7, S2 = 11, END = 12.2, clamp = v => Math.max(0, Math.min(1, v));
     const points = [], meta = [];
-    C.forEach((c, ci) => {
-      for (let k = 0; k < 120; k++) { const [x, y] = at(c.cx, c.cy, c.r, (k / 120) * TAU); meta.push({ kind: "fixed", x, y, a: 0.45 }); points.push({ x, y, c: "ice", a: 0.45, s: 0.8 }); }
-      for (let k = 0; k < 22; k++) { const [x, y] = at(c.cx, c.cy, (c.r * k) / 21, c.ref); meta.push({ kind: "fixed", x, y, a: 0.5 }); points.push({ x, y, c: "dim", a: 0.5, s: 0.8 }); }
-      for (let k = 0; k < 26; k++) { meta.push({ kind: "hand", ci, u: k / 25 }); points.push({ x: c.cx, y: c.cy, c: "cyan", a: 0.9, s: 0.95 }); }
-      for (let k = 0; k < 30; k++) { meta.push({ kind: "arc", ci, u: k / 29 }); points.push({ x: c.cx, y: c.cy, c: "cyan", a: 0.7, s: 0.8 }); }
-      for (let k = 0; k < 16; k++) { meta.push({ kind: "mark", ci, jx: gauss() * 0.02, jy: gauss() * 0.02 }); points.push({ x: c.cx, y: c.cy, c: "gold", a: 1, s: 1.25 }); }
+    const add = (m, p) => { meta.push(m); points.push(p); };
+
+    /* the letters: two small retinas and the equals sign between them */
+    const N = 16, cell = 0.03, half = (N * cell) / 2, ly = 0.74;
+    const grids = [
+      { cx: -0.62, glyph: rasterGlyph("A", '600 {px}px "EB Garamond", Georgia, serif', 0, 1.06 * N * cell, N, cell), t0: 0, t1: S0 - 0.3, c: "ice" },
+      { cx: 0.62, glyph: rasterGlyph("A", '700 {px}px "Segoe UI", Ubuntu, Arial, sans-serif', -0.15, 0.94 * N * cell, N, cell), t0: S0, t1: S1 - 0.3, c: "cyan" }
+    ];
+    grids.forEach((g, gi) => {
+      for (let k = 0; k < N * N; k++) {
+        const row = Math.floor(k / N), col = k % N, on = g.glyph.has(k);
+        add({ kind: "cell", gi, k, on, x: g.cx - half + (col + 0.5) * cell, y: ly + half - (row + 0.5) * cell }, { x: g.cx, y: ly, c: g.c, a: on ? 0.85 : 0.08, s: on ? 0.9 : 0.55 });
+      }
     });
+    for (let k = 0; k < 40; k++) {
+      const u = (k % 20) / 19, y = ly + (k < 20 ? 0.035 : -0.035);
+      add({ kind: "eq", x: -0.09 + 0.18 * u, y }, { x: 0, y, c: "cyan", a: 1, s: 1 });
+    }
+
+    /* the circle */
+    const cx = -0.36, cy = -0.42, R = 0.46;
+    for (let k = 0; k < 160; k++) add({ kind: "ring", a: (k / 160) * TAU, props: [2] }, { x: cx, y: cy, c: "ice", a: 0.4, s: 0.8 });
+    for (let d = 0; d < 2; d++) for (let k = 0; k < 40; k++) add({ kind: "dia", d, u: -1 + (2 * k) / 39, props: [d ? 0 : 1] }, { x: cx, y: cy, c: "paper", a: 0.4, s: 0.8 });
+    for (let k = 0; k < 12; k++) add({ kind: "corner", k, props: [0] }, { x: cx, y: cy, c: "paper", a: 0.6, s: 0.75 });
+    for (let q = 0; q < 4; q++) for (let k = 0; k < 14; k++) add({ kind: "pole", q, jx: gauss() * 0.018, jy: gauss() * 0.018, props: q % 2 ? [0] : [1] }, { x: cx, y: cy, c: "paper", a: 0.9, s: 1 });
+    for (let k = 0; k < 80; k++) add({ kind: "trail", u: k / 79, props: [2] }, { x: cx, y: cy, c: "gold", a: 0, s: 0.85 });
+    for (let k = 0; k < 16; k++) add({ kind: "mark", jx: gauss() * 0.018, jy: gauss() * 0.018, props: [2] }, { x: cx + R, y: cy, c: "gold", a: 1, s: 1.25 });
+
+    const phase = t => t < S0 ? 0 : t < S1 ? 1 : 2;
+    const rot = t => Math.PI * ease(clamp((t - S0) / (S1 - S0 - 0.6))) + Math.PI * ease(clamp((t - S1) / (S2 - S1 - 0.6)));
+    const P = (r, a) => at(cx, cy, r, a);
+    const BASE = { ring: ["ice", 0.4], dia: ["paper", 0.35], corner: ["paper", 0.5], pole: ["paper", 0.85], trail: ["gold", 0], mark: ["gold", 1] };
+    const lit = (k, html) => t => `<span style="opacity:${phase(t) === k ? 1 : 0.35}">${html}</span>`;
     const out = new Array(points.length);
-    const turn = t => { const p = Math.min(1, Math.max(0, (t - 0.8) / 1.8)); return (Math.PI / 2) * (p < 0.5 ? 2 * p * p : 1 - 2 * (1 - p) * (1 - p)); };
     return {
-      points, period: 6, stillT: 5,
+      points, period: END, stillT: 5.2,
       dynamic: t => {
-        const phi = turn(t);
+        const ph = phase(t), o = rot(t), turned = Math.max(0, o - Math.PI);
+        const scan = grids.map(g => (t >= g.t0 && t < g.t1) ? (t - g.t0) / (g.t1 - g.t0) * N * N : -1);
+        const eqA = ph === 2 ? 1 : 0.35 + 0.25 * (0.5 + 0.5 * Math.sin(t * TAU / 2.4));
         meta.forEach((m, i) => {
-          if (m.kind === "fixed") { out[i] = { x: m.x, y: m.y, a: m.a }; return; }
-          const c = C[m.ci];
-          if (m.kind === "hand") { const [x, y] = at(c.cx, c.cy, c.r * m.u, c.ref + phi); out[i] = { x, y, a: 0.9 }; }
-          else if (m.kind === "arc") { const [x, y] = at(c.cx, c.cy, c.r * 0.42, c.ref + phi * m.u); out[i] = { x, y, a: phi > 0.02 ? 0.75 : 0 }; }
-          else { const [x, y] = at(c.cx, c.cy, c.r, c.ref + phi); out[i] = { x: x + m.jx, y: y + m.jy, a: 1 }; }
+          if (m.kind === "cell") {
+            const since = scan[m.gi] >= 0 ? scan[m.gi] - m.k : 1e9;
+            const glow = since >= 0 && since < 40 ? 1 - since / 40 : 0;
+            out[i] = { x: m.x, y: m.y, a: m.on ? 0.72 + 0.28 * glow : 0.07 + 0.3 * glow };
+            return;
+          }
+          if (m.kind === "eq") { out[i] = { x: m.x, y: m.y, a: eqA }; return; }
+          let x, y;
+          if (m.kind === "ring") [x, y] = P(R, m.a);
+          else if (m.kind === "dia") [x, y] = P(R * m.u, o + m.d * Math.PI / 2);
+          else if (m.kind === "corner") {
+            const u = (m.k % 6) / 5 * 0.1, side = m.k < 6, px = side ? 0.1 : u, py = side ? u : 0.1;
+            x = cx + px * Math.cos(o) - py * Math.sin(o); y = cy + px * Math.sin(o) + py * Math.cos(o);
+          }
+          else if (m.kind === "pole") { [x, y] = P(R, o + m.q * Math.PI / 2); x += m.jx; y += m.jy; }
+          else if (m.kind === "trail") [x, y] = P(R + 0.08, Math.PI + turned * m.u);
+          else { [x, y] = P(R, o); x += m.jx; y += m.jy; }
+          const [bc, ba] = BASE[m.kind], on = m.props.includes(ph);
+          let a = on ? 1 : ba * 0.55, c = on ? CHECKS[ph].c : bc;
+          if (m.kind === "trail") a = ph === 2 && turned > 0.02 ? 0.8 : 0;
+          if (m.kind === "mark") { a = 1; c = "gold"; }
+          out[i] = { x, y, a, c };
         });
         return out;
       },
       labels: [
-        ...C.map(c => ({ x: c.cx, y: c.cy - c.r - 0.16, html: c.name, cls: "word" })),
-        ...(narrow() ? [] : [
-          { x: C[0].cx, y: C[0].cy - C[0].r - 0.32, html: "reference on the right", cls: "tag" },
-          { x: C[1].cx, y: C[1].cy - C[1].r - 0.32, html: "reference at the top, larger", cls: "tag" }]),
-        ...C.map(c => ({ x: c.cx, y: c.cy - c.r - (narrow() ? 0.36 : 0.5), live: t => `${Math.round(turn(t) * DEG)}°`, html: "0°", cls: "math c-math" }))
+        { x: grids[0].cx, y: ly - half - 0.1, html: "tell it apart", cls: "tag" },
+        { x: grids[1].cx, y: ly - half - 0.1, html: "recognize it again", cls: "tag" },
+        { x: cx, y: cy, html: "<i>A</i>", cls: "slot c-math", at: t => P(R - 0.15, rot(t)) },
+        ...CHECKS.flatMap((c, k) => {
+          const y = cy + 0.34 - k * 0.34;
+          return [
+            { x: 0.46, y, html: "", cls: "role left " + c.cls, live: lit(k, c.name) },
+            { x: 0.46, y: y - 0.13, html: "", cls: "example left", live: lit(k, c.mean) }
+          ];
+        }),
+        { x: cx, y: -1.06, html: "", cls: "example", live: t => t < S0 ? "the right angle between 1 and <i>i</i>" : t < S1 ? "a half turn, and the circle is as it was" : t < S2 ? "a full turn, and <i>A</i> is back" : "the form changed, the identity held" }
+      ]
+    };
+  };
+
+  /* Continuous and discrete, both ways. Left: Shannon's bits approach a continuous curve by
+     composing discreteness, each added bit doubling the levels. Right: the circle turns
+     continuously, measured by π and e, and every full turn lands on a whole number. */
+  SCENES.gbridge = () => {
+    const bx = -0.9, bw = 1.1, bh = 0.8, by = 0.02, f = u => Math.sin(Math.PI * u);
+    const cx = 0.86, cy = 0.02, R = 0.42, points = [], meta = [];
+    const add = (m, p) => { meta.push(m); points.push(p); };
+    for (let k = 0; k < 90; k++) { const u = k / 89; add({ kind: "fixed", x: bx - bw / 2 + bw * u, y: by - bh / 2 + bh * f(u), a: 0.3 }, { x: 0, y: 0, c: "paper", a: 0.3, s: 0.7 }); }
+    for (let k = 0; k < 40; k++) add({ kind: "fixed", x: bx - bw / 2 + (bw * k) / 39, y: by - bh / 2, a: 0.3 }, { x: 0, y: 0, c: "dim", a: 0.3, s: 0.7 });
+    for (let k = 0; k < 150; k++) add({ kind: "step", u: (k + 0.5) / 150 }, { x: bx, y: by, c: "cyan", a: 0.9, s: 0.95 });
+    for (let k = 0; k < 150; k++) { const [x, y] = at(cx, cy, R, (k / 150) * TAU); add({ kind: "fixed", x, y, a: 0.4 }, { x, y, c: "ice", a: 0.4, s: 0.8 }); }
+    for (let k = 0; k < 10; k++) add({ kind: "fixed", x: cx + R + 0.04 + k * 0.012, y: cy, a: 0.8 }, { x: 0, y: 0, c: "paper", a: 0.8, s: 0.8 });
+    for (let k = 0; k < 26; k++) add({ kind: "hand", u: k / 25 }, { x: cx, y: cy, c: "cyan", a: 0.8, s: 0.9 });
+    for (let k = 0; k < 90; k++) add({ kind: "trail", u: k / 89 }, { x: cx, y: cy, c: "violet", a: 0.7, s: 0.85 });
+    for (let k = 0; k < 18; k++) add({ kind: "mark", jx: gauss() * 0.02, jy: gauss() * 0.02 }, { x: cx + R, y: cy, c: "gold", a: 1, s: 1.3 });
+    const bits = t => 1 + (Math.floor(t / 1.8) % 5), theta = t => t * 1.15;
+    const out = new Array(points.length);
+    return {
+      points, stillT: 6.6,
+      dynamic: t => {
+        const L = 2 ** bits(t), th = theta(t), part = th % TAU;
+        meta.forEach((m, i) => {
+          if (m.kind === "fixed") out[i] = { x: m.x, y: m.y, a: m.a };
+          else if (m.kind === "step") { const q = Math.round(f(m.u) * (L - 1)) / (L - 1); out[i] = { x: bx - bw / 2 + bw * m.u, y: by - bh / 2 + bh * q, a: 0.9 }; }
+          else if (m.kind === "hand") { const [x, y] = at(cx, cy, R * m.u, th); out[i] = { x, y, a: 0.8 }; }
+          else if (m.kind === "trail") { const [x, y] = at(cx, cy, R + 0.08, part * m.u); out[i] = { x, y, a: part > 0.05 ? 0.7 : 0 }; }
+          else { const [x, y] = at(cx, cy, R, th); out[i] = { x: x + m.jx, y: y + m.jy, a: 1 }; }
+        });
+        return out;
+      },
+      labels: [
+        { x: bx, y: 0.72, html: "Shannon’s bit", cls: "role" },
+        { x: cx, y: 0.72, html: "the circle", cls: "role" },
+        { x: bx, y: -0.58, html: "", cls: "slot", live: t => `${bits(t)} bit${bits(t) > 1 ? "s" : ""}, ${2 ** bits(t)} levels` },
+        { x: cx, y: -0.58, html: "", cls: "slot c-math", live: t => { const n = Math.floor(theta(t) / TAU); return `${((theta(t) % TAU) / Math.PI).toFixed(2)}<i>π</i> · ${n} whole turn${n === 1 ? "" : "s"}`; } },
+        { x: bx, y: -0.78, html: "discreteness composed toward the continuous", cls: "example" },
+        { x: cx, y: -0.78, html: "the continuous closing on whole numbers", cls: "example" }
+      ]
+    };
+  };
+
+  /* Level B: the lighter at the centre and two of us looking at it from different places,
+     each on our own circle, each turning back and forth at our own pace. Each of us sees the
+     lighter turned in our own frame; the angle between us changes, and at every moment it is
+     an exact quantity, so turning your view back by it gives mine. */
+  SCENES.glighter = () => {
+    const X0 = -0.36, VIEW = 0.24, points = [], meta = [];
+    const add = (m, p) => { meta.push(m); points.push(p); };
+    const OBS = [
+      { R: 0.42, a0: -Math.PI / 2, amp: 1.0, w: 0.33, ph: 0, c: "ice", word: "I say <b>lighter</b>" },
+      { R: 0.62, a0: Math.PI * 0.72, amp: 1.2, w: 0.25, ph: 1.3, c: "cyan", word: "you say <b>igniter</b>" }
+    ];
+    lighterAt(X0, 0.02, 1.1).forEach(p => add({ kind: "fixed", x: p.x, y: p.y, a: p.a }, p));
+    OBS.forEach(o => { for (let k = 0; k < 150; k++) { const [x, y] = at(X0, 0, o.R, (k / 150) * TAU); add({ kind: "fixed", x, y, a: 0.2 }, { x, y, c: "dim", a: 0.2, s: 0.7 }); } });
+    const icon = lighterAt(0, 0, 0.5);
+    OBS.forEach((o, oi) => {
+      for (let k = 0; k < 20; k++) add({ kind: "eye", oi, jx: gauss() * 0.02, jy: gauss() * 0.02 }, { x: 0, y: 0, c: o.c, a: 1, s: 1.2 });
+      for (let k = 0; k < 18; k++) add({ kind: "sight", oi, u: k / 17 }, { x: 0, y: 0, c: o.c, a: 0.45, s: 0.75 });
+      icon.forEach(p => add({ kind: "icon", oi, dx: p.x, dy: p.y }, { x: 0, y: 0, c: p.c, a: p.a, s: 0.8 }));
+    });
+    for (let k = 0; k < 50; k++) add({ kind: "arc", u: k / 49 }, { x: 0, y: 0, c: "gold", a: 0.8, s: 0.9 });
+    const ang = (oi, t) => { const o = OBS[oi]; return o.a0 + o.amp * Math.sin(o.w * t + o.ph); };   // back and forth: clockwise, then counterclockwise
+    const deg = a => Math.round((((a * DEG) % 360) + 360) % 360);
+    const between = t => { let d = ang(1, t) - ang(0, t); d = ((d % TAU) + TAU) % TAU; return d > Math.PI ? d - TAU : d; };   // signed, the short way round
+    const ARC = 0.16, out = new Array(points.length);
+    return {
+      points, stillT: 2.2,
+      dynamic: t => {
+        const a0 = ang(0, t), d = between(t);
+        meta.forEach((m, i) => {
+          if (m.kind === "fixed") { out[i] = { x: m.x, y: m.y, a: m.a }; return; }
+          if (m.kind === "arc") { const [x, y] = at(X0, 0, ARC + 0.04, a0 + d * m.u); out[i] = { x, y, a: 0.85 }; return; }
+          const o = OBS[m.oi], a = ang(m.oi, t), [ex, ey] = at(X0, 0, o.R, a);
+          if (m.kind === "eye") out[i] = { x: ex + m.jx, y: ey + m.jy, a: 1 };
+          else if (m.kind === "sight") { const u = 0.1 + 0.55 * m.u; out[i] = { x: X0 + (ex - X0) * (1 - u), y: ey * (1 - u), a: 0.45 }; }
+          else {                                                         // the lighter as this observer sees it: turned with their frame
+            const r = a + Math.PI / 2, c = Math.cos(r), s = Math.sin(r), [vx, vy] = at(X0, 0, o.R + VIEW, a);
+            out[i] = { x: vx + m.dx * c - m.dy * s, y: vy + m.dx * s + m.dy * c, a: 0.9 };
+          }
+        });
+        return out;
+      },
+      labels: [
+        ...OBS.map((o, oi) => ({ x: 0, y: 0, html: o.word, cls: "word small", at: t => { const a = ang(oi, t), [x, y] = at(X0, 0, o.R + VIEW + 0.2, a); return [Math.max(-1.05, x + Math.cos(a) * 0.22), y]; } })),
+        ...[["my frame", t => `${deg(ang(0, t))}°`], ["your frame", t => `${deg(ang(1, t))}°`], ["between us", t => `${Math.round(Math.abs(between(t)) * DEG)}°, exactly`], ["the lighter", () => "the same"]].flatMap(([tag, v], k) => [
+          { x: 1.02, y: 0.5 - k * 0.34, html: tag, cls: "tag left" },
+          { x: 1.02, y: 0.36 - k * 0.34, html: "", cls: "slot left" + (k > 1 ? " c-math" : ""), live: v }
+        ])
       ]
     };
   };
@@ -1090,9 +1476,749 @@
     };
   };
 
+  /* Physics on the circle: a point turning at steady speed, and its height traced to the
+     right as time passes. A turn seen from the side is a wave. */
+  SCENES.phasor = () => {
+    const cx = -0.98, cy = 0.05, R = 0.42, x0 = -0.3, x1 = 1.45, K = 2.4, W = 1.1, points = [], meta = [];
+    const add = (m, p) => { meta.push(m); points.push(p); };
+    for (let k = 0; k < 130; k++) { const [x, y] = at(cx, cy, R, (k / 130) * TAU); add({ kind: "fixed", x, y, a: 0.4 }, { x, y, c: "ice", a: 0.4, s: 0.8 }); }
+    for (let k = 0; k < 60; k++) { const x = x0 + ((x1 - x0) * k) / 59; add({ kind: "fixed", x, y: cy, a: 0.22 }, { x, y: cy, c: "dim", a: 0.22, s: 0.7 }); }
+    for (let k = 0; k < 24; k++) add({ kind: "hand", u: k / 23 }, { x: cx, y: cy, c: "cyan", a: 0.8, s: 0.85 });
+    for (let k = 0; k < 22; k++) add({ kind: "link", u: k / 21 }, { x: cx, y: cy, c: "dim", a: 0.5, s: 0.7 });
+    for (let k = 0; k < 200; k++) add({ kind: "wave", u: k / 199 }, { x: x0, y: cy, c: "cyan", a: 0.85, s: 0.9 });
+    for (let k = 0; k < 18; k++) add({ kind: "mark", jx: gauss() * 0.02, jy: gauss() * 0.02 }, { x: cx + R, y: cy, c: "gold", a: 1, s: 1.3 });
+    const out = new Array(points.length);
+    return {
+      points, stillT: 1.3,
+      dynamic: t => {
+        const th = t * W, [mx, my] = at(cx, cy, R, th);
+        meta.forEach((m, i) => {
+          if (m.kind === "fixed") out[i] = { x: m.x, y: m.y, a: m.a };
+          else if (m.kind === "hand") out[i] = { x: cx + (mx - cx) * m.u, y: cy + (my - cy) * m.u, a: 0.8 };
+          else if (m.kind === "link") out[i] = { x: mx + (x0 - mx) * m.u, y: my, a: 0.5 };
+          else if (m.kind === "wave") { const x = x0 + (x1 - x0) * m.u; out[i] = { x, y: cy + R * Math.sin(th - K * (x - x0)), a: 0.85 }; }
+          else out[i] = { x: mx + m.jx, y: my + m.jy, a: 1 };
+        });
+        return out;
+      },
+      labels: [
+        { x: cx, y: cy - R - 0.2, html: "a turn", cls: "tag" },
+        { x: (x0 + x1) / 2, y: cy - R - 0.2, html: "seen from the side, a wave", cls: "tag" },
+        { x: cx, y: cy + R + 0.2, html: "<i>e</i><sup><i>iωt</i></sup>", cls: "slot c-math" }
+      ]
+    };
+  };
+
+  /* The mirror of Weaver's levels: Level A solved by Shannon's bit, Level B checked by the turn, Level C by the return. */
+  SCENES.levels2 = () => {
+    const bar = (y, n, o) => S.rect(0, y, 2.7, 0.3, n, o);
+    return {
+      points: [
+        ...bar(0.55, 110, { c: "brass", a: 0.75 }),
+        ...S.fill(0, 0, 2.7, 0.3, 360, { c: "cyan", a: 0.4, s: 0.8 }),
+        ...bar(0, 130, { c: "cyan", a: 0.95 }),
+        ...bar(-0.55, 110, { c: "mint", a: 0.85 })
+      ],
+      flows: [{ n: 60, path: S.rectPath(0, 0, 2.7, 0.3), speed: 0.05, c: "gold", a: 1, s: 1.3 },
+              { n: 40, path: S.rectPath(0, -0.55, 2.7, 0.3), speed: 0.05, c: "mint", a: 1, s: 1.2 }],
+      labels: [
+        { x: -1.26, y: 0.55, html: "Level A · the technical problem", cls: "slot left" },
+        { x: 1.26, y: 0.55, html: "Shannon’s bit, 1948", cls: "tag right brass" },
+        { x: -1.26, y: 0, html: "Level B · the semantic problem", cls: "slot left lit" },
+        { x: 1.26, y: 0, html: "checked by the turn", cls: "tag right cyan" },
+        { x: -1.26, y: -0.55, html: "Level C · the effectiveness problem", cls: "slot left" },
+        { x: 1.26, y: -0.55, html: "checked by the return", cls: "tag right c-mint" }
+      ]
+    };
+  };
+
+
+  /* Composition, both ways: Shannon's bits into the corners of a cube, geometric bits into
+     a sphere made of circles, turning. */
+  SCENES.spheres = () => {
+    const lx = -0.88, rx = 0.78, points = [], meta = [];
+    const add = (m, p) => { meta.push(m); points.push(p); };
+    const V = [];
+    for (let k = 0; k < 8; k++) V.push([(k & 1 ? 1 : -1) * 0.34, (k & 2 ? 1 : -1) * 0.34, (k & 4 ? 1 : -1) * 0.34]);
+    for (let a = 0; a < 8; a++) for (let b = a + 1; b < 8; b++) {
+      const d = V[a].reduce((n, x, j) => n + (x !== V[b][j] ? 1 : 0), 0);
+      if (d === 1) for (let k = 0; k < 14; k++) { const u = k / 13; add({ kind: "cube", p: V[a].map((x, j) => x + (V[b][j] - x) * u) }, { x: lx, y: 0, c: "brass", a: 0.7, s: 0.85 }); }
+    }
+    V.forEach(p => { for (let k = 0; k < 8; k++) add({ kind: "cube", p: p.map(x => x + gauss() * 0.015) }, { x: lx, y: 0, c: "brass", a: 1, s: 1.1 }); });
+    const circles = [];
+    for (let j = 0; j < 7; j++) { const tilt = (j / 7) * Math.PI; for (let k = 0; k < 64; k++) { const a = (k / 64) * TAU; circles.push([0.55 * Math.cos(a), 0.55 * Math.sin(a) * Math.cos(tilt), 0.55 * Math.sin(a) * Math.sin(tilt), j]); } }
+    circles.forEach(c => add({ kind: "sphere", p: c }, { x: rx, y: 0, c: c[3] % 2 ? "violet" : "cyan", a: 0.7, s: 0.85 }));
+    const out = new Array(points.length);
+    return {
+      points, stillT: 2,
+      dynamic: t => {
+        meta.forEach((m, i) => {
+          const [x, y, z] = m.p;
+          if (m.kind === "cube") { const [X, Y, d] = view3(x, y, z, 0.6 + t * 0.2, 0.45); out[i] = { x: lx + X, y: 0.02 + Y, a: 0.35 + 0.6 * d }; }
+          else { const [X, Y, d] = view3(x, y, z, t * 0.25, 0.35); out[i] = { x: rx + X, y: 0.02 + Y, a: 0.2 + 0.7 * d }; }
+        });
+        return out;
+      },
+      labels: [
+        { x: lx, y: 0.78, html: "Shannon’s bits", cls: "tag" },
+        { x: rx, y: 0.78, html: "geometric bits", cls: "tag" },
+        { x: lx, y: -0.74, html: "compose into cubes", cls: "example" },
+        { x: rx, y: -0.74, html: "compose into spheres", cls: "example" }
+      ]
+    };
+  };
+
+  /* Level C: I ask for the lighter, the meaning crosses to you, and your action brings the
+     lighter back along the lower arc, where I can compare it with what I meant. */
+  SCENES.loop = () => {
+    const I = [-1.05, 0], U = [1.05, 0];
+    const top = [[I[0] + 0.12, 0.12], [-0.45, 0.85], [0.45, 0.85], [U[0] - 0.12, 0.12]];
+    const bot = [[U[0] - 0.12, -0.14], [0.45, -0.85], [-0.45, -0.85], [I[0] + 0.12, -0.14]];
+    const icon = lighterAt(0, 0, 0.8), points = [], meta = [];
+    const add = (m, p) => { meta.push(m); points.push(p); };
+    [I, U].forEach(p => S.blob(p[0], p[1], 0.1, 0.1, 50, {}).forEach(q => add({ kind: "fixed", x: q.x, y: q.y, a: 0.95 }, { x: q.x, y: q.y, c: "paper", a: 0.95, s: 1.1 })));
+    S.bezier(...top, 70, {}).forEach(q => add({ kind: "fixed", x: q.x, y: q.y, a: 0.45 }, { x: q.x, y: q.y, c: "cyan", a: 0.45, s: 0.8 }));
+    S.head(top[3][0], top[3][1], -0.9, 0.08, 10, {}).forEach(q => add({ kind: "fixed", x: q.x, y: q.y, a: 0.6 }, { x: q.x, y: q.y, c: "cyan", a: 0.6, s: 0.8 }));
+    S.bezier(...bot, 70, {}).forEach(q => add({ kind: "fixed", x: q.x, y: q.y, a: 0.45 }, { x: q.x, y: q.y, c: "mint", a: 0.45, s: 0.8 }));
+    S.head(bot[3][0], bot[3][1], Math.PI - 0.9, 0.08, 10, {}).forEach(q => add({ kind: "fixed", x: q.x, y: q.y, a: 0.6 }, { x: q.x, y: q.y, c: "mint", a: 0.6, s: 0.8 }));
+    icon.forEach(q => add({ kind: "icon", dx: q.x, dy: q.y }, { x: U[0], y: U[1], c: q.c, a: q.a, s: 0.8 }));
+    const out = new Array(points.length);
+    return {
+      points, stillT: 3.5,
+      flows: [{ n: 10, path: u => S.bezierAt(...top, u), speed: 0.16, c: "cyan", a: 1, s: 1.2 }],
+      dynamic: t => {
+        const u = (t * 0.12) % 1, [bx, by] = S.bezierAt(...bot, u);
+        meta.forEach((m, i) => { out[i] = m.kind === "fixed" ? { x: m.x, y: m.y, a: m.a } : { x: bx + m.dx, y: by + m.dy, a: 0.95 }; });
+        return out;
+      },
+      labels: [
+        { x: I[0], y: I[1] - 0.2, html: "I", cls: "word" }, { x: U[0], y: U[1] - 0.2, html: "you", cls: "word" },
+        { x: 0, y: 0.84, html: "Level A · the signal arrives", cls: "tag" },
+        { x: U[0], y: U[1] + 0.26, html: "Level B · you recover what I meant", cls: "tag" },
+        { x: 0, y: -0.9, html: "Level C · your action brings it back", cls: "tag" },
+        { x: I[0], y: I[1] + 0.26, html: "<i>A</i> = <i>A</i>", cls: "slot c-math" }
+      ]
+    };
+  };
+
+  /* ================= 06–10 · What exists, the tower, what we measure, how we convey it ================= */
+
+  /* A point in space turned about the vertical (yaw) and tipped toward us (tilt): [x, y, depth 0..1]. */
+  const view3 = (x, y, z, yaw, tilt) => {
+    const c = Math.cos(yaw), s = Math.sin(yaw), x1 = x * c - z * s, z1 = x * s + z * c;
+    const ct = Math.cos(tilt), st = Math.sin(tilt);
+    return [x1, y * ct - z1 * st, Math.max(0, Math.min(1, (y * st + z1 * ct + 1) / 2))];
+  };
+  /* shaft and head of an arrow as a list of [x, y], for figures that move */
+  const arrowPts = (x0, y0, x1, y1, n, hn, size = 0.07) => {
+    const out = [], ang = Math.atan2(y1 - y0, x1 - x0);
+    for (let k = 0; k < n; k++) { const u = k / (n - 1); out.push([x0 + (x1 - x0) * u, y0 + (y1 - y0) * u]); }
+    for (let k = 0; k < hn; k++) {
+      const u = (k % Math.ceil(hn / 2)) / Math.ceil(hn / 2), side = k < hn / 2 ? -0.5 : 0.5;
+      out.push([x1 - size * u * Math.cos(ang + side), y1 - size * u * Math.sin(ang + side)]);
+    }
+    return out;
+  };
+
+  /* An error at the root grows along every branch: the same tree drawn twice, once with a
+     small change at its start that compounds level by level. */
+  SCENES.cascade = () => {
+    const segs = [], build = (level, path) => { segs.push({ level, path }); if (level < 4) { build(level + 1, [...path, -1]); build(level + 1, [...path, 1]); } };
+    build(0, []);
+    const N = 9, root = [-1.38, 0.02], len = L => 0.6 * Math.pow(0.8, L), spread = L => 0.5 * Math.pow(0.74, L);
+    const points = [], meta = [];
+    [0, 1].forEach(tr => segs.forEach((sg, si) => { for (let k = 0; k < N; k++) { meta.push({ tr, si, u: (k + 0.5) / N }); points.push({ x: root[0], y: root[1], c: tr ? "coral" : "cyan", a: tr ? 0.8 : 0.7, s: 0.85 }); } }));
+    const place = (sg, err) => {
+      let x = root[0], y = root[1], a = 0, sx = x, sy = y;
+      for (let L = 0; L <= sg.level; L++) {
+        a += (L > 0 ? sg.path[L - 1] * spread(L) : 0) + err * Math.pow(1.8, L);
+        sx = x; sy = y; x += len(L) * Math.cos(a); y += len(L) * Math.sin(a);
+      }
+      return [sx, sy, x, y];
+    };
+    const out = new Array(points.length);
+    return {
+      points, stillT: 3.1,
+      dynamic: t => {
+        const err = 0.045 * Math.sin(t * 0.5), ends = [segs.map(sg => place(sg, 0)), segs.map(sg => place(sg, err))];
+        meta.forEach((m, i) => { const [sx, sy, x, y] = ends[m.tr][m.si]; out[i] = { x: sx + (x - sx) * m.u, y: sy + (y - sy) * m.u, a: m.tr ? 0.8 : 0.7 }; });
+        return out;
+      },
+      labels: [
+        { x: root[0], y: root[1] - 0.18, html: "what a number is", cls: "tag" },
+        { x: root[0] + 0.05, y: root[1] + 0.2, html: "a small error here", cls: "example left" },
+        { x: 1.08, y: 0.1, html: "everything built on it", cls: "tag left" },
+        { x: 1.08, y: -0.08, html: "carries it, grown", cls: "example left" }
+      ]
+    };
+  };
+
+  /* To exist is to interact: light reflecting off the lighter, heat rising from it, a hand
+     pressing against it and stopping where the lighter resists. */
+  SCENES.interact = () => {
+    const LX = -0.2, points = [], meta = [];
+    const add = (m, p) => { meta.push(m); points.push(p); };
+    lighterAt(LX, -0.05, 1.5).forEach(p => add({ kind: "fixed", x: p.x, y: p.y, a: p.a }, p));
+    for (let k = 0; k < 80; k++) add({ kind: "hand", dx: (Math.random() - 0.5) * 0.3, dy: (Math.random() - 0.5) * 0.16 }, { x: 1, y: -0.1, c: "paper", a: 0.5, s: 0.8 });
+    const hand = t => { const f = 0.5 + 0.5 * Math.cos(t * 0.7); return LX + 0.3 + 1.0 * f * f; };
+    const inP = [-1.5, 0.8], hit = [LX - 0.11, 0.02], outP = [1.4, 1.02];
+    const out = new Array(points.length);
+    return {
+      points, stillT: 4.2,
+      flows: [
+        { n: 16, path: u => u < 0.5 ? [inP[0] + (hit[0] - inP[0]) * 2 * u, inP[1] + (hit[1] - inP[1]) * 2 * u] : [hit[0] + (outP[0] - hit[0]) * (2 * u - 1), hit[1] + (outP[1] - hit[1]) * (2 * u - 1)], speed: 0.22, c: "cyan", a: 0.95, s: 1.2 },
+        { n: 14, path: u => [LX + 0.07 * Math.sin(u * 13), 0.34 + 0.62 * u], speed: 0.3, c: "coral", a: 0.8, s: 1 }
+      ],
+      dynamic: t => {
+        const hx = hand(t);
+        meta.forEach((m, i) => { out[i] = m.kind === "fixed" ? { x: m.x, y: m.y, a: m.a } : { x: hx + 0.15 + m.dx, y: -0.1 + m.dy, a: 0.5 }; });
+        return out;
+      },
+      labels: [
+        { x: -1.05, y: 0.82, html: "reflects light", cls: "example" },
+        { x: LX + 0.02, y: 1.06, html: "exchanges heat", cls: "example" },
+        { x: 0.95, y: -0.36, html: "resists a hand", cls: "example" }
+      ]
+    };
+  };
+
+  /* Gödel's proof with its checker: the sentence G inside the formal system, and Gödel outside
+     it holding the coding that reads G as being about itself. Then the checker is removed and
+     G is left alone in the system, a sentence it cannot prove. */
+  SCENES.coding = () => {
+    const bx = -0.56, by = 0.08, gx = 0.98, gy = 0.08, points = [], meta = [];
+    const add = (m, p) => { meta.push(m); points.push(p); };
+    const c1 = [[bx + 0.62, by + 0.14], [bx + 0.95, by + 0.62], [gx - 0.35, gy + 0.62], [gx - 0.12, gy + 0.1]];
+    const c2 = [[gx - 0.12, gy - 0.1], [gx - 0.35, gy - 0.62], [bx + 0.95, by - 0.62], [bx + 0.62, by - 0.14]];
+    S.rect(bx, by, 1.24, 0.62, 150, {}).forEach(p => add({ kind: "box", x: p.x, y: p.y }, { x: p.x, y: p.y, c: "ice", a: 0.6, s: 0.85 }));
+    S.blob(gx, gy, 0.09, 0.09, 40, {}).forEach(p => add({ kind: "checker", x: p.x, y: p.y }, { x: p.x, y: p.y, c: "gold", a: 1, s: 1.1 }));
+    [c1, c2].forEach((c, ci) => { for (let k = 0; k < 70; k++) { const [x, y] = S.bezierAt(...c, k / 69); add({ kind: "arc", ci, u: k / 69, x, y }, { x, y, c: ci ? "cyan" : "brass", a: 0.7, s: 0.85 }); } });
+    const [hx, hy] = c2[3], hang = Math.atan2(c2[3][1] - c2[2][1], c2[3][0] - c2[2][0]);
+    S.head(hx, hy, hang, 0.08, 10, {}).forEach(p => add({ kind: "arc", ci: 1, u: 1, x: p.x, y: p.y }, { x: p.x, y: p.y, c: "cyan", a: 0.7, s: 0.85 }));
+    const loop = u => { const a = -0.4 + u * 1.7 * Math.PI; return [bx + 0.5 + 0.2 * Math.cos(a), by + 0.52 + 0.2 * Math.sin(a)]; };
+    for (let k = 0; k < 44; k++) { const [x, y] = loop(k / 43); add({ kind: "loop", x, y }, { x, y, c: "dim", a: 0, s: 0.8 }); }
+    const PER = 10, alone = t => t > 5.2;
+    const out = new Array(points.length);
+    const fadeIn = (t, t0) => Math.max(0, Math.min(1, (t - t0) / 0.8));
+    return {
+      points, period: PER, stillT: 3.4,
+      dynamic: t => {
+        const gone = fadeIn(t, 5.2), pulse = (t * 0.45) % 1;
+        meta.forEach((m, i) => {
+          let a;
+          if (m.kind === "box") a = 0.6;
+          else if (m.kind === "checker") a = 1 - 0.9 * gone;
+          else if (m.kind === "arc") { const near = Math.abs(((m.u - pulse) % 1 + 1) % 1 - 0.5) > 0.42 ? 1 : 0.55; a = (0.7 * near + 0.1) * (1 - 0.92 * gone); }
+          else a = 0.55 * gone;
+          out[i] = { x: m.x, y: m.y, a };
+        });
+        return out;
+      },
+      labels: [
+        { x: bx, y: by + 0.44, html: "the formal system", cls: "tag" },
+        { x: bx, y: by, html: "G: no number has the property P", cls: "example" },
+        { x: gx, y: gy - 0.2, html: "", cls: "role c-math", live: t => `<span style="opacity:${alone(t) ? 0.15 : 1}">Gödel</span>` },
+        { x: (bx + gx) / 2 + 0.18, y: by + 0.64, html: "", cls: "example", live: t => `<span style="opacity:${alone(t) ? 0.15 : 1}">the coding: sentences as numbers</span>` },
+        { x: (bx + gx) / 2 + 0.18, y: by - 0.64, html: "", cls: "example", live: t => `<span style="opacity:${alone(t) ? 0.15 : 1}">reads G as about itself, and sees it is true</span>` },
+        { x: 0.2, y: -0.98, html: "", cls: "slot", live: t => alone(t) ? "without the checker: a sentence the system cannot prove" : "with the checker: G is true" }
+      ]
+    };
+  };
+
+  /* No closed systems. Left: the liar, a sign pointing only at itself. Right: the open tower,
+     each system adding the consistency of the one below and checking it from above. */
+  SCENES.selfref = () => {
+    const bx = -0.82, by = 0.12, lx = 0.78, rows = [-0.66, -0.22, 0.22, 0.66];
+    const loop = u => { const a = -Math.PI / 2 + u * 1.5 * Math.PI; return [bx + 0.45 + 0.28 * Math.cos(a), by + 0.28 + 0.28 * Math.sin(a)]; };
+    return {
+      points: [
+        ...S.rect(bx, by, 0.9, 0.34, 110, { c: "coral", a: 0.55 }),
+        ...Array.from({ length: 50 }, (_, k) => { const [x, y] = loop(k / 49); return { x, y, c: "coral", a: 0.35, s: 0.75 }; }),
+        ...rows.flatMap((y, k) => S.rect(lx, y, 0.86, 0.26, 90, { c: k ? "cyan" : "ice", a: 0.6 })),
+        ...rows.slice(1).flatMap((y, k) => S.line(lx - 0.5, y - 0.03, lx - 0.5, rows[k] + 0.03, 10, { c: "cyan", a: 0.35, s: 0.7 }))
+      ],
+      flows: [
+        { n: 8, path: loop, speed: 0.25, c: "coral", a: 0.8, s: 1.1 },
+        ...rows.slice(1).map((y, k) => ({ n: 3, path: u => [lx - 0.5, y - 0.03 - (y - rows[k] - 0.06) * u], speed: 0.35, c: "cyan", a: 1, s: 1.1 }))
+      ],
+      labels: [
+        { x: bx, y: by, html: "this sentence is false", cls: "example" },
+        { x: bx, y: -0.2, html: "a sign pointing only at itself", cls: "tag" },
+        { x: lx, y: rows[0], html: "arithmetic", cls: "example" },
+        { x: lx, y: rows[1], html: "+ its consistency", cls: "example" },
+        { x: lx, y: rows[2], html: "+ the consistency of that", cls: "example" },
+        { x: lx, y: rows[3], html: "…", cls: "example" },
+        { x: lx, y: -0.98, html: "the open tower of checks", cls: "tag" }
+      ]
+    };
+  };
+
+  /* A cup in space, tipped from edge on to seen from above: the rim is a line, an ellipse,
+     a circle, and the cup never changes. */
+  SCENES.cup = () => {
+    const pts3 = [], cx = -0.2;
+    for (let k = 0; k < 150; k++) { const a = (k / 150) * TAU; pts3.push([0.62 * Math.cos(a), 0.42, 0.62 * Math.sin(a), "cyan", 0.95]); }
+    for (let k = 0; k < 110; k++) { const a = (k / 110) * TAU; pts3.push([0.44 * Math.cos(a), -0.42, 0.44 * Math.sin(a), "ice", 0.6]); }
+    for (let j = 0; j < 12; j++) { const a = (j / 12) * TAU; for (let k = 0; k < 12; k++) { const u = k / 11; pts3.push([(0.44 + 0.18 * u) * Math.cos(a), -0.42 + 0.84 * u, (0.44 + 0.18 * u) * Math.sin(a), "ice", 0.35]); } }
+    const tilt = t => 0.06 + 1.32 * (0.5 - 0.5 * Math.cos(t * 0.42));
+    const out = new Array(pts3.length);
+    const view = t => { const tl = tilt(t); return tl < 0.3 ? "seen edge on, the rim is a line" : tl < 1.15 ? "tilted, the rim is an ellipse" : "from above, the rim is a circle"; };
+    return {
+      points: pts3.map(([x, y, z, c, a]) => ({ x: cx + x, y, c, a, s: 0.85 })),
+      stillT: 3.4,
+      dynamic: t => {
+        const tl = tilt(t);
+        pts3.forEach(([x, y, z, c, a], i) => { const [X, Y, d] = view3(x, y, z, 0.35, tl); out[i] = { x: cx + X, y: Y, a: a * (0.35 + 0.65 * d) }; });
+        return out;
+      },
+      labels: [
+        { x: cx, y: -1.0, html: "", cls: "example", live: view },
+        { x: 1.08, y: 0.1, html: "the cup", cls: "tag left" },
+        { x: 1.08, y: -0.08, html: "unchanged", cls: "example left" }
+      ]
+    };
+  };
+
+  /* Why three: a bounded planar motion settles onto a cycle; the Lorenz system, bounded in
+     three dimensions, never repeats. */
+  SCENES.three = () => {
+    const lx = -0.88, rx = 0.84, points = [], meta = [];
+    const add = (m, p) => { meta.push(m); points.push(p); };
+    const spiral = [];                                                   // r' = r(1 - r²), θ' = 1, from r = 0.12
+    for (let k = 0; k < 360; k++) { const t = k * 0.035, r = 1 / Math.sqrt(1 + (1 / 0.0144 - 1) * Math.exp(-2 * t)); spiral.push([lx + 0.52 * r * Math.cos(t), 0.02 + 0.52 * r * Math.sin(t)]); }
+    spiral.forEach(([x, y]) => add({ kind: "fixed", x, y, a: 0.45 }, { x, y, c: "cyan", a: 0.45, s: 0.75 }));
+    let x = 1, y = 1, z = 1; const lor = [];
+    for (let k = 0; k < 3000; k++) {
+      const dx = 10 * (y - x), dy = x * (28 - z) - y, dz = x * y - (8 / 3) * z;
+      x += dx * 0.005; y += dy * 0.005; z += dz * 0.005;
+      if (k > 500 && k % 3 === 0) lor.push([x / 21, (z - 25) / 21, y / 21]);
+    }
+    lor.forEach((p, k) => add({ kind: "lorenz", k }, { x: rx, y: 0, c: "violet", a: 0.5, s: 0.75 }));
+    for (let k = 0; k < 16; k++) add({ kind: "trace2", jx: gauss() * 0.018, jy: gauss() * 0.018 }, { x: lx, y: 0, c: "gold", a: 1, s: 1.2 });
+    for (let k = 0; k < 16; k++) add({ kind: "trace3", jx: gauss() * 0.018, jy: gauss() * 0.018 }, { x: rx, y: 0, c: "gold", a: 1, s: 1.2 });
+    const out = new Array(points.length), S3 = 0.62;
+    return {
+      points, stillT: 5,
+      dynamic: t => {
+        const yaw = 0.35 * Math.sin(t * 0.18), i2 = Math.floor((t * 40) % spiral.length), i3 = Math.floor((t * 30) % lor.length);
+        const P3 = p => { const [X, Y, d] = view3(p[0], p[1], p[2], yaw, 0.15); return [rx + S3 * X, 0.02 + S3 * Y, d]; };
+        meta.forEach((m, i) => {
+          if (m.kind === "fixed") out[i] = { x: m.x, y: m.y, a: m.a };
+          else if (m.kind === "lorenz") { const [X, Y, d] = P3(lor[m.k]); out[i] = { x: X, y: Y, a: 0.25 + 0.5 * d }; }
+          else if (m.kind === "trace2") out[i] = { x: spiral[i2][0] + m.jx, y: spiral[i2][1] + m.jy, a: 1 };
+          else { const [X, Y] = P3(lor[i3]); out[i] = { x: X + m.jx, y: Y + m.jy, a: 1 }; }
+        });
+        return out;
+      },
+      labels: [
+        { x: lx, y: 0.78, html: "two dimensions", cls: "tag" },
+        { x: rx, y: 0.78, html: "three dimensions", cls: "tag" },
+        { x: lx, y: -0.78, html: "it settles into a cycle", cls: "example" },
+        { x: rx, y: -0.78, html: "bounded, and it never repeats", cls: "example" }
+      ]
+    };
+  };
+
+  /* Closure and entropy: a mark that keeps coming back, and a drop of ink that keeps spreading. */
+  SCENES.closure = () => {
+    const cx = -0.86, R = 0.42, bx = 0.82, B = 0.46, N = 6, cell = (2 * B) / N, points = [], meta = [];
+    const add = (m, p) => { meta.push(m); points.push(p); };
+    for (let k = 0; k < 140; k++) { const [x, y] = at(cx, 0, R, (k / 140) * TAU); add({ kind: "fixed", x, y, a: 0.4 }, { x, y, c: "ice", a: 0.4, s: 0.8 }); }
+    for (let k = 0; k < 8; k++) add({ kind: "fixed", x: cx + R + 0.04 + k * 0.012, y: 0, a: 0.8 }, { x: cx + R, y: 0, c: "paper", a: 0.8, s: 0.8 });
+    for (let k = 0; k < 80; k++) add({ kind: "trail", u: k / 79 }, { x: cx, y: 0, c: "cyan", a: 0.7, s: 0.85 });
+    for (let k = 0; k < 18; k++) add({ kind: "mark", jx: gauss() * 0.02, jy: gauss() * 0.02 }, { x: cx + R, y: 0, c: "gold", a: 1, s: 1.3 });
+    for (let g = 0; g <= N; g++) for (let k = 0; k < 16; k++) {
+      const u = -B + (2 * B * k) / 15, v = -B + g * cell;
+      add({ kind: "fixed", x: bx + u, y: v, a: g % N ? 0.1 : 0.35 }, { x: bx + u, y: v, c: "dim", a: 0.2, s: 0.7 });
+      add({ kind: "fixed", x: bx + v, y: u, a: g % N ? 0.1 : 0.35 }, { x: bx + v, y: u, c: "dim", a: 0.2, s: 0.7 });
+    }
+    const x0 = bx - B + cell * 1.5, y0 = B - cell * 1.5;
+    for (let k = 0; k < 300; k++) add({
+      kind: "ink", gx: x0 + gauss() * 0.03, gy: y0 + gauss() * 0.03,
+      tx: bx - B + 0.02 + Math.random() * (2 * B - 0.04), ty: -B + 0.02 + Math.random() * (2 * B - 0.04), ph: Math.random() * TAU, w: 0.6 + Math.random() * 0.8
+    }, { x: x0, y: y0, c: "violet", a: 0.85, s: 0.9 });
+    const spread = t => t < 0.8 ? 0 : 1 - Math.exp(-(t - 0.8) / 2.6);
+    const out = new Array(points.length);
+    return {
+      points, stillT: 3.4,
+      dynamic: t => {
+        const th = t * 1.05, part = th % TAU, f = spread(t);
+        meta.forEach((m, i) => {
+          if (m.kind === "fixed") out[i] = { x: m.x, y: m.y, a: m.a };
+          else if (m.kind === "trail") { const [x, y] = at(cx, 0, R + 0.08, part * m.u); out[i] = { x, y, a: part > 0.05 ? 0.7 : 0 }; }
+          else if (m.kind === "mark") { const [x, y] = at(cx, 0, R, th); out[i] = { x: x + m.jx, y: y + m.jy, a: 1 }; }
+          else {
+            const wob = 0.01 + 0.016 * f;
+            out[i] = { x: Math.max(bx - B + 0.01, Math.min(bx + B - 0.01, m.gx + (m.tx - m.gx) * f + wob * Math.sin(t * m.w + m.ph))),
+                       y: Math.max(-B + 0.01, Math.min(B - 0.01, m.gy + (m.ty - m.gy) * f + wob * Math.cos(t * m.w * 1.3 + m.ph))), a: 0.85 };
+          }
+        });
+        return out;
+      },
+      labels: [
+        { x: cx, y: 0.72, html: "closure", cls: "role" },
+        { x: cx, y: -0.66, html: "it comes back", cls: "example" },
+        { x: bx, y: 0.72, html: "entropy", cls: "role c-violet" },
+        { x: bx, y: -0.66, html: "it spreads", cls: "example" },
+        { x: -0.02, y: 0.02, html: "information", cls: "slot" }
+      ]
+    };
+  };
+
+  /* Broom Bridge: the rule carved into the stone, appearing as it is cut. */
+  SCENES.stone = () => {
+    const text = S.text("i² = j² = k² = ijk = −1", 0, 0.12, 0.3, 760, { c: "brass", a: 0.95, s: 0.9 }, 'italic 500 {px}px "EB Garamond", Georgia, serif');
+    const stone = [...S.rect(0, 0.12, 3.0, 0.78, 170, { c: "dim", a: 0.5 }), ...S.fill(0, 0.12, 3.0, 0.78, 200, { c: "dim", a: 0.1, s: 0.7 })];
+    const points = [...stone, ...text], nS = stone.length, out = new Array(points.length);
+    return {
+      points, stillT: 6,
+      dynamic: t => {
+        const edge = -1.55 + 3.3 * Math.min(1, t / 4.5);
+        points.forEach((p, i) => { out[i] = i < nS ? { x: p.x, y: p.y, a: p.a } : { x: p.x, y: p.y, a: p.x < edge ? 0.95 : 0 }; });
+        return out;
+      },
+      labels: [
+        { x: 0, y: 0.72, html: "carved into the stone", cls: "tag" },
+        { x: 0, y: -0.48, html: "Broom Bridge, Dublin, 16 October 1843", cls: "example" }
+      ]
+    };
+  };
+
+  /* One product, two answers: p and q lie on a floor seen at an angle; their dot product
+     runs along p, their cross product stands up out of the floor. */
+  SCENES.split = () => {
+    const O = [-0.3, -0.42], F = 0.38, P = 0.95, Q = 0.8, ap = 0.2;
+    const fl = (r, a) => [O[0] + r * Math.cos(a), O[1] + r * F * Math.sin(a)];
+    const phi = t => 1.45 + 1.25 * Math.sin(t * 0.45);
+    const points = [], meta = [];
+    const add = (m, p) => { meta.push(m); points.push(p); };
+    for (let k = 0; k < 120; k++) { const [x, y] = fl(1.15, (k / 120) * TAU); add({ kind: "fixed", x, y, a: 0.22 }, { x, y, c: "dim", a: 0.22, s: 0.7 }); }
+    arrowPts(O[0], O[1], ...fl(P, ap), 30, 10).forEach(([x, y]) => add({ kind: "fixed", x, y, a: 0.9 }, { x, y, c: "cyan", a: 0.9, s: 0.9 }));
+    for (let k = 0; k < 36; k++) add({ kind: "q", k }, { x: O[0], y: O[1], c: "ice", a: 0.9, s: 0.9 });
+    for (let k = 0; k < 30; k++) add({ kind: "dot", u: k / 29 }, { x: O[0], y: O[1], c: "coral", a: 1, s: 1.15 });
+    for (let k = 0; k < 36; k++) add({ kind: "cross", k }, { x: O[0], y: O[1], c: "gold", a: 1, s: 1 });
+    const out = new Array(points.length);
+    const vals = t => { const f = phi(t); return { f, dot: P * Q * Math.cos(f), cross: P * Q * Math.sin(f) }; };
+    return {
+      points, stillT: 2.2,
+      dynamic: t => {
+        const { f, cross } = vals(t), qa = arrowPts(O[0], O[1], ...fl(Q, ap + f), 26, 10), ca = arrowPts(O[0], O[1], O[0], O[1] + 0.9 * cross, 26, 10);
+        const dl = Q * Math.cos(f);
+        meta.forEach((m, i) => {
+          if (m.kind === "fixed") out[i] = { x: m.x, y: m.y, a: m.a };
+          else if (m.kind === "q") { const [x, y] = qa[m.k]; out[i] = { x, y, a: 0.9 }; }
+          else if (m.kind === "dot") { const [x, y] = fl(dl * m.u, ap); out[i] = { x, y: y - 0.035, a: 1 }; }
+          else { const [x, y] = ca[m.k]; out[i] = { x, y, a: Math.abs(cross) > 0.02 ? 1 : 0 }; }
+        });
+        return out;
+      },
+      labels: [
+        { x: 0.1, y: 0.98, html: "<i>pq</i> = −<i>p</i>·<i>q</i> + <i>p</i>×<i>q</i>", cls: "slot c-math" },
+        { x: 0, y: 0, html: "<i>p</i>", cls: "slot", at: () => { const [x, y] = fl(P + 0.12, ap); return [x, y]; } },
+        { x: 0, y: 0, html: "<i>q</i>", cls: "slot", at: t => { const [x, y] = fl(Q + 0.14, ap + phi(t)); return [x, y]; } },
+        { x: -0.3, y: -0.84, html: "", cls: "example", live: t => `<i>p</i> · <i>q</i>, how much they agree: <span style="color:var(--coral)">${vals(t).dot.toFixed(2)}</span>` },
+        { x: -0.3, y: -1.0, html: "", cls: "example", live: t => `<i>p</i> × <i>q</i>, the perpendicular they make: <span style="color:var(--math)">${vals(t).cross.toFixed(2)}</span>` }
+      ]
+    };
+  };
+
+  /* The tower: each doubling, drawn as the signed units ±1, ±e₁, …; each row lights in turn,
+     and the sedenions' row will not hold still. */
+  const TOWER = [
+    { sym: "ℝ", dim: 1, lost: "" },
+    { sym: "ℂ", dim: 2, lost: "gives up order" },
+    { sym: "ℍ", dim: 4, lost: "gives up commutativity" },
+    { sym: "𝕆", dim: 8, lost: "gives up associativity" },
+    { sym: "𝕊", dim: 16, lost: "gives up the norm", extra: "nonzero × nonzero = 0" }
+  ];
+  SCENES.tower = () => {
+    const points = [], meta = [], gap = 0.046, rowY = r => -0.84 + r * 0.42;
+    TOWER.forEach((row, r) => {
+      const n = 2 * row.dim;
+      for (let k = 0; k < n; k++) for (let j = 0; j < 5; j++) {
+        const x = (k - (n - 1) / 2) * gap + gauss() * 0.006, y = rowY(r) + gauss() * 0.006;
+        meta.push({ r, k, x, y }); points.push({ x, y, c: r === 4 ? "coral" : r === 3 ? "violet" : r === 2 ? "mint" : r === 1 ? "cyan" : "ice", a: 0.9, s: 1, g: r });
+      }
+    });
+    const out = new Array(points.length);
+    return {
+      points, pulse: { count: 5, period: 2.2 }, stillT: 2,
+      dynamic: t => {
+        meta.forEach((m, i) => {
+          const shake = m.r === 4 ? 1 : 0;
+          out[i] = { x: m.x + shake * 0.03 * Math.sin(t * 3.1 + m.k * 1.7), y: m.y + shake * 0.07 * Math.sin(t * 2.3 + m.k * 2.9), a: 0.9 };
+        });
+        return out;
+      },
+      labels: [
+        ...TOWER.map((row, r) => ({ x: -1.12, y: rowY(r), html: row.sym, cls: "math", g: r })),
+        ...TOWER.map((row, r) => ({ x: -1.34, y: rowY(r), html: String(row.dim), cls: "tag", g: r })),
+        ...TOWER.filter(row => row.lost).map(row => { const r = TOWER.indexOf(row); return { x: 0.86, y: rowY(r) + (row.extra ? 0.07 : 0), html: row.lost, cls: "example left", g: r }; }),
+        { x: 0.86, y: rowY(4) - 0.1, html: TOWER[4].extra, cls: "example left c-coral", g: 4 }
+      ]
+    };
+  };
+
+  /* Hopf fibres of the three-sphere, seen through stereographic projection: circles, every
+     one linked with every other, each the set of states one reading cannot tell apart. */
+  SCENES.hopf = () => {
+    const COLS = ["cyan", "violet", "mint", "brass", "coral", "ice", "gold"], fib = [];
+    const sets = [[0.62, 11], [0.3, 7]];
+    sets.forEach(([eta, nf], si) => {
+      for (let f = 0; f < nf; f++) {
+        const phi = (f / nf) * TAU + si * 0.3, c = COLS[(f + si * 3) % COLS.length];
+        for (let k = 0; k < 62; k++) {
+          const psi = (k / 62) * TAU;
+          const x1 = Math.cos(eta) * Math.cos(psi), x2 = Math.cos(eta) * Math.sin(psi), x3 = Math.sin(eta) * Math.cos(psi + phi), x4 = Math.sin(eta) * Math.sin(psi + phi);
+          const d = 1 - x4;
+          fib.push([x1 / d, x3 / d, x2 / d, c]);
+        }
+      }
+    });
+    const sc = 0.42, out = new Array(fib.length);
+    return {
+      points: fib.map(([x, y, z, c]) => ({ x: x * sc, y: y * sc, c, a: 0.7, s: 0.85 })),
+      stillT: 2.5,
+      dynamic: t => {
+        fib.forEach(([x, y, z], i) => { const [X, Y, d] = view3(x, y, z, t * 0.1, 1.05); out[i] = { x: X * sc, y: Y * sc, a: 0.2 + 0.7 * d }; });
+        return out;
+      },
+      labels: [
+        { x: 0, y: -1.02, html: "each circle is a fibre; every fibre is linked with every other", cls: "example" }
+      ]
+    };
+  };
+
+  /* Two turns to come back: a mark carried along a Möbius band is on the far side after one
+     lap and home after two, the way a spin-one-half state changes sign after one full turn. */
+  SCENES.mobius = () => {
+    const pts3 = [];
+    for (let a = 0; a < 120; a++) for (const b of [0, 6]) {             // the band's edge, which is a single loop
+      const u = (a / 120) * TAU, v = -0.42 + (0.84 * b) / 6, r = 1 + v * Math.cos(u / 2);
+      pts3.push([r * Math.cos(u), v * Math.sin(u / 2), r * Math.sin(u), 0.6]);
+    }
+    for (let a = 0; a < 24; a++) for (let b = 0; b < 9; b++) {          // rulings across the band show its half twist
+      const u = (a / 24) * TAU, v = -0.42 + (0.84 * b) / 8, r = 1 + v * Math.cos(u / 2);
+      pts3.push([r * Math.cos(u), v * Math.sin(u / 2), r * Math.sin(u), 0.3]);
+    }
+    const band = (u, v) => { const r = 1 + v * Math.cos(u / 2); return [r * Math.cos(u), v * Math.sin(u / 2), r * Math.sin(u)]; };
+    const sc = 0.66, cx = -0.25, nB = pts3.length, points = [], out = [];
+    pts3.forEach(([x, y, z, a]) => points.push({ x: cx + x * sc, y: y * sc, c: "ice", a, s: 0.8 }));
+    for (let k = 0; k < 18; k++) points.push({ x: cx, y: 0, c: "gold", a: 1, s: 1.3, jx: gauss() * 0.02, jy: gauss() * 0.02 });
+    const lap = t => t * 0.75, tilt = 1.0;
+    return {
+      points, stillT: 11,
+      dynamic: t => {
+        const yaw = 0.3 + t * 0.06, s = lap(t);
+        for (let i = 0; i < nB; i++) { const [x, y, z, a] = pts3[i], [X, Y, d] = view3(x, y, z, yaw, tilt); out[i] = { x: cx + X * sc, y: Y * sc, a: a * (0.35 + 0.65 * d) }; }
+        const [mx, my, mz] = band(s, 0.34), [X, Y] = view3(mx, my, mz, yaw, tilt);
+        for (let i = nB; i < points.length; i++) out[i] = { x: cx + X * sc + points[i].jx, y: Y * sc + points[i].jy, a: 1 };
+        return out;
+      },
+      labels: [
+        { x: 1.1, y: 0.3, html: "turns", cls: "tag left" },
+        { x: 1.1, y: 0.12, html: "", cls: "slot left c-math", live: t => (lap(t) / TAU).toFixed(2) },
+        { x: 1.1, y: -0.18, html: "the state", cls: "tag left" },
+        { x: 1.1, y: -0.36, html: "", cls: "slot left", live: t => Math.floor(lap(t) / TAU) % 2 ? "sign reversed" : "itself" }
+      ]
+    };
+  };
+
+  /* What we measure: a string around a circle, unrolled beside its diameter: three diameters
+     and a little more, π. */
+  SCENES.unroll = () => {
+    const cx = -0.3, cy = 0.42, R = 0.3, C = TAU * R, x0 = -1.24, ly = -0.26, points = [], meta = [];
+    const add = (m, p) => { meta.push(m); points.push(p); };
+    for (let k = 0; k < 110; k++) { const [x, y] = at(cx, cy, R, (k / 110) * TAU); add({ kind: "fixed", x, y, a: 0.3 }, { x, y, c: "ice", a: 0.3, s: 0.75 }); }
+    for (let k = 0; k < 26; k++) { const x = cx - R + (2 * R * k) / 25; add({ kind: "fixed", x, y: cy, a: 0.8 }, { x, y: cy, c: "brass", a: 0.8, s: 0.85 }); }
+    for (let k = 0; k < 190; k++) add({ kind: "string", s: (C * k) / 189 }, { x: cx, y: cy - R, c: "cyan", a: 0.95, s: 0.95 });
+    for (let j = 0; j < 3; j++) for (let k = 0; k < 26; k++) add({ kind: "dia", j, x: x0 + 2 * R * j + (2 * R * k) / 25 }, { x: x0, y: ly - 0.12, c: "brass", a: 0, s: 0.95 });
+    for (let k = 0; k < 8; k++) add({ kind: "rest", x: x0 + 6 * R + ((C - 6 * R) * k) / 7 }, { x: x0, y: ly - 0.12, c: "coral", a: 0, s: 1.1 });
+    const f = t => ease(Math.max(0, Math.min(1, (t - 1.2) / 2.8)));
+    const out = new Array(points.length);
+    const shown = t => Math.max(0, Math.min(3, Math.floor((t - 4.6) / 0.8) + 1));
+    return {
+      points, period: 12, stillT: 10,
+      dynamic: t => {
+        const p = f(t), n = shown(t), rest = t > 7.2;
+        meta.forEach((m, i) => {
+          if (m.kind === "fixed") out[i] = { x: m.x, y: m.y, a: m.a };
+          else if (m.kind === "string") {
+            const [ax, ay] = at(cx, cy, R, -Math.PI / 2 + m.s / R), bx = x0 + m.s;
+            out[i] = { x: ax + (bx - ax) * p, y: ay + (ly - ay) * p, a: 0.95 };
+          }
+          else if (m.kind === "dia") out[i] = { x: m.x, y: ly - 0.12, a: m.j < n && t > 4.6 ? 0.95 : 0 };
+          else out[i] = { x: m.x, y: ly - 0.12, a: rest ? 1 : 0 };
+        });
+        return out;
+      },
+      labels: [
+        { x: cx + R + 0.12, y: cy, html: "the diameter", cls: "tag left" },
+        { x: x0 + C / 2, y: ly + 0.14, html: "the string, unrolled", cls: "tag" },
+        { x: x0 + C / 2, y: ly - 0.42, html: "", cls: "slot c-math", live: t => t < 4.6 ? "&nbsp;" : t < 7.2 ? `${shown(t)} diameter${shown(t) > 1 ? "s" : ""}` : "3 diameters and 0.14…, which is π" }
+      ]
+    };
+  };
+
+  /* One exponential, two compositions: turns add their angles while their exponentials
+     multiply, and independent systems add their energies while their weights multiply. */
+  SCENES.exps = () => {
+    const cx = -0.9, R = 0.4, bx0 = 0.2, bx1 = 1.42, by0 = -0.42, by1 = 0.5, points = [], meta = [];
+    const add = (m, p) => { meta.push(m); points.push(p); };
+    for (let k = 0; k < 120; k++) { const [x, y] = at(cx, 0.05, R, (k / 120) * TAU); add({ kind: "fixed", x, y, a: 0.35 }, { x, y, c: "ice", a: 0.35, s: 0.8 }); }
+    for (let k = 0; k < 40; k++) add({ kind: "arcA", u: k / 39 }, { x: cx, y: 0, c: "cyan", a: 0.9, s: 0.9 });
+    for (let k = 0; k < 40; k++) add({ kind: "arcB", u: k / 39 }, { x: cx, y: 0, c: "violet", a: 0.9, s: 0.9 });
+    for (let k = 0; k < 16; k++) add({ kind: "mark", jx: gauss() * 0.02, jy: gauss() * 0.02 }, { x: cx, y: 0, c: "gold", a: 1, s: 1.25 });
+    const X = E => bx0 + ((bx1 - bx0) * E) / 3, Y = w => by0 + (by1 - by0) * w;
+    for (let k = 0; k < 110; k++) { const E = (3 * k) / 109; add({ kind: "fixed", x: X(E), y: Y(Math.exp(-E)), a: 0.6 }, { x: 0, y: 0, c: "coral", a: 0.6, s: 0.85 }); }
+    for (let k = 0; k < 40; k++) add({ kind: "fixed", x: bx0 + ((bx1 - bx0) * k) / 39, y: by0, a: 0.3 }, { x: 0, y: 0, c: "dim", a: 0.3, s: 0.7 });
+    ["e1", "e2", "e12"].forEach(kind => { for (let k = 0; k < 14; k++) add({ kind, u: k / 13 }, { x: 0, y: 0, c: kind === "e12" ? "gold" : "coral", a: 0.8, s: 0.9 }); });
+    const ang = t => [0.7 + 0.35 * Math.sin(t * 0.5), 1.1 + 0.4 * Math.sin(t * 0.37 + 1)], en = t => [0.45 + 0.25 * Math.sin(t * 0.4), 0.8 + 0.3 * Math.sin(t * 0.33 + 2)];
+    const out = new Array(points.length);
+    return {
+      points, stillT: 2,
+      dynamic: t => {
+        const [a, b] = ang(t), [e1, e2] = en(t);
+        meta.forEach((m, i) => {
+          if (m.kind === "fixed") { out[i] = { x: m.x, y: m.y, a: m.a }; return; }
+          if (m.kind === "arcA") { const [x, y] = at(cx, 0.05, R + 0.07, a * m.u); out[i] = { x, y, a: 0.9 }; return; }
+          if (m.kind === "arcB") { const [x, y] = at(cx, 0.05, R + 0.13, a + b * m.u); out[i] = { x, y, a: 0.9 }; return; }
+          if (m.kind === "mark") { const [x, y] = at(cx, 0.05, R, a + b); out[i] = { x: x + m.jx, y: y + m.jy, a: 1 }; return; }
+          const E = m.kind === "e1" ? e1 : m.kind === "e2" ? e2 : e1 + e2;
+          out[i] = { x: X(E), y: by0 + (Y(Math.exp(-E)) - by0) * m.u, a: 0.8 };
+        });
+        return out;
+      },
+      labels: [
+        { x: cx, y: -0.62, html: "<i>e</i><sup><i>iα</i></sup> · <i>e</i><sup><i>iβ</i></sup> = <i>e</i><sup><i>i</i>(<i>α</i>+<i>β</i>)</sup>", cls: "slot c-math" },
+        { x: cx, y: -0.8, html: "angles add, turns multiply", cls: "example" },
+        { x: (bx0 + bx1) / 2, y: -0.62, html: "<i>e</i><sup>−<i>E</i>₁/<i>kT</i></sup> · <i>e</i><sup>−<i>E</i>₂/<i>kT</i></sup> = <i>e</i><sup>−(<i>E</i>₁+<i>E</i>₂)/<i>kT</i></sup>", cls: "slot c-math" },
+        { x: (bx0 + bx1) / 2, y: -0.8, html: "energies add, weights multiply", cls: "example" },
+        { x: bx0, y: by1 + 0.12, html: "weight", cls: "tag" },
+        { x: bx1, y: by0 - 0.1, html: "energy", cls: "tag" }
+      ]
+    };
+  };
+
+  /* The metre and the second: a quarter of the Earth's meridian, and the caesium cycles now
+     counted in every second. */
+  SCENES.earth = () => {
+    const cx = -0.62, R = 0.62, wx0 = 0.56, wx1 = 1.46, wy = 0.36, points = [], meta = [];
+    const add = (m, p) => { meta.push(m); points.push(p); };
+    for (let k = 0; k < 170; k++) { const [x, y] = at(cx, 0, R, (k / 170) * TAU); add({ kind: "fixed", x, y, a: 0.4 }, { x, y, c: "ice", a: 0.4, s: 0.8 }); }
+    for (let k = 0; k < 40; k++) { const u = -1 + (2 * k) / 39; add({ kind: "fixed", x: cx, y: u * R, a: 0.22 }, { x: cx, y: 0, c: "dim", a: 0.22, s: 0.7 }); add({ kind: "fixed", x: cx + u * R, y: 0, a: 0.22 }, { x: cx, y: 0, c: "dim", a: 0.22, s: 0.7 }); }
+    for (let k = 0; k < 60; k++) { const [x, y] = at(cx, 0, R + 0.05, (Math.PI / 2) * (k / 59)); add({ kind: "fixed", x, y, a: 0.95 }, { x, y, c: "gold", a: 0.95, s: 1.05 }); }
+    for (let k = 0; k < 150; k++) add({ kind: "wave", u: k / 149 }, { x: wx0, y: wy, c: "cyan", a: 0.85, s: 0.85 });
+    const out = new Array(points.length);
+    const count = t => Math.floor((t % 1) * 9192631770).toLocaleString("en-US");
+    return {
+      points, stillT: 0.49,
+      flows: [{ n: 3, path: u => at(cx, 0, R + 0.05, (Math.PI / 2) * (1 - u)), speed: 0.18, c: "paper", a: 1, s: 1.5 }],
+      dynamic: t => {
+        meta.forEach((m, i) => {
+          if (m.kind === "fixed") out[i] = { x: m.x, y: m.y, a: m.a };
+          else { const x = wx0 + (wx1 - wx0) * m.u; out[i] = { x, y: wy + 0.1 * Math.sin(m.u * 38 - t * 30), a: 0.85 }; }
+        });
+        return out;
+      },
+      labels: [
+        { x: cx, y: R + 0.14, html: "North Pole", cls: "tag" },
+        { x: cx + R + 0.16, y: -0.1, html: "equator", cls: "tag left" },
+        { x: 0, y: 0, html: "10,000,000 metres, 1791", cls: "example left", at: () => at(cx, 0, R + 0.16, Math.PI / 4) },
+        { x: (wx0 + wx1) / 2, y: wy + 0.26, html: "caesium-133", cls: "tag" },
+        { x: (wx0 + wx1) / 2, y: wy - 0.26, html: "", cls: "slot c-math", live: count },
+        { x: (wx0 + wx1) / 2, y: wy - 0.44, html: "of 9,192,631,770 cycles in one second", cls: "example" }
+      ]
+    };
+  };
+
+  /* Relational frames: A larger than B and B larger than C are trained; the reverse and the
+     combination are derived without training. */
+  SCENES.frames = () => {
+    const A = [-1.05, -0.05], B = [0, -0.05], C = [1.05, -0.05];
+    const arc = [[A[0], A[1] + 0.18], [A[0] + 0.3, 0.75], [C[0] - 0.3, 0.75], [C[0], C[1] + 0.18]];
+    return {
+      points: [
+        ...[A, B, C].flatMap(p => S.blob(p[0], p[1], 0.1, 0.1, 50, { c: "paper", a: 0.9, s: 1 })),
+        ...S.line(A[0] + 0.16, A[1] + 0.06, B[0] - 0.16, B[1] + 0.06, 30, { c: "cyan", a: 0.85, g: 0 }), ...S.head(B[0] - 0.16, B[1] + 0.06, 0, 0.07, 8, { c: "cyan", a: 0.85, g: 0 }),
+        ...S.line(B[0] + 0.16, B[1] + 0.06, C[0] - 0.16, C[1] + 0.06, 30, { c: "cyan", a: 0.85, g: 0 }), ...S.head(C[0] - 0.16, C[1] + 0.06, 0, 0.07, 8, { c: "cyan", a: 0.85, g: 0 }),
+        ...S.line(B[0] - 0.16, B[1] - 0.16, A[0] + 0.16, A[1] - 0.16, 30, { c: "violet", a: 0.85, g: 1 }), ...S.head(A[0] + 0.16, A[1] - 0.16, Math.PI, 0.07, 8, { c: "violet", a: 0.85, g: 1 }),
+        ...S.bezier(...arc, 90, { c: "gold", a: 0.85, g: 2 }), ...S.head(C[0], C[1] + 0.18, -Math.PI / 2, 0.07, 8, { c: "gold", a: 0.85, g: 2 })
+      ],
+      pulse: { count: 3, period: 2.6 },
+      labels: [
+        { x: A[0], y: A[1] - 0.02, html: "A", cls: "slot" }, { x: B[0], y: B[1] - 0.02, html: "B", cls: "slot" }, { x: C[0], y: C[1] - 0.02, html: "C", cls: "slot" },
+        { x: -0.52, y: 0.2, html: "larger than · trained", cls: "example", g: 0 },
+        { x: 0.52, y: 0.2, html: "larger than · trained", cls: "example", g: 0 },
+        { x: -0.52, y: -0.38, html: "smaller than · derived by reversing", cls: "example", g: 1 },
+        { x: 0, y: 0.86, html: "A larger than C · derived by combining", cls: "example", g: 2 }
+      ]
+    };
+  };
+
+  /* Any circle, any size, anywhere: the same ratio. */
+  SCENES.anysize = () => {
+    const C = [[-1.2, 0.12, 0.1], [-0.72, 0.12, 0.24], [0.42, 0.12, 0.72]];
+    return {
+      points: C.flatMap(([x, y, r]) => S.arc(x, y, r, 0, TAU * 0.995, Math.round(40 + 180 * r), { c: "ice", a: 0.45, s: 0.8 })),
+      flows: C.map(([x, y, r]) => ({ n: 1, path: u => at(x, y, r, u * TAU), speed: 0.15, c: "gold", a: 1, s: 2.2 })),
+      labels: [
+        ...C.map(([x, y, r]) => ({ x, y: y - r - 0.16, html: "π", cls: "slot c-math" })),
+        { x: 0, y: -0.98, html: "any circle, any size, any observer: 3.14159…", cls: "example" }
+      ]
+    };
+  };
+
+  /* The same turn tested in three places, checked together at every return. */
+  SCENES.tests = () => {
+    const X = [-1.0, 0, 1.0], R = 0.28, cy = 0.12, points = [], meta = [];
+    const add = (m, p) => { meta.push(m); points.push(p); };
+    X.forEach(cx => { for (let k = 0; k < 90; k++) { const [x, y] = at(cx, cy, R, (k / 90) * TAU); add({ kind: "ring", x, y }, { x, y, c: "ice", a: 0.45, s: 0.8 }); } });
+    X.forEach((cx, j) => { for (let k = 0; k < 14; k++) add({ kind: "mark", j, jx: gauss() * 0.018, jy: gauss() * 0.018 }, { x: cx + R, y: cy, c: "gold", a: 1, s: 1.2 }); });
+    const step = t => { const k = Math.floor(t / 1.1), f = Math.min(1, (t % 1.1) / 0.55); return (k + ease(f)) * Math.PI / 2; };
+    const out = new Array(points.length);
+    return {
+      points, stillT: 4.35,
+      dynamic: t => {
+        const a = step(t), flash = Math.abs(((a / TAU) % 1)) < 0.02 || Math.abs(((a / TAU) % 1) - 1) < 0.02;
+        meta.forEach((m, i) => {
+          if (m.kind === "ring") out[i] = { x: m.x, y: m.y, a: flash ? 0.9 : 0.45, c: flash ? "cyan" : "ice" };
+          else { const [x, y] = at(X[m.j], cy, R, a); out[i] = { x: x + m.jx, y: y + m.jy, a: 1 }; }
+        });
+        return out;
+      },
+      labels: [
+        ...["people", "machines", "physics"].map((w, j) => ({ x: X[j], y: cy - R - 0.2, html: w, cls: "role" })),
+        { x: 0, y: 0.72, html: "the same turn, the same check", cls: "example" }
+      ]
+    };
+  };
+
+  /* Coda: the lighter, a turn around it, and the words for it changing while it stays. */
+  SCENES.coda = () => {
+    const points = [...lighterAt(0, -0.02, 1.45), ...S.arc(0, 0.02, 0.74, 0, TAU * 0.995, 170, { c: "ice", a: 0.35, s: 0.8 })];
+    const word = (w, k) => t => `<span style="opacity:${(Math.floor(t / 2.4) % 2 === k) ? 1 : 0.25}">${w}</span>`;
+    return {
+      points,
+      flows: [{ n: 1, path: u => at(0, 0.02, 0.74, u * TAU), speed: 0.12, c: "gold", a: 1, s: 2.4 }],
+      labels: [
+        { x: -1.18, y: 0.02, html: "", cls: "word", live: word("lighter", 0) },
+        { x: 1.18, y: 0.02, html: "", cls: "word", live: word("igniter", 1) },
+        { x: 0, y: -1.0, html: "<i>A</i> = <i>A</i>", cls: "math c-math" }
+      ]
+    };
+  };
+
   /* ---------------- definitions for hoverable phrases in the text ---------------- */
 
   const DEFS = {
+    // Source for Peirce: https://www.unav.es/gep/Welby12.10.04.html
+    "peirce-relation": { w: "observer · observed · observation", t: "Two things, and the relation connecting them.",
+      d: "This is the paper’s triad of observation. Peirce develops a related account of meaning through a sign, its object and its interpretant: the understanding or effect the sign produces. His point is that the connection itself belongs in the explanation; naming the two ends alone leaves it out.",
+      s: "C. S. Peirce, letter to Lady Welby, 12 October 1904" },
+    "self-reference": { w: "paradoxes and tautologies", t: "What is the sign being compared with?",
+      d: "Saying ‘a lighter is a lighter’ repeats the sign without helping us find the object. Russell’s paradox asks whether a set belongs to itself; Gödel encodes statements about proofs inside arithmetic. They bring the relation between a description and what it describes into focus. Here we keep the thing, the observation and the sign visible so we can ask what checks the statement.",
+      s: "Bertrand Russell, 1902; Kurt Gödel, 1931" },
     gates: { w: "logic gates", t: "Each gate is a surface over the square.",
       d: "A gate reads bits at a corner and returns a bit. AND returns 1 only at the corner 11, exactly as the polynomial <i>xy</i> does, and XOR returns 1 where the inputs differ, as <i>x</i> + <i>y</i> − 2<i>xy</i> does. Every gate is a polynomial over the cube, read at its corners.",
       s: "Ryan O’Donnell, <i>Analysis of Boolean Functions</i>, 2014, chapter 1" },
@@ -1105,6 +2231,9 @@
     machines: { w: "hypercube computers", t: "The Connection Machine was wired as a 12-dimensional cube.",
       d: "Its 65,536 processors were grouped into 4,096 routing nodes, each linked to its neighbours along twelve perpendicular directions, so a message crossed the machine by flipping one coordinate at a time.",
       s: "W. Daniel Hillis, <i>The Connection Machine</i>, 1985" },
+    frames: { w: "more technically", t: "Frames related by a rotation, and an object that stays the same.",
+      d: "Each description of the lighter is written in a frame, and any two frames are related by a rotation <i>g</i>. Applying <i>g</i> turns my description into yours and its inverse <i>g</i><sup>−1</sup> turns yours back into mine, so decode(encode(<i>A</i>)) = <i>A</i> holds for every <i>g</i>, and what stays fixed under all of them is the thing both descriptions are about. Physics builds its fields the same way: electromagnetism places this circle of phases at every point in space, the field records the rotation between neighbouring frames, and only what is invariant under those rotations can be measured.",
+      s: "Hermann Weyl, 1929: the electron’s phase and the circle symmetry of electromagnetism" },
     heat: { w: "thermodynamics", t: "Entropy began as a law of heat.",
       d: "Rudolf Clausius named entropy to state that heat flows on its own only from hot to cold, and Ludwig Boltzmann showed that it counts the molecular arrangements behind what we measure, which is why the spread ink never gathers back and why the past differs from the future.",
       s: "Rudolf Clausius, 1865; Ludwig Boltzmann, 1877" },
@@ -1119,7 +2248,25 @@
       s: "Robert MacArthur, 1955; the Shannon index" },
     language: { w: "language", t: "Shannon measured the entropy of English.",
       d: "In 1951 Shannon had people guess the next letter of English text and estimated roughly one bit per letter. Language models are trained on the same quantity, learning to be less surprised by the next word.",
-      s: "Claude Shannon, “Prediction and Entropy of Printed English”, 1951" }
+      s: "Claude Shannon, “Prediction and Entropy of Printed English”, 1951" },
+    osc: { w: "oscillations", t: "An oscillation is the shadow of a turn.",
+      d: "A mass on a spring, a pendulum swinging a little and the current in an alternating circuit all rise and fall as the height of a point turning at steady speed, so physicists write them as <i>e</i><sup><i>iωt</i></sup> and measure its shadow. Charles Steinmetz made this the working method of electrical engineering.",
+      s: "Charles Proteus Steinmetz, 1893; <i>The Feynman Lectures on Physics</i>, I.23" },
+    amplitudes: { w: "quantum amplitudes", t: "Every way something can happen carries a turning arrow.",
+      d: "Feynman described each way an event can happen as a small arrow that turns as time passes. The arrows of all the ways are added, the length of the sum gives the probability, and ways whose arrows point in opposite directions cancel.",
+      s: "Richard Feynman, <i>QED: The Strange Theory of Light and Matter</i>, 1985" },
+    quantization: { w: "quantization", t: "Only whole returns survive.",
+      d: "Louis de Broglie gave the electron a wave and required it to fit around its orbit a whole number of times, coming back in step with itself. The orbits allowed are the ones where the turn closes, and their energies are the levels of the atom.",
+      s: "Louis de Broglie, doctoral thesis, 1924" },
+    relativity: { w: "relativity", t: "Changing speed is turning in spacetime.",
+      d: "Passing from one moving frame to another is a rotation in which the circle’s functions are replaced by their hyperbolic twins. Written as rapidities, speeds combine the way angles add, and the spacetime interval stays fixed the way the radius stays fixed on the circle.",
+      s: "Hermann Minkowski, “Space and Time”, 1908" },
+    signals: { w: "signals", t: "Every signal is a sum of turns.",
+      d: "Fourier showed that any repeating signal is a sum of turns at different speeds. A phone sends two bits at a time as one of four points on the circle, 00, 01, 11 and 10, which is the quadrant reading of the geometric bit.",
+      s: "Joseph Fourier, 1822; quadrature phase-shift keying" },
+    paradoxes: { w: "the paradoxes", t: "Each one takes a totality, or a sign about itself, as a finished thing.",
+      d: "Russell’s set of all sets that do not contain themselves, Burali-Forti’s greatest ordinal and the liar all treat a whole that includes themselves as complete. Poincaré and Russell traced them to vicious circles, whatever involves all of a collection cannot be one of its members, and Kripke’s theory of truth leaves the liar ungrounded, with no truth value at all.",
+      s: "Cesare Burali-Forti, 1897; Bertrand Russell, 1903; Henri Poincaré, 1906; Saul Kripke, 1975" }
   };
 
   window.GTC = { SCENES, S, DEFS, clearText: () => textCache.clear() };

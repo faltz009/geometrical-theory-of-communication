@@ -9,6 +9,14 @@
 \usetikzlibrary{arrows.meta}
 \usepackage[section]{placeins}
 \usepackage{float}
+\usepackage[skins]{tcolorbox}
+\newtcolorbox[auto counter,number within=section]{formalnote}[1]{
+ enhanced,colback=black!2,colframe=black!40,
+ colbacktitle=black!7,coltitle=black,boxrule=.4pt,arc=1pt,
+ left=9pt,right=9pt,top=7pt,bottom=7pt,
+ fonttitle=\bfseries,fontupper=\small,
+ title={Formal \thetcbcounter: #1},before skip=12pt,after skip=12pt
+}
 \usepackage{microtype}
 \usepackage[authoryear,round]{natbib}
 \usepackage[hidelinks]{hyperref}
@@ -174,72 +182,110 @@ available to someone else.
 \section{From Shannon's bit to the geometric bit}
 \label{sec:v1-comparison}
 
-What is the uncertainty that a message resolves? Weaver's account
-of Shannon begins with the alternatives available to the sender:
-the receiver needs to learn which one was chosen. A message full
-of meaning and a string of nonsense can therefore have the same
-information measure, since the channel must recover the selection
-in either case. Setting meaning aside makes it possible to measure
-this task through the choices and their probabilities
+How did Shannon and Weaver make the transmission problem measurable?
+They set meaning aside on purpose: a message full of meaning and a
+string of nonsense can have the same information measure, because
+the task is to recover at one end the message selected at the other.
+The uncertainty concerns which of the possible messages was chosen,
+so the measure belongs to the whole choice situation
 \citep[pp.~8--9]{ShannonWeaver1949}.
 
 \subsection{Shannon's bit: what the choice already assumes}
 
-Information, in this sense, belongs to the situation from which a
-message is selected. In Weaver's example, the alternatives are an
-entire Bible and the single word ``Yes.'' If we agree that $0$
-selects the first and $1$ the second, one binary signal tells me
-which you chose. I already have both messages available, together
-with the agreement about their labels; the uncertainty concerns
-your choice between them.
+Weaver's example makes this easy to see. The two possible messages
+are the whole King James Bible and the single word ``Yes.'' One is
+a book and the other is a word, yet either can be selected by the
+same small signal: we agree beforehand that $0$ selects the Bible
+and $1$ selects ``Yes,'' or that a closed relay selects one and an
+open relay the other. I already have the messages and their labels;
+when your signal arrives, I learn which one you chose.
 
-For two equally likely alternatives, we assign the value one and
-call the unit a bit. Weaver explicitly treats this assignment as
-a convention. The characters $0$ and $1$ name the alternatives,
-but an open or closed switch, two voltages, or two agreed gestures
-can serve the same purpose, provided I can reliably tell them apart
-\citep[p.~9]{ShannonWeaver1949}.
+With the alternatives equally likely, we assign this choice the
+value one and call its unit a bit, John Tukey's contraction of
+\emph{binary digit}. Weaver calls the assignment a convention:
+the unit measures the choice between the two messages, whatever
+their length or meaning \citep[p.~9]{ShannonWeaver1949}.
 
-How should the amount grow when we combine choices? Two independent
-binary choices give four possible pairs, and three give eight
-possible triples. The possibilities multiply while the information
-adds, which is why the measure is logarithmic: $N$ equally likely
-alternatives give $\log_2 N$ bits. Choosing base two fixes the scale,
-so one equally likely binary choice counts as one
-\citep[pp.~9--10]{ShannonWeaver1949}.
+What happens when we have more choices? Two independent binary
+choices give four possible pairs, and three give eight possible
+triples. The possibilities multiply while the information adds,
+which is the counting rule expressed by the logarithm. Unequal
+probabilities change how much we learn: an almost certain answer
+is less surprising than a rare one, and entropy averages over
+these possibilities \citep{Shannon1948}.
 
-When the probabilities differ, an almost certain answer is less
-surprising than a rare one. Shannon's entropy weights the information
-of each possible answer by how often it occurs, giving the average
-uncertainty of the choice. A record with two states can therefore
-supply less than one bit on average, even though we still write
-its alternatives as $0$ and $1$ \citep{Shannon1948}.
+\begin{formalnote}{The choice, its unit, and entropy}
+For a finite set of $N$ equally likely messages, the information is
+$I(N)=\log_2N$, with $I(2)=1$ fixing the unit. Independent choices
+multiply the number of possibilities, so
+\[
+ I(NM)=I(N)+I(M).
+\]
+The logarithmic form follows from additivity and regularity. For
+a continuous extension $J$ to positive arguments satisfying
+$J(xy)=J(x)+J(y)$, the function $g(t)=J(e^t)$ is continuous and
+additive, hence $g(t)=ct$. Thus $J(x)=c\ln x$, and $J(2)=1$
+gives $c=1/\ln2$.
 
-What have we used in counting those alternatives? Take a line marked
-$0,1,2,3$. We hold an origin and repeat a chosen interval, measuring
-each new position against the same reference. Extend the marks
-perpendicularly, as the ticks on a ruler: every point along the
-perpendicular through $1$ keeps that horizontal reading. Movement
-along the counting line changes the reading; movement along the
-perpendicular leaves it fixed.
+For a message $m$ of probability $p(m)>0$, its self-information is
+$-\log_2p(m)$. The source entropy is its expectation,
+\[
+ H(M)=-\sum_m p(m)\log_2p(m),\qquad 0\log_2 0:=0.
+\]
+A binary source has $0\leq H(M)\leq1$, with equality at the upper
+bound precisely for equal probabilities. Two available states and
+one bit of entropy coincide in that case \citep{Shannon1948}.
+\end{formalnote}
 
-These transverse lines let us carry a reading away from the counting
-line and recover it by projection, with the reference through $0$
-and the reading through $1$ remaining separate. Leaving the ticks
-undrawn leaves this relationship implicit in the measurement.
-To count another unit, we also repeat the same step: the interval
-from $1$ to $2$ must agree with the interval from $0$ to $1$.
-Translation carries one interval onto the next while preserving
-its length. I take this comparison as the physical ground of
-counting, with perpendicularity separating the readings and
-symmetry preserving the repeated unit.
+How does the bit look geometrically? Put $0$ and $1$ on a line,
+holding $0$ as the reference and placing $1$ one unit away. Reading
+the mark means comparing its position with that origin and unit.
+If we move along the line, the reading changes; if we move along
+the perpendicular through $1$, it stays at $1$, just as a ruler's
+tick carries a reading across the page.
 
-A binary record keeps two readings along one coordinate. Put two
-such records together and their four combinations, $00$, $01$,
-$10$, and $11$, occupy the corners of a square: changing either
-coordinate leaves the other fixed. A third coordinate gives a
-cube, and $n$ coordinates give the $2^n$ corners of the Boolean
-cube \citep[Chapter~1]{ODonnell2014}.
+\begin{figure}[H]
+\centering
+\input{figures/binary-reference.tex}
+\caption{A reading and its reference. Movement along the horizontal
+line changes the reading; movement along the perpendicular through
+$1$ preserves it. The interval from $0$ to $1$ fixes the unit.}
+\label{fig:v1-reference}
+\end{figure}
+
+Extend the line to $2$ and $3$, and the same comparison repeats:
+the interval from $1$ to $2$ must agree with the interval from $0$
+to $1$. Translation carries one interval onto the next while
+preserving its length. In this physical account of counting,
+perpendicularity keeps the coordinate readings separate and
+symmetry keeps the repeated step the same, whether or not we
+draw every tick.
+
+\begin{formalnote}{What the perpendicular preserves}
+Fix a Euclidean plane, an origin $o$, a unit direction $u$, and a
+length unit $\ell>0$. The reading of a point $p$ along that direction is
+\[
+ x(p)=\frac{\langle p-o,u\rangle}{\ell}.
+\]
+A displacement $v$ preserves the reading exactly when
+\[
+ x(p+v)-x(p)=\frac{\langle v,u\rangle}{\ell}=0,
+ \quad\text{that is, }v\perp u.
+\]
+Thus each fixed reading is a line perpendicular to $u$. The points
+$p_k=o+k\ell u$ have readings $k$, and translation by $\ell u$
+sends $p_k$ to $p_{k+1}$ while preserving distances. These are the
+projection and equal-step properties used by the ruler construction.
+\end{formalnote}
+
+What happens when we put two bits together? Each must be able to
+change while the other stays fixed, giving the four readings
+$00$, $01$, $10$, and $11$ at the corners of a square. A third bit
+adds another perpendicular coordinate and gives the eight corners
+of a cube; each further bit adds another direction in which the
+record can vary. An $n$-bit string is one corner of this cube,
+read from the common starting corner $00\ldots0$
+\citep[Chapter~1]{ODonnell2014}.
 
 \begin{figure}[H]
 \centering
@@ -252,37 +298,97 @@ multilinear extensions of the truth tables.}
 \label{fig:v1-binary}
 \end{figure}
 
-The gates in Figure~\ref{fig:v1-binary} operate on these corners.
-AND returns one at $11$ and zero at the other three, just as the
-polynomial $xy$ does; XOR returns one where the inputs differ and
-zero where they agree. The surfaces show their multilinear
-extensions, joining the corner values through functions linear
-in each input separately \citep[Section~1.2]{ODonnell2014}.
-Feeding one gate's result into another lets these comparisons
-combine into a computation.
+Computers already use this geometry in their operations. On the
+square in Figure~\ref{fig:v1-binary}, AND returns one only at $11$,
+just as multiplication $xy$ does. XOR returns one at $01$ and $10$,
+where the inputs differ, and zero where they agree. Each gate reads
+a corner and supplies an output that another gate can use, allowing
+these small comparisons to combine into a computation.
 
-To check whether a string arrived unchanged, count the positions
-where the sent and received records differ. This is Hamming
-distance, and zero means the same corner of the cube. Each differing
-coordinate contributes one to the squared Euclidean distance,
-so that distance equals the count. Error-correcting codes separate
-allowed records far enough that some corrupted readings can still
-be assigned to the original selection.
+\begin{formalnote}{Gates as functions on the cube}
+The binary state space is $B_n=\{0,1\}^n\subset\R^n$, with
+$2^n$ vertices and one coordinate per bit. A Boolean gate
+$f:B_n\to\{0,1\}$ has the unique multilinear extension
+\[
+ F(x)=\sum_{a\in B_n}f(a)
+       \prod_{j:a_j=1}x_j\prod_{j:a_j=0}(1-x_j).
+\]
+At a vertex $b$, the product indexed by $a=b$ is one and all others
+vanish, so $F(b)=f(b)$. These products form a basis for the
+multilinear polynomials, establishing uniqueness within that class.
+For two inputs,
+\[
+ F_{\mathrm{AND}}(x,y)=xy,\qquad
+ F_{\mathrm{XOR}}(x,y)=x+y-2xy.
+\]
+The surfaces in the figure are these extensions; the gate's binary
+outputs are their values at the corners
+\citep[Section~1.2]{ODonnell2014}.
+\end{formalnote}
 
-But what if the bits arrive correctly and we use different
-agreements? You send $0$ for the Bible while I read $0$ as ``Yes.''
-The symbol comparison passes, yet I recover the wrong message.
-Shannon's technical problem holds the correspondence fixed; the
-agreement that makes the recovered symbol useful is already in
-place before transmission begins.
+The cube also tells us how far apart two messages are. A flipped
+bit moves a record along one edge, so the shortest route between
+two corners counts the positions where their strings differ.
+That count is Hamming distance, and zero means the same string.
+To correct errors, choose valid records far enough apart that a
+few wrong bits still leave the received corner closest to the one
+that was sent \citep{Hamming1950}.
 
-There are therefore two checks behind the example. We must recognize
-the received state as the one sent, and we must agree about what
-that state selects. The first is the transmission test; the second
-brings us to Weaver's Level B, where the receiver's interpretation
-must agree with the sender's intended meaning
-\citep[pp.~4--5]{ShannonWeaver1949}. How can we make that agreement
-something we can perform and check, rather than something we assume
+\begin{formalnote}{Distance and recovery}
+For $x,y\in B_n$,
+\[
+ d_H(x,y)=\sum_{j=1}^n\mathbf{1}_{x_j\ne y_j}
+         =\sum_{j=1}^n(x_j-y_j)^2
+         =\|x-y\|_2^2.
+\]
+Each summand is zero or one. This is also the shortest edge-path
+length on the cube: each differing coordinate must be flipped at
+least once, and flipping each once reaches the destination.
+
+For a code $C\subseteq B_n$ with at least two codewords, let
+$d_{\min}=\min_{c\ne c'\in C}d_H(c,c')$. If $d_{\min}\geq2t+1$,
+nearest-codeword decoding corrects any pattern of at most $t$ bit
+errors. A word within $t$ of two codewords would, by the triangle
+inequality, put them at distance at most
+$2t$, contradicting the separation \citep{Hamming1950}.
+\end{formalnote}
+
+Some computers even used the cube to connect their hardware.
+The Connection Machine CM-1 linked 4,096 routing nodes in a
+12-dimensional Boolean cube, with neighbouring addresses differing
+in one bit. Moving a message between nodes followed the same
+coordinate changes used to compare their addresses
+\citep[Section~4.3]{Hillis1985}.
+
+What, then, has the bit given us? A difference recorded against a
+fixed reference, a way to combine such records, and operations for
+computing with them and recovering them after noise. The agreement
+about what each record selects remains in place throughout. If you
+send $0$ for the Bible while I read $0$ as ``Yes,'' the string arrives
+correctly and I still recover the wrong message.
+
+\begin{formalnote}{The shared agreement}
+For the agreed repertoire $\mathcal M=\{\text{Bible},\text{Yes}\}$,
+let the sender's encoding be $E_S:\mathcal M\to\{0,1\}$, with
+$E_S(\text{Bible})=0$ and $E_S(\text{Yes})=1$. Let
+$D_R:\{0,1\}\to\mathcal M$ be the receiver's interpretation.
+If $b=E_S(m)$ is sent and $\hat b$ is recovered, the two checks are
+\[
+ \hat b=b,\qquad D_R(\hat b)=m.
+\]
+With exact symbol recovery, agreement for every message requires
+$D_R\circ E_S=\mathrm{id}_{\mathcal M}$. This equation specifies
+recovery within the agreed repertoire; the assignment of labels
+to its members is part of the setup. Reversing $D_R$ preserves
+symbol recovery while making the second check fail.
+\end{formalnote}
+
+Every transmitted record therefore leaves us with two questions:
+did the receiver recognize the state that was sent, and did that
+state select the same thing for both of us? The first is Shannon's
+technical problem; the second is Weaver's Level B
+\citep[pp.~4--5]{ShannonWeaver1949}. How can that agreement become
+something we perform and check, instead of something we assume
 when assigning the labels?
 
 \subsection{The geometric bit: identity through an operation}
@@ -325,8 +431,8 @@ marks finish at different places, but each has turned through the
 same angle relative to its own reference. Rotating a reference
 and its reading together adds the same angle to both; their
 difference stays fixed. We can compare our results because the
-reference travels with the reading, with the direction of turning
-agreed between us.
+reference travels with the reading, and the turn carries its own
+direction in the order its positions are reached.
 
 Now change the size of your circle. Its circumference and diameter
 grow together, keeping the ratio $\pi$, while the right angles and
@@ -640,7 +746,7 @@ that with perpendicularity, length, angle, and return.
 The requirement of consistency is direct: descriptions of the same
 physical turn must agree about its result. One person writes
 $90^\circ$, another $\pi/2$, another multiplies by $i$. Once the
-plane, centre, and orientation agree, these describe the same turn.
+plane and centre agree, these describe the same turn.
 The notation changes while the operation remains available.
 
 Euler's formula keeps the components of that turn together. Its
@@ -726,8 +832,7 @@ $\log_2N$ bits. With probabilities $p_j$, entropy is
 $H=-\sum_jp_j\log_2p_j$ \citep{Shannon1948}. A geometric reading
 supplies distinguishable alternatives, while the preparation
 supplies their probabilities. The counting problem therefore uses the
-repeatable identity developed in Section~
-ef{sec:v1-comparison}:
+repeatable identity developed in Section~\ref{sec:v1-comparison}:
 the alternatives must be identifiable before uncertainty among
 them can be measured.
 
@@ -809,11 +914,21 @@ Principia Mathematica und verwandter Systeme I.
 \emph{Monatshefte f\"ur Mathematik und Physik}, 38, 173--198.
 \url{https://doi.org/10.1007/BF01700692}.
 
+\bibitem[Hamming(1950)]{Hamming1950}
+Hamming, R. W. (1950). Error detecting and error correcting codes.
+\emph{Bell System Technical Journal}, 29, 147--160.
+\url{https://doi.org/10.1002/j.1538-7305.1950.tb00463.x}.
+
 \bibitem[Hayes et~al.(2001)]{HayesEtAl2001}
 Hayes, S. C., Barnes-Holmes, D., and Roche, B. (eds.) (2001).
 \emph{Relational Frame Theory: A Post-Skinnerian Account of Human
 Language and Cognition}. Springer.
 \url{https://doi.org/10.1007/b108413}.
+
+\bibitem[Hillis(1985)]{Hillis1985}
+Hillis, W. D. (1985). \emph{The Connection Machine}.
+Ph.D. thesis, Massachusetts Institute of Technology. Section~4.3.
+\url{https://worrydream.com/refs/Hillis_1985_-_The_Connection_Machine.pdf}.
 
 \bibitem[Landauer(1996)]{Landauer1996}
 Landauer, R. (1996). The physical nature of information.

@@ -158,6 +158,8 @@ h1.intro-title { font-size: clamp(64px, 8.6vw, 140px); }
 .terms li { font: 400 clamp(16px, 1.2vw, 19px)/1.4 var(--serif); color: var(--soft); display: grid; grid-template-columns: 7.2em 1fr; gap: 12px; }
 .terms b { font: 600 11.5px/1.9 var(--label); letter-spacing: 0.14em; text-transform: uppercase; color: var(--cyan); }
 .terms.bit-terms b { color: var(--brass); }
+.terms.symbols li { grid-template-columns: 2.2em 1fr; align-items: baseline; }
+.terms.symbols b { font: italic 500 clamp(24px, 1.9vw, 30px)/1 var(--serif); letter-spacing: 0; text-transform: none; color: var(--math); }
 .levelbars { display: grid; gap: 10px; margin: 20px 0 22px; }
 .lb { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 12px 16px; border: 1.5px dotted color-mix(in srgb, var(--dim) 70%, transparent);
   font: 400 clamp(16px, 1.15vw, 18.5px)/1.2 var(--serif); color: var(--soft); }
@@ -167,6 +169,8 @@ h1.intro-title { font-size: clamp(64px, 8.6vw, 140px); }
 .lb.open { border-color: color-mix(in srgb, var(--cyan) 85%, transparent); color: var(--cyan); background: color-mix(in srgb, var(--cyan) 8%, transparent);
   box-shadow: 0 0 18px color-mix(in srgb, var(--cyan) 22%, transparent); animation: lbglow 2.6s ease-in-out infinite; }
 .lb.open em { color: var(--cyan); }
+.lb.checked { border-style: solid; border-color: color-mix(in srgb, var(--mint) 70%, transparent); color: var(--paper); background: color-mix(in srgb, var(--mint) 8%, transparent); }
+.lb.checked em { color: var(--mint); }
 @keyframes lbglow { 50% { box-shadow: 0 0 28px color-mix(in srgb, var(--cyan) 38%, transparent); } }
 
 /* the three questions, one per line */
@@ -177,6 +181,7 @@ h1.intro-title { font-size: clamp(64px, 8.6vw, 140px); }
 .copy .citation a { color: var(--dim); text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .copy .citation a:hover, .copy .citation a:focus-visible { color: var(--cyan); }
 .hotlist { list-style: none; padding: 0; margin: 4px 0 0; display: grid; gap: 8px; }
+.hotlist + p { margin-top: 18px; }
 .hotlist li { padding-left: 18px; position: relative; font: 400 clamp(16px, 1.2vw, 19px)/1.4 var(--serif); color: var(--soft); }
 .hotlist li::before { content: ""; position: absolute; left: 0; top: 0.7em; width: 7px; height: 1px; background: var(--brass); }
 #entropy-fields .hotlist { gap: 9px; margin-top: 14px; }
@@ -185,6 +190,8 @@ h1.intro-title { font-size: clamp(64px, 8.6vw, 140px); }
 .tagf { font: 600 11px/1.3 var(--label); letter-spacing: 0.12em; text-transform: uppercase; }
 .hotword { cursor: help; border-bottom: 1px dotted rgba(227, 179, 110, 0.7); }
 .hotword:hover, .hotword:focus-visible { color: var(--brass); outline: none; }
+.hotword.recall { cursor: pointer; border-bottom-style: dashed; border-bottom-color: color-mix(in srgb, var(--cyan) 60%, transparent); }
+.hotword.recall:hover, .hotword.recall:focus-visible { color: var(--cyan); }
 
 .colophon { margin-top: 26px; display: grid; gap: 6px; font: 13px/1.5 var(--label); color: var(--dim); }
 
@@ -192,6 +199,7 @@ h1.intro-title { font-size: clamp(64px, 8.6vw, 140px); }
 .lbl { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; opacity: 0; transition: opacity 0.7s 0.25s, color 0.4s, text-shadow 0.4s, filter 0.4s; }
 .lbl.in { opacity: 1; }
 .lbl.left { transform: translate(0, -50%); }
+.lbl.left-of { transform: translate(-100%, -50%); }
 .lbl.right { transform: translate(-100%, -50%); }
 
 .lbl.word { font: italic 400 clamp(18px, 1.65vw, 27px)/1 var(--serif); color: var(--paper); text-shadow: var(--halo); }
@@ -257,6 +265,8 @@ h1.intro-title { font-size: clamp(64px, 8.6vw, 140px); }
 .lbl.level.lit .lv-head b, .lbl.level.lit .lv-head span { color: var(--cyan); }
 
 /* ---------- definition floater ---------- */
+#floater.wide { width: min(520px, calc(100vw - 32px)); }
+#floater .f-img { display: block; width: 100%; margin: 8px 0 6px; border-radius: 6px; border: 1px solid var(--line); }
 #floater {
   position: fixed; z-index: 8; width: min(340px, calc(100vw - 32px)); pointer-events: none;
   background: rgba(5, 13, 18, 0.94); border: 1px solid rgba(69, 220, 255, 0.35);
@@ -351,3 +361,72 @@ h1.intro-title { font-size: clamp(64px, 8.6vw, 140px); }
 :root[data-theme="light"] #floater { background: rgba(255, 253, 247, 0.97); border-color: rgba(168, 120, 27, 0.4); box-shadow: 0 10px 40px rgba(40, 34, 20, 0.16); }
 :root[data-theme="light"] .copy .def .def-eq { animation-name: breathe-light; }
 @keyframes breathe-light { 0%, 100% { opacity: 0.75; text-shadow: none; } 50% { opacity: 1; text-shadow: 0 0 18px rgba(196, 150, 40, 0.35); } }
+#gbit .copy h2 { font-size: clamp(30px, 2.8vw, 44px); margin-bottom: 14px; }
+#gbit .copy .def { margin: 18px 0 16px; }
+
+/* the comparison of the two bits, laid out like a feature table over the stage: every row lines up
+   across the two columns with its name in the middle, and the particle figures sit in the slots */
+#mirror .copy { width: min(94vw, 1180px); top: 52%; }
+.cmp { display: grid; grid-template-columns: 1fr 170px 1fr; text-align: left; }
+.cmp .c { padding: 0 8px; }
+.cmp .L { padding-right: 4px; } .cmp .R { padding-left: 16px; }
+.cmp .L, .cmp .R { --bc: var(--brass); font: 400 clamp(18px, 1.35vw, 21px)/1.3 var(--serif); color: var(--soft); }
+.cmp .R { --bc: var(--cyan); color: var(--paper); }
+.cmp .row i { font-style: normal; }
+.cmp .head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 6px; }
+.cmp h3 { margin: 0; font: 400 clamp(32px, 2.8vw, 42px)/1 var(--serif); letter-spacing: -0.02em; color: var(--paper); white-space: nowrap; }
+.cmp .bsub { margin: 8px 0 0 !important; font: 600 12.5px/1 var(--label) !important; letter-spacing: 0.14em; text-transform: uppercase; color: var(--bc) !important; }
+.cmp .hfig { width: 210px; height: 88px; flex: none; overflow: visible; }
+.cmp .band { display: flex; align-items: center; gap: 14px; padding-right: 0; padding-top: 16px; padding-bottom: 8px; font: 600 12.5px/1 var(--label); letter-spacing: 0.14em; text-transform: uppercase; color: var(--bc); }
+.cmp .band::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.cmp .row { display: flex; align-items: center; gap: 12px; min-height: 36px; border-top: 1px solid var(--line); }
+.cmp .meas { display: grid; gap: 6px; padding-top: 12px; padding-bottom: 2px; border-top: 1px solid var(--line); }
+.cmp .meas b { flex: none; font: 400 clamp(30px, 2.5vw, 38px)/1 var(--serif); color: var(--bc); letter-spacing: -0.01em; }
+.cmp .meas span { font: 400 clamp(18px, 1.35vw, 21px)/1.3 var(--serif); color: var(--soft); }
+/* the middle of the six feature rows is the axis of the comparison: one block between two hairlines,
+   each cell on its row's own grid line, and particles flow out of each name to the bits that encode it */
+.cmp .M { display: flex; align-items: center; justify-content: center; margin: 0 14px; }
+.cmp .M.ax { text-align: center; font: 600 12px/1.2 var(--label); letter-spacing: 0.12em; text-transform: uppercase; color: var(--paper);
+  background: color-mix(in srgb, var(--paper) 4%, transparent); border: 1px solid var(--line); border-bottom: 0; }
+.cmp .M.ax:has(+ .R + .band) { border-bottom: 1px solid var(--line); }
+.cmp .mk { flex: none; width: 1.2em; font: 600 15px/1 var(--label); color: var(--bc); }
+.cmp .mk.no, .cmp .none { color: var(--dim); }
+.cmp .row .mk:empty { visibility: hidden; }
+.cmp .fig { display: flex; align-items: center; justify-content: center; gap: 34px; height: 138px; }
+.cmp .fig .slot { width: 200px; height: 134px; flex: none; }
+.cmp .fig p { margin: 0 !important; font: 400 clamp(26px, 2.2vw, 34px)/1.1 var(--serif) !important; color: var(--bc) !important; }
+.hfig .ax { stroke: var(--soft); stroke-width: 1.6; fill: none; }
+.hfig .dash { stroke: var(--brass); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.hfig .p0 { fill: var(--soft); } .hfig .p1 { fill: var(--brass); }
+.hfig text { fill: var(--paper); font: 600 16px var(--label); text-anchor: middle; }
+.hfig .note { font: 500 14px var(--label); fill: var(--soft); text-anchor: start; }
+.hfig .ring { fill: none; stroke: var(--cyan); stroke-width: 2; }
+.hfig .corner { fill: none; stroke: var(--soft); stroke-width: 1.2; }
+.hfig .sym { fill: var(--coral); } .hfig .per { fill: var(--cyan); }
+.hfig .turn { fill: none; stroke: var(--math); stroke-width: 2; }
+
+/* Section openers: the question alone on the dark stage, then the title, then the figure */
+.step.reveal .intro-title { opacity: 0; transform: scale(0.94); transition: opacity 1.1s ease, transform 1.4s ease; }
+.step.reveal.is-active .intro-title { opacity: 1; transform: none; transition-delay: 1.8s; }
+h1.intro-title.long { font-size: clamp(54px, 6.6vw, 108px); }
+.lbl.reveal { transition-delay: 2.6s; }
+html.still .step.reveal .intro-title { opacity: 1; transform: none; transition: none; }
+html.still .lbl.reveal { transition-delay: 0s; }
+#law .copy .def { margin: 12px 0 0; }
+
+/* the bar under every card of a section map */
+.arcnav { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.arcnav a { padding: 8px 16px; border: 1px solid var(--line); border-radius: 999px; font: 500 14.5px/1.2 var(--label); color: var(--soft); text-decoration: none; transition: border-color 0.2s, color 0.2s; }
+.arcnav a:hover, .arcnav a:focus-visible { border-color: var(--cyan); color: var(--cyan); outline: none; }
+.arcnav a + a { color: var(--paper); }
+
+/* the wall of names: who found part of the object, and under which name */
+#names .copy { width: min(94vw, 1200px); }
+.copy p.names-sub { margin: 0 auto 24px; font-size: clamp(17px, 1.3vw, 20px); }
+.names { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0 28px; text-align: left; }
+.names .nm { display: grid; grid-template-columns: 1fr auto; column-gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); }
+.names .nm b { font: 500 clamp(17px, 1.3vw, 20px)/1.2 var(--serif); color: var(--paper); }
+.names .nm .yr { font: 600 12px/1.6 var(--label); color: var(--dim); }
+.names .nm span:last-child { grid-column: 1 / -1; font: 400 15.5px/1.3 var(--serif); color: var(--soft); }
+.hotlist.links a { color: var(--cyan); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--cyan) 35%, transparent); }
+.hotlist.links a:hover { border-bottom-color: var(--cyan); }

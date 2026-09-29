@@ -1,9 +1,9 @@
 /* Stage engine: one particle field behind a snap-scrolling deck.
  *
  * Adapted from closure-verification/docs/horizon-webgl.js. Every step of the
- * deck names a scene (scenes.js); when the step changes, the particles burst
- * and spring into the new figure, and the ones the figure does not use drift
- * as dust. Figure labels are HTML placed in the same coordinates.
+ * deck names a scene (scenes.js); when the step changes, the particles glide
+ * into the new figure and settle there on a soft spring, and the ones the
+ * figure does not use drift as dust. Figure labels are HTML placed in the same coordinates.
  *
  * ?still, or a reduced-motion preference, snaps every figure into place and
  * freezes animated scenes at their stillT frame. One wheel or trackpad gesture
@@ -25,7 +25,11 @@
   if (STILL) document.documentElement.classList.add("still");
 
   const NP = 1800;                                // particles
-  const SPRING = 0.07, DAMP = 0.84, BURST = 4.2;  // pull to target, velocity kept per frame, kick on step change
+  const SPRING = 0.07, DAMP = 0.84;               // pull to target, velocity kept per frame: a springy, floating settle
+  /* for the first ARRIVE seconds after a step change the motion starts overdamped (pull 0.04, 68% kept,
+     both rates real) and eases into the spring above, so particles glide into the new figure without
+     the first overshoot, then keep the spring's floating feel */
+  const ARRIVE = 1.2;
   const NARROW = 880;                             // below this width, figure on top and words below
   /* Two palettes under the same names. Night draws light on black and adds light where
      particles overlap; the light theme draws ink and gold on paper and lays them over each other. */
@@ -75,6 +79,9 @@
     return { cx: fx + fw / 2, cy: fy + fh / 2, u: Math.min(fw / (W < NARROW ? 3.9 : 3.4), fh / 2.3) };
   }
   const toX = x => frame.cx + x * frame.u, toY = y => frame.cy - y * frame.u;
+  /* screen pixels to stage units, for scenes that sit their figures inside the page's own boxes */
+  window.GTC.toStage = (px, py) => [(px - frame.cx) / frame.u, (frame.cy - py) / frame.u];
+  window.GTC.unit = () => frame.u;
 
   function resize() {
     const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -85,7 +92,7 @@
     if (activeIndex < 0) { wasNarrow = isNarrow; return; }
     frame = computeFrame(steps[activeIndex]);
     if (isNarrow !== wasNarrow) {           // some scenes lay out differently on phones
-      wasNarrow = isNarrow; cache.clear(); setScene(steps[activeIndex].dataset.scene, false);
+      wasNarrow = isNarrow; cache.clear(); setScene(steps[activeIndex].dataset.scene);
     } else { placeLabels(); retarget(); }
   }
 
@@ -98,7 +105,7 @@
   function setColor(i, c) { [tr[i], tg[i], tb[i]] = COLORS[c] || COLORS.ice; }
 
   /* Hand the particles to a scene: fixed points first, then flows, the rest dust. */
-  function setScene(name, burst) {
+  function setScene(name) {
     spec = build(name || "dust"); sceneT = 0;
     const pts = spec.points || [], flows = spec.flows || [];
     let k = 0, f = 0, fk = 0;
@@ -116,10 +123,6 @@
       }
     }
     retarget();
-    if (burst && !STILL) for (let i = 0; i < NP; i++) {
-      const a = Math.random() * Math.PI * 2, s = Math.random() * BURST;
-      vx[i] += Math.cos(a) * s; vy[i] += Math.sin(a) * s;
-    }
     renderLabels(spec.labels || []);
     if (STILL) render(performance.now() / 1000, 0.016, true);
   }
@@ -137,7 +140,9 @@
   document.body.appendChild(floater);
 
   function showFloat(el, def) {
-    floater.innerHTML = `<span class="f-word">${def.w}</span><p class="f-title">${def.t}</p><p class="f-body">${def.d}</p><p class="f-src">${def.s}</p>`;
+    floater.innerHTML = `<span class="f-word">${def.w}</span><p class="f-title">${def.t}</p>` +
+      (def.img ? `<img class="f-img" src="${def.img}" alt="">` : `<p class="f-body">${def.d}</p>`) + `<p class="f-src">${def.s}</p>`;
+    floater.classList.toggle("wide", !!def.img);
     floater.dataset.for = def.w; floater.hidden = false;
     const r = el.getBoundingClientRect(), fw = floater.offsetWidth, fh = floater.offsetHeight;
     let left = r.right + 18, top = r.top + r.height / 2 - fh / 2;
@@ -156,6 +161,16 @@
   }
   /* phrases in the text that carry a definition */
   document.querySelectorAll(".copy [data-def]").forEach(el => { if (DEFS[el.dataset.def]) bindFloat(el, DEFS[el.dataset.def]); });
+  /* phrases that refer back to an earlier screen: the floater shows a picture of that screen's
+     figure (docs/recall/<id>.jpg, captured from ?still) with its chapter and title, and a click
+     goes back to it */
+  document.querySelectorAll(".copy [data-recall]").forEach(el => {
+    const target = document.getElementById(el.dataset.recall);
+    if (!target) return;
+    const kicker = target.querySelector(".kicker"), title = target.querySelector("h2");
+    bindFloat(el, { w: kicker ? kicker.textContent : "earlier", t: title ? title.textContent : "", img: `recall/${target.id}.jpg`, s: "Click to go back to it" });
+    el.addEventListener("click", e => { e.preventDefault(); hideFloat(); goTo(steps.indexOf(target)); });
+  });
 
   let labelEls = [];
   function renderLabels(list) {
@@ -207,7 +222,8 @@
   /* One frame: move every particle toward its target, then draw it. snap places it there directly. */
   function render(T, dt, snap) {
     sceneT += dt;
-    const k = dt * 60, damp = Math.pow(DAMP, k);
+    const k = dt * 60, ease = Math.min(1, sceneT / ARRIVE);
+    const spring = 0.04 + (SPRING - 0.04) * ease, damp = Math.pow(0.68 + (DAMP - 0.68) * ease, k);
     const flows = spec.flows || [], spin = spec.spin, pulse = spec.pulse;
     const lit = pulse ? Math.floor(sceneT / pulse.period) % pulse.count : -1;
     const tc = STILL && spec.stillT !== undefined ? spec.stillT : spec.period ? sceneT % spec.period : sceneT;
@@ -237,8 +253,8 @@
       }
       if (snap) { px[i] = gx; py[i] = gy; vx[i] = vy[i] = 0; }
       else {
-        vx[i] = (vx[i] + (gx - px[i]) * SPRING * k) * damp;
-        vy[i] = (vy[i] + (gy - py[i]) * SPRING * k) * damp;
+        vx[i] = (vx[i] + (gx - px[i]) * spring * k) * damp;
+        vy[i] = (vy[i] + (gy - py[i]) * spring * k) * damp;
         px[i] += vx[i] * k; py[i] += vy[i] * k;
       }
       const e = snap ? 1 : Math.min(1, 0.08 * k);
@@ -279,17 +295,21 @@
     if (s.classList.contains("topic")) return;
     if (!parts.length || parts[parts.length - 1].id !== s.dataset.part) parts.push({ id: s.dataset.part, label: s.dataset.partLabel, num: s.dataset.partNum, first: i });
   });
+  /* a section's rail button lands on its opener (the screen with the big title) when it has one */
+  parts.forEach(p => {
+    const k = steps.findIndex((s, j) => j >= p.first && s.dataset.part === p.id && !s.classList.contains("topic") && s.querySelector(".intro-title"));
+    if (k >= 0) p.first = k;
+  });
   rail.innerHTML = parts.map(p => `<button type="button" data-first="${p.first}"><span>${p.num} ${p.label}</span><i></i></button>`).join("");
   rail.querySelectorAll("button").forEach(b => b.addEventListener("click", () => goTo(+b.dataset.first)));
 
   function activate(i) {
     if (i === activeIndex) return;
     hideFloat();
-    const burst = activeIndex >= 0;
     activeIndex = i;
     steps.forEach((s, j) => s.classList.toggle("is-active", j === i));
     frame = computeFrame(steps[i]);
-    setScene(steps[i].dataset.scene, burst);
+    setScene(steps[i].dataset.scene);
     const part = steps[i].dataset.part;
     rail.querySelectorAll("button").forEach(b => b.setAttribute("aria-current", steps[+b.dataset.first].dataset.part === part));
   }
@@ -302,7 +322,20 @@
     for (let j = i; j >= 0 && j < steps.length; j += dir) if (!steps[j].hidden) return j;
     return activeIndex;
   }
-  const step = dir => goTo(visibleFrom(activeIndex + dir, dir));
+  /* Inside a section map the wheel and keys move through the cards of the open part, each opening in
+     place, and past either end of the part they return to its map; from the map, going down closes the
+     open card and continues past the section. */
+  const step = dir => {
+    const cur = steps[activeIndex];
+    if (cur && cur.dataset.arc) {
+      const list = arcs[cur.dataset.arc], to = list[list.indexOf(cur) + dir];
+      if (to) { openTopic(to.id, false); markSeen(to.id); }
+      else goTo(steps.findIndex(s => s.id === cur.dataset.hub));
+      return;
+    }
+    if (dir > 0 && cur && steps.some(s => s.dataset.hub === cur.id)) steps.forEach(s => { if (s.dataset.arc) s.hidden = true; });
+    goTo(visibleFrom(activeIndex + dir, dir));
+  };
   function openTopic(id, jump) {
     let target = -1;
     steps.forEach((s, j) => { if (s.classList.contains("topic")) { s.hidden = s.id !== id; if (s.id === id) target = j; } });
@@ -311,6 +344,36 @@
     else goTo(target);
     onScroll();                                                    // the next topic can open exactly where the last one was
   }
+  /* Section maps. A step with data-arc is a card of one part of a section map (data-hub names the map
+     step): each card gets a bar back to its map and on to the next card of the same part. Any in-page
+     link to a step opens it, a hidden card right where it sits, and the map marks the cards already read. */
+  const arcs = {};
+  steps.forEach(s => { if (s.dataset.arc) (arcs[s.dataset.arc] ||= []).push(s); });
+  Object.values(arcs).forEach(list => list.forEach((s, k) => {
+    const next = list[k + 1], nav = document.createElement("nav");
+    nav.className = "arcnav";
+    nav.innerHTML = `<a href="#${s.dataset.hub}">← Back to the map</a>` +
+      (next ? `<a href="#${next.id}">Next: ${next.querySelector("h2").textContent} →</a>` : "");
+    s.querySelector(".copy").appendChild(nav);
+  }));
+  let seen = [];
+  try { seen = JSON.parse(sessionStorage.getItem("gtc-seen") || "[]"); } catch (e) {}
+  const markSeen = id => {
+    if (!seen.includes(id)) { seen.push(id); try { sessionStorage.setItem("gtc-seen", JSON.stringify(seen)); } catch (e) {} }
+    document.querySelectorAll(`.hub a[href="#${id}"]`).forEach(a => a.classList.add("seen"));
+  };
+  seen.forEach(markSeen);
+  document.addEventListener("click", ev => {
+    const a = ev.target.closest('a[href^="#"]');
+    if (!a) return;
+    const id = a.getAttribute("href").slice(1), j = steps.findIndex(s => s.id === id);
+    if (j < 0) return;
+    ev.preventDefault();
+    if (steps[j].classList.contains("topic")) { openTopic(id, false); if (steps[j].dataset.arc) markSeen(id); }
+    else goTo(j);
+    try { history.replaceState(null, "", "#" + id); } catch (e) {}
+  });
+
   /* the light and dark themes: recolour the particles by re-handing them the current scene */
   const themeButton = document.getElementById("theme");
   function setTheme(t) {
@@ -319,7 +382,7 @@
     themeButton.setAttribute("aria-label", t === "light" ? "Switch to the dark theme" : "Switch to the light theme");
     try { localStorage.setItem("gtc-theme", t); } catch (e) {}
     for (let i = 0; i < NP; i++) if (mode[i] === 0) setColor(i, "dim");
-    if (activeIndex >= 0) setScene(steps[activeIndex].dataset.scene, false);
+    if (activeIndex >= 0) setScene(steps[activeIndex].dataset.scene);
   }
   themeButton.addEventListener("click", () => setTheme(theme === "light" ? "dark" : "light"));
   themeButton.textContent = theme === "light" ? "Dark" : "Light";
@@ -369,7 +432,7 @@
 
   resize();
   const start = steps.findIndex(s => s.id === location.hash.slice(1));
-  if (start > 0 && steps[start].classList.contains("topic")) openTopic(steps[start].id, true);
+  if (start > 0 && steps[start].classList.contains("topic")) { openTopic(steps[start].id, true); if (steps[start].dataset.arc) markSeen(steps[start].id); }
   else if (start > 0) deck.scrollTop = steps[start].offsetTop;
   onScroll();
   requestAnimationFrame(tick);
@@ -378,7 +441,7 @@
   if (document.fonts && document.fonts.load) {
     Promise.all([document.fonts.load('500 240px "EB Garamond"'), document.fonts.ready]).then(() => {
       clearText(); cache.clear();
-      if (activeIndex >= 0) setScene(steps[activeIndex].dataset.scene, false);
+      if (activeIndex >= 0) setScene(steps[activeIndex].dataset.scene);
     }).catch(() => {});
   }
 })();

@@ -1691,7 +1691,7 @@
     return {
       points, flows,
       labels: [
-        { x: 0, y: -R - 0.14, html: "closure", cls: "role c-mint" },
+        { x: 0, y: -R - 0.14, html: "identity", cls: "role c-math" },
         ...ITEMS.flatMap((it, k) => [
           { x: it.x, y: it.y, html: it.sym, cls: "example", g: k },
           { x: it.x, y: it.y - 0.31, html: it.name, cls: "tag", g: k }
@@ -2860,6 +2860,307 @@
     });
   };
 
+  /* The symbols and what they carry: above, the word crosses and arrives letter for letter (Level A);
+     below, the lighter it was about stays lit on the sender's side and arrives only as an empty outline (Level B). */
+  SCENES.parrot = () => {
+    const xa = -0.95, xb = 0.95, ya = 0.42, yb = -0.38;
+    const lighter = (x, y) => [...segPts(x - 0.07, y - 0.16, x + 0.07, y - 0.16, 8), ...segPts(x - 0.07, y - 0.16, x - 0.07, y + 0.08, 12), ...segPts(x + 0.07, y - 0.16, x + 0.07, y + 0.08, 12), ...segPts(x - 0.07, y + 0.08, x + 0.07, y + 0.08, 8)];
+    return tScene({
+      stillT: 2,
+      shapes: [
+        { pts: segPts(xa + 0.28, ya, xb - 0.28, ya, 40), c: "dim", a: 0.25, s: 0.6, at: 0 },
+        { pts: lighter(xa, yb), c: "brass", a: 0.95, s: 1, at: 0 },
+        { pts: blobPts(xa, yb + 0.16, 0.025, 14), c: "gold", a: 1, s: 1.2, at: 0 },
+        { pts: lighter(xb, yb), c: "dim", a: 0.3, s: 0.8, at: 0 },
+        { pts: segPts(xa + 0.28, yb, xb - 0.28, yb, 40), c: "dim", a: 0.12, s: 0.5, at: 0 }
+      ],
+      streams: [{ path: u => [xa + 0.28 + (xb - xa - 0.56) * u, ya], n: 8, speed: 0.35, c: "cyan", ends: true, at: 0 }],
+      labels: [
+        { x: xa, y: ya, html: "“lighter”", cls: "example c-math" }, { x: xb, y: ya, html: "“lighter”", cls: "example c-math" },
+        { x: 0, y: ya + 0.2, html: "Level A: the symbols arrive", cls: "tag" },
+        { x: 0, y: yb + 0.2, html: "Level B: what they carry", cls: "tag" },
+        { x: xa, y: yb - 0.32, html: "what I meant", cls: "example" }, { x: xb, y: yb - 0.32, html: "what a parrot gets", cls: "example" }
+      ]
+    });
+  };
+
+  /* How bits become complete: one bit, two messages; two bits, four; three bits, eight, each place worth
+     twice the next, so two symbols and position reach every whole number. */
+  SCENES.bitcount = () => {
+    const rows = [[1, 0.62], [2, 0.18], [3, -0.34]], shapes = [], labels = [];
+    rows.forEach(([n, y], r) => {
+      const m = 1 << n, w = 0.3, x0 = -((m - 1) * w) / 2 - 0.1;
+      for (let k = 0; k < m; k++) {
+        const x = x0 + k * w;
+        shapes.push({ pts: ringPts(x, y, 0.1, 30), c: "brass", a: 0.75, s: 0.8, at: r * 0.6 + k * 0.05 });
+        labels.push({ x, y: y - 0.2, html: k.toString(2).padStart(n, "0"), cls: "slot" });
+      }
+      labels.push({ x: -1.62, y, html: `${n} bit${n > 1 ? "s" : ""}`, cls: "tag left" });
+      labels.push({ x: 1.62, y, html: `${m} messages`, cls: "example left-of" });
+    });
+    labels.push({ x: 0, y: -0.86, html: "each bit added doubles the messages", cls: "example" });
+    return tScene({ shapes, labels, stillT: 3 });
+  };
+
+  /* Every bit is somewhere: four physical bits, a voltage, a magnet, a pit on a disc, a punched hole. */
+  SCENES.bitforms = () => {
+    const X = [-1.05, -0.35, 0.35, 1.05], y = 0.1, shapes = [], streams = [];
+    shapes.push({ pts: [...segPts(X[0] - 0.22, y - 0.15, X[0] - 0.05, y - 0.15, 10), ...segPts(X[0] - 0.05, y - 0.15, X[0] - 0.05, y + 0.15, 14), ...segPts(X[0] - 0.05, y + 0.15, X[0] + 0.22, y + 0.15, 14)], c: "cyan", a: 0.9, s: 0.9, at: 0 });
+    shapes.push({ pts: [...segPts(X[1], y - 0.18, X[1], y + 0.18, 18), ...segPts(X[1] - 0.06, y + 0.11, X[1], y + 0.18, 4), ...segPts(X[1] + 0.06, y + 0.11, X[1], y + 0.18, 4)], c: "coral", a: 0.95, s: 1, at: 0.15 });
+    shapes.push({ pts: [...ringPts(X[2], y, 0.2, 60), ...blobPts(X[2] + 0.1, y + 0.05, 0.012, 6)], c: "violet", a: 0.8, s: 0.85, at: 0.3 });
+    shapes.push({ pts: [...segPts(X[3] - 0.16, y - 0.2, X[3] + 0.16, y - 0.2, 12), ...segPts(X[3] - 0.16, y + 0.2, X[3] + 0.16, y + 0.2, 12), ...segPts(X[3] - 0.16, y - 0.2, X[3] - 0.16, y + 0.2, 14), ...segPts(X[3] + 0.16, y - 0.2, X[3] + 0.16, y + 0.2, 14), ...ringPts(X[3], y + 0.05, 0.045, 14)], c: "brass", a: 0.85, s: 0.85, at: 0.45 });
+    const names = ["a voltage on a wire", "a magnet on a disk", "a pit on a disc", "a hole in a card"];
+    return tScene({
+      shapes, stillT: 2,
+      labels: [...X.map((x, k) => ({ x, y: y - 0.36, html: names[k], cls: "example" })), { x: 0, y: -0.86, html: "every bit sits somewhere and takes time to travel", cls: "example" }]
+    });
+  };
+
+  /* Identity as a check: three different things placed round the circle are carried through a full
+     rotation together, and each lands back on itself, lit as it returns. */
+  SCENES.greturn = () => {
+    const R = 0.6, cy = 0.02, P = 6, MOVE = 4;
+    const tri = Array.from({ length: 30 }, (_, k) => { const s = Math.floor(k / 10), u = (k % 10) / 10, A = [[0, 0.1], [-0.09, -0.06], [0.09, -0.06]], a = A[s], b = A[(s + 1) % 3]; return [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u]; });
+    const sq = Array.from({ length: 32 }, (_, k) => { const s = Math.floor(k / 8), u = (k % 8) / 8, A = [[-0.08, -0.08], [0.08, -0.08], [0.08, 0.08], [-0.08, 0.08]], a = A[s], b = A[(s + 1) % 4]; return [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u]; });
+    const sp = Array.from({ length: 30 }, (_, k) => { const u = k / 29, a = u * 2.2 * TAU, r = 0.02 + 0.08 * u; return [r * Math.cos(a), r * Math.sin(a)]; });
+    const shapes = [[tri, Math.PI / 2, "coral"], [sq, Math.PI / 2 + TAU / 3, "cyan"], [sp, Math.PI / 2 + 2 * TAU / 3, "violet"]];
+    const pts = [], meta = [];
+    shapes.forEach(([pp, a0, c], s) => { pp.forEach(p => { pts.push({ x: 0, y: cy, c, a: 0, s: 1 }); meta.push({ s, p, a0 }); }); for (let k = 0; k < 30; k++) { pts.push({ x: 0, y: cy, c: "gold", a: 0, s: 0.9 }); meta.push({ s, ring: k / 30 * TAU, a0 }); } });
+    const ang = t => { const c = t % P; return c < MOVE ? TAU * (1 - Math.cos(Math.PI * c / MOVE)) / 2 : TAU; };
+    return tScene({
+      stillT: 4.6,
+      shapes: [{ pts: ringPts(0, cy, R, 120), c: "ice", a: 0.25, s: 0.7, at: 0 }, { pts: blobPts(0, cy, 0.014, 8), c: "paper", a: 0.9, s: 1.1, at: 0 }],
+      labels: [{ x: 0, y: -0.98, html: "carried through a full rotation, each one comes back: <i>e</i><sup>2πi</sup><i>A</i> = <i>A</i>", cls: "example" }],
+      custom: {
+        points: pts,
+        update: (t, out, o) => {
+          const a = ang(t), c = t % P, glow = c >= MOVE ? Math.max(0, 1 - (c - MOVE) / (P - MOVE)) : 0;
+          meta.forEach((m, k) => {
+            const th = m.a0 + a, cx = R * Math.cos(th), y0 = cy + R * Math.sin(th);
+            if (m.ring !== undefined) { const r = 0.13 + 0.06 * (1 - glow); out[o + k] = { x: R * Math.cos(m.a0) + r * Math.cos(m.ring), y: cy + R * Math.sin(m.a0) + r * Math.sin(m.ring), a: 0.9 * glow }; }
+            else out[o + k] = { x: cx + m.p[0], y: y0 + m.p[1], a: 0.95 };
+          });
+        }
+      }
+    });
+  };
+
+  /* Meaning has a shape: the same arrangement of relations held in two frames. The second copy is
+     turned and slightly off; a rotation brings it onto the first, and what is left over shows as the gap. */
+  SCENES.gshape = () => {
+    const base = [[0, 0.32], [0.26, 0.12], [0.18, -0.24], [-0.16, -0.26], [-0.3, 0.06], [0.04, 0.02]].map(([x, y]) => [x * 1.55, y * 1.55]);
+    const names = ["love", "care", "loss", "you", "home", "time"];
+    const L = [-0.8, 0.12], Rr = [0.8, 0.12], P = 6, tilt = 1.1;
+    const jit = base.map(() => [gauss() * 0.035, gauss() * 0.035]);
+    const pts = [], meta = [];
+    const edges = [[0, 1], [0, 3], [1, 2], [2, 3], [3, 4], [4, 0], [5, 0], [5, 2]];
+    [L, Rr].forEach((c, side) => {
+      base.forEach((p, i) => { for (let q = 0; q < 8; q++) { pts.push({ x: c[0], y: c[1], c: side ? "cyan" : "brass", a: 0, s: 1.1 }); meta.push({ side, i, j: [gauss() * 0.012, gauss() * 0.012] }); } });
+      edges.forEach(([a, b]) => { for (let q = 0; q < 12; q++) { pts.push({ x: c[0], y: c[1], c: side ? "cyan" : "brass", a: 0, s: 0.6 }); meta.push({ side, e: [a, b], u: q / 11 }); } });
+    });
+    const turnBy = t => { const c = t % P; return c < 1.5 ? tilt : c < 4 ? tilt * (1 - (1 - Math.cos(Math.PI * (c - 1.5) / 2.5)) / 2) : 0; };
+    const place = (side, i, t) => {
+      const [x, y] = base[i];
+      if (!side) return [L[0] + x, L[1] + y];
+      const a = turnBy(t), d = jit[i], xx = x + d[0], yy = y + d[1];
+      return [Rr[0] + xx * Math.cos(a) - yy * Math.sin(a), Rr[1] + xx * Math.sin(a) + yy * Math.cos(a)];
+    };
+    return tScene({
+      stillT: 4.5,
+      labels: [
+        ...base.map((p, i) => ({ x: L[0] + p[0] * 1.28, y: L[1] + p[1] * 1.28, html: names[i], cls: "example" })),
+        { x: L[0], y: -0.62, html: "my frame", cls: "tag" }, { x: Rr[0], y: -0.62, html: "your frame", cls: "tag" },
+        { x: 0, y: -0.86, html: "", cls: "example", live: t => (t % P) < 4 ? "the same shape, turned: a rotation brings it back" : "what is left over is the meaning that was lost" }
+      ],
+      custom: {
+        points: pts,
+        update: (t, out, o) => {
+          meta.forEach((m, k) => {
+            if (m.i !== undefined) { const [x, y] = place(m.side, m.i, t); out[o + k] = { x: x + m.j[0], y: y + m.j[1], a: 0.95 }; }
+            else { const [x1, y1] = place(m.side, m.e[0], t), [x2, y2] = place(m.side, m.e[1], t); out[o + k] = { x: x1 + (x2 - x1) * m.u, y: y1 + (y2 - y1) * m.u, a: 0.35 }; }
+          });
+        }
+      }
+    });
+  };
+
+  /* Markov's letters: a stream of vowels and consonants where each depends on the last (his Onegin
+     transition rates), and below it the running share of vowels settling all the same, near 0.43. */
+  SCENES.markov = () => {
+    const N = 26, M = 160, pVV = 0.128, pVC = 0.663, X0 = -1.3, X1 = 1.3, yS = 0.55, gy0 = -0.75, gh = 0.95;
+    let st = 0, seq = [];
+    const next = () => { st = Math.random() < (st ? pVV : pVC) ? 1 : 0; return st; };
+    for (let k = 0; k < 4000; k++) seq.push(next());
+    const pts = [];
+    for (let k = 0; k < N; k++) pts.push({ x: 0, y: yS, c: "dim", a: 0, s: 1.4 });
+    for (let k = 0; k < M; k++) pts.push({ x: 0, y: 0, c: "gold", a: 0, s: 0.95 });
+    const rate = 9, gx = n => X0 + (X1 - X0) * Math.log(1 + n) / Math.log(4001), gyv = v => gy0 + gh * v;
+    return tScene({
+      stillT: 380,
+      shapes: [{ pts: segPts(X0, gy0, X1, gy0, 60), c: "dim", a: 0.35, s: 0.6, at: 0 }, { pts: segPts(X0, gyv(0.432), X1, gyv(0.432), 70), c: "cyan", a: 0.35, s: 0.55, at: 0 }],
+      labels: [
+        { x: X0, y: yS + 0.16, html: "each letter depends on the last", cls: "tag left" },
+        { x: X1 + 0.04, y: gyv(0.432), html: "0.43", cls: "example left" },
+        { x: X0, y: gy0 + gh + 0.08, html: "share of vowels so far", cls: "tag left" },
+        { x: 0, y: -0.98, html: "", cls: "example", live: t => { const n = Math.min(4000, Math.floor(t * rate) + 1); let v = 0; for (let k = 0; k < n; k++) v += seq[k]; return `${n} letters, vowels ${(v / n).toFixed(3)}`; } }
+      ],
+      custom: {
+        points: pts,
+        update: (t, out, o) => {
+          const n = Math.min(4000, Math.floor(t * rate) + 1);
+          for (let k = 0; k < N; k++) { const idx = Math.max(0, n - N + k), on = n - N + k >= 0; out[o + k] = { x: X0 + (X1 - X0) * k / (N - 1), y: yS, a: on ? 0.95 : 0, c: seq[idx] ? "cyan" : "brass" }; }
+          let v = 0; const cum = []; for (let k = 0; k < n; k++) { v += seq[k]; cum.push(v / (k + 1)); }
+          for (let k = 0; k < M; k++) { const m = Math.max(1, Math.round(Math.exp(Math.log(n) * (k + 1) / M))), idx = Math.min(cum.length, m) - 1; out[o + N + k] = { x: gx(idx + 1), y: gyv(cum[idx]), a: 0.85 }; }
+        }
+      }
+    });
+  };
+
+  /* Four letters for every living thing: a double helix turning, its rungs the four bases in their two
+     pairs, and the same four letters spelling a bacterium, a tree and a person. */
+  SCENES.dnahelix = () => {
+    const N = 26, X0 = -1.45, X1 = 0.35, R = 0.24, cy = 0.12, S = 140, pts = [], meta = [];
+    const BASES = ["A", "T", "C", "G"], COL = { A: "coral", T: "cyan", C: "mint", G: "brass" }, PAIR = { A: "T", T: "A", C: "G", G: "C" };
+    const seq = Array.from({ length: N }, () => BASES[Math.floor(Math.random() * 4)]);
+    for (let s2 = 0; s2 < 2; s2++) for (let k = 0; k < S; k++) { pts.push({ x: 0, y: cy, c: "ice", a: 0, s: 0.9 }); meta.push({ strand: s2, u: k / (S - 1) }); }
+    for (let k = 0; k < N; k++) for (let q = 0; q < 7; q++) { const b = q < 3.5 ? seq[k] : PAIR[seq[k]]; pts.push({ x: 0, y: cy, c: COL[b], a: 0, s: 0.95 }); meta.push({ k, rung: (q + 0.5) / 7 }); }
+    const at3 = (u, side, t) => { const a = u * 3.6 * TAU + t * 0.8 + (side ? Math.PI : 0); return [X0 + (X1 - X0) * u, cy + R * Math.cos(a), Math.sin(a)]; };
+    return tScene({
+      stillT: 2,
+      labels: [
+        { x: 0.6, y: 0.5, html: "A · T · C · G", cls: "math c-math left" },
+        { x: 0.6, y: 0.32, html: "four letters, two pairs", cls: "example left" },
+        { x: 0.6, y: 0.0, html: "a bacterium", cls: "example left" }, { x: 0.6, y: -0.17, html: "a tree", cls: "example left" }, { x: 0.6, y: -0.34, html: "you", cls: "example left" },
+        { x: 0, y: -0.9, html: "agree on four letters, and everything alive is written with them", cls: "example" }
+      ],
+      custom: {
+        points: pts,
+        update: (t, out, o) => {
+          meta.forEach((m, i) => {
+            if (m.strand !== undefined) { const [x, y, z] = at3(m.u, m.strand, t); out[o + i] = { x, y, a: 0.25 + 0.7 * (z + 1) / 2 }; }
+            else { const u = m.k / (N - 1), p1 = at3(u, 0, t), p2 = at3(u, 1, t), y = p1[1] + (p2[1] - p1[1]) * m.rung, z = p1[2] + (p2[2] - p1[2]) * m.rung; out[o + i] = { x: p1[0], y, a: 0.3 + 0.6 * (z + 1) / 2 }; }
+          });
+        }
+      }
+    });
+  };
+
+  /* Science almost does it: every field checks identity against a reference of its own, each landing
+     near the shared centre and none exactly on it; the dashed centre is the one law they could all share. */
+  SCENES.galmost = () => {
+    const F = [["mathematics", "gold"], ["physics", "cyan"], ["engineering", "brass"], ["computing", "violet"], ["biology", "coral"]];
+    const shapes = [{ pts: ringPts(0, 0.02, 0.18, 70), c: "paper", a: 0.25, s: 0.6, at: 0 }, { pts: blobPts(0, 0.02, 0.012, 6), c: "gold", a: 0.9, s: 1.2, at: 0 }];
+    const streams = [], labels = [];
+    F.forEach(([n, c], k) => {
+      const a = Math.PI / 2 - k / F.length * TAU, x = 1.15 * Math.cos(a), y = 0.02 + 0.78 * Math.sin(a);
+      const off = [0.11 * Math.cos(a + 1.1), 0.02 + 0.11 * Math.sin(a + 1.1)];
+      shapes.push({ pts: ringPts(x, y, 0.09, 30), c, a: 0.8, s: 0.8, at: 0 });
+      shapes.push({ pts: ringPts(off[0], off[1], 0.03, 14), c, a: 0.9, s: 0.8, at: 0 });
+      const sx = x - 0.12 * Math.cos(a), sy = y - 0.12 * Math.sin(a);
+      streams.push({ path: u => [sx + (off[0] - sx) * u, sy + (off[1] - sy) * u], n: 5, speed: 0.3, c, ends: true, at: 0 });
+      labels.push({ x, y: y >= 0.02 ? y + 0.16 : y - 0.16, html: n, cls: "tag" });
+    });
+    labels.push({ x: 0, y: -0.98, html: "each field checks against a reference of its own, almost the same one", cls: "example" });
+    return tScene({ shapes, streams, labels, stillT: 2 });
+  };
+
+  /* One object, two readings: a wheel turning in space, and beside it the same rotation written in
+     the complex plane as e^{iθ}, the two marks joined so they move together. */
+  SCENES.gtwoviews = () => {
+    const W = [-0.78, 0.04], P = [0.78, 0.04], R = 0.42, pts = [], meta = [];
+    for (let k = 0; k < 90; k++) { pts.push({ x: 0, y: 0, c: "brass", a: 0, s: 0.85 }); meta.push({ w: "rim", u: k / 90 }); }
+    for (let s2 = 0; s2 < 6; s2++) for (let q = 0; q < 8; q++) { pts.push({ x: 0, y: 0, c: "brass", a: 0, s: 0.6 }); meta.push({ w: "spoke", s: s2, u: (q + 1) / 8 }); }
+    for (let k = 0; k < 8; k++) { pts.push({ x: 0, y: 0, c: "gold", a: 0, s: 1.5 }); meta.push({ w: "wmark" }); }
+    for (let k = 0; k < 8; k++) { pts.push({ x: 0, y: 0, c: "gold", a: 0, s: 1.5 }); meta.push({ w: "pmark" }); }
+    for (let k = 0; k < 24; k++) { pts.push({ x: 0, y: 0, c: "cyan", a: 0, s: 0.9 }); meta.push({ w: "radius", u: k / 23 }); }
+    for (let k = 0; k < 30; k++) { pts.push({ x: 0, y: 0, c: "dim", a: 0, s: 0.6 }); meta.push({ w: "link", u: k / 29 }); }
+    const tilt = 1.05;
+    return tScene({
+      stillT: 1.4,
+      shapes: [
+        { pts: ringPts(P[0], P[1], R, 110), c: "cyan", a: 0.45, s: 0.75, at: 0 },
+        { pts: segPts(P[0] - R - 0.12, P[1], P[0] + R + 0.12, P[1], 40), c: "dim", a: 0.4, s: 0.6, at: 0 },
+        { pts: segPts(P[0], P[1] - R - 0.12, P[0], P[1] + R + 0.12, 40), c: "dim", a: 0.4, s: 0.6, at: 0 }
+      ],
+      labels: [
+        { x: W[0], y: -0.62, html: "a thing that turns", cls: "tag" },
+        { x: P[0], y: -0.62, html: "the same rotation, written down", cls: "tag" },
+        { x: P[0] + R + 0.2, y: P[1] - 0.08, html: "1", cls: "math" }, { x: P[0] + 0.08, y: P[1] + R + 0.16, html: "<i>i</i>", cls: "math" },
+        { x: 0, y: -0.92, html: "physics is the turning, mathematics is <i>e</i><sup><i>iθ</i></sup>", cls: "example" }
+      ],
+      custom: {
+        points: pts,
+        update: (t, out, o) => {
+          const th = t * 0.8;
+          const wp = a => { const [X, Y] = view3(R * Math.cos(a), 0, R * Math.sin(a), 0, tilt); return [W[0] + X, W[1] + Y]; };
+          const mw = wp(th), mp = [P[0] + R * Math.cos(th), P[1] + R * Math.sin(th)];
+          meta.forEach((m, k) => {
+            let x, y, a = 0.85;
+            if (m.w === "rim") [x, y] = wp(m.u * TAU);
+            else if (m.w === "spoke") { const q = wp(th + m.s / 6 * TAU); x = W[0] + (q[0] - W[0]) * m.u; y = W[1] + (q[1] - W[1]) * m.u; a = 0.5; }
+            else if (m.w === "wmark") { x = mw[0] + gauss() * 0.012; y = mw[1] + gauss() * 0.012; a = 1; }
+            else if (m.w === "pmark") { x = mp[0] + gauss() * 0.012; y = mp[1] + gauss() * 0.012; a = 1; }
+            else if (m.w === "radius") { x = P[0] + (mp[0] - P[0]) * m.u; y = P[1] + (mp[1] - P[1]) * m.u; a = 0.8; }
+            else { x = mw[0] + (mp[0] - mw[0]) * m.u; y = mw[1] + (mp[1] - mw[1]) * m.u; a = 0.3; }
+            out[o + k] = { x, y, a };
+          });
+        }
+      }
+    });
+  };
+
+  /* Physics computed from rotations: a field of small rotations, each turning toward its neighbours
+     while noise fades, so domains form and settle and the defects between them stay closed. */
+  SCENES.gfield = () => {
+    const NX = 15, NY = 9, SP = 0.17, F = 260, P = 11, x0 = -((NX - 1) * SP) / 2, y0 = -((NY - 1) * SP) / 2 + 0.06;
+    let th = Array.from({ length: NX * NY }, () => Math.random() * TAU);
+    const frames = [th.slice()];
+    for (let f = 1; f < F; f++) {
+      const noise = 0.9 * Math.max(0, 1 - f / (F * 0.7)), nx = th.slice();
+      for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) {
+        let sx = 0, sy = 0;
+        [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([di, dj]) => { const a = i + di, b = j + dj; if (a >= 0 && a < NX && b >= 0 && b < NY) { sx += Math.cos(th[b * NX + a]); sy += Math.sin(th[b * NX + a]); } });
+        const target = Math.atan2(sy, sx), cur = th[j * NX + i];
+        let d = Math.atan2(Math.sin(target - cur), Math.cos(target - cur));
+        nx[j * NX + i] = cur + 0.25 * d + noise * (Math.random() - 0.5);
+      }
+      th = nx; frames.push(th.slice());
+    }
+    const pts = [], meta = [];
+    for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) for (let q = 0; q < 5; q++) { pts.push({ x: 0, y: 0, c: q === 4 ? "gold" : "cyan", a: 0, s: q === 4 ? 1.1 : 0.7 }); meta.push({ i, j, q }); }
+    return tScene({
+      stillT: 9.5,
+      labels: [{ x: 0, y: -0.98, html: "rotations, each turning toward its neighbours, settle into domains", cls: "example" }],
+      custom: {
+        points: pts,
+        update: (t, out, o) => {
+          const fr = frames[Math.min(F - 1, Math.floor(((t % P) / P) * F * 1.15))];
+          meta.forEach((m, k) => {
+            const a = fr[m.j * NX + m.i], cx = x0 + m.i * SP, cy = y0 + m.j * SP, u = (m.q - 2) / 2 * 0.065;
+            out[o + k] = { x: cx + u * Math.cos(a), y: cy + u * Math.sin(a), a: m.q === 4 ? 1 : 0.7, c: Math.cos(a) > 0 ? "cyan" : "violet" };
+          });
+        }
+      }
+    });
+  };
+
+  /* Everything we touch is information: one object in the middle, and every way we meet it, light to
+     an eye, heat to a hand, a push, a reading on an instrument, is something carried from it to us. */
+  SCENES.ginfo = () => {
+    const O = [0, 0.04], R = [[-0.95, 0.5, "light", "gold"], [0.95, 0.5, "heat", "coral"], [-0.95, -0.45, "a push", "cyan"], [0.95, -0.45, "an instrument", "violet"]];
+    const shapes = [{ pts: ringPts(O[0], O[1], 0.16, 60), c: "paper", a: 0.8, s: 0.9, at: 0 }, { pts: blobPts(O[0], O[1], 0.03, 16), c: "paper", a: 0.9, s: 1, at: 0 }];
+    const streams = [], labels = [{ x: O[0], y: O[1] - 0.3, html: "the thing itself", cls: "tag" }];
+    R.forEach(([x, y, n, c]) => {
+      shapes.push({ pts: ringPts(x, y, 0.08, 26), c, a: 0.8, s: 0.8, at: 0 });
+      const d = Math.hypot(x - O[0], y - O[1]), ux = (x - O[0]) / d, uy = (y - O[1]) / d;
+      const sx = O[0] + ux * 0.2, sy = O[1] + uy * 0.2, ex = x - ux * 0.12, ey = y - uy * 0.12;
+      streams.push({ path: u => [sx + (ex - sx) * u, sy + (ey - sy) * u], n: 6, speed: 0.32, c, ends: true, at: 0 });
+      labels.push({ x, y: y > 0 ? y + 0.17 : y - 0.17, html: n, cls: "example" });
+    });
+    labels.push({ x: 0, y: -0.95, html: "every way we meet a thing is something carried from it to us", cls: "example" });
+    return tScene({ shapes, streams, labels, stillT: 2 });
+  };
+
   /* The two bits side by side: Shannon's composes into the turning tesseract of "Computers already
      compute like this", the geometric bit into the three-sphere of Hopf circles. Each figure sits in
      its card's slot, measured from the page, so it follows the table wherever the layout puts it. */
@@ -3310,6 +3611,27 @@
     crossling: { w: "aligning languages", t: "Two languages’ word spaces differ by a rotation.",
       d: "Word embeddings trained separately on two languages have different axes, yet a single orthogonal map, a rotation, carries one onto the other well enough to translate words, and it can even be found without a bilingual dictionary. It works because the angles between concepts are preserved across the languages while their absolute positions differ.",
       s: "Tomas Mikolov, Quoc Le and Ilya Sutskever, 2013; Chao Xing and colleagues, 2015; Alexis Conneau and colleagues, “Word Translation Without Parallel Data”, 2018" },
+    platonic: { w: "converging representations", t: "Different models settle on the same pattern of relations.",
+      d: "Huh and colleagues proposed in 2024 that vision and language models converge toward a shared representation of reality as they scale. Jha and colleagues then translated embeddings between unrelated text models with no paired examples, through one shared latent space. Later studies refined what is shared: once similarity measures are corrected for model size, models agree on which examples are related to which, their local relational structure, more than on exact distances.",
+      s: "Huh, Cheung, Wang and Isola, “The Platonic Representation Hypothesis”, ICML 2024; Jha, Zhang, Shmatikov and Morris, “Harnessing the Universal Geometry of Embeddings”, 2025; Gröger, Wen and Brbić, “Revisiting the Platonic Representation Hypothesis: An Aristotelian View”, 2026; You, Jang, Mo and Jung, “What Converges in the Platonic Representation Hypothesis? Structure over Geometry”, 2026" },
+    markov: { w: "Markov’s letters", t: "Averages settle without independence.",
+      d: "In 1902 Pavel Nekrasov argued that the law of large numbers, the way averages settle as samples grow, works only for independent events, and read free will into the steady yearly counts of marriages and crimes. Markov answered by building chains where each step depends on the one before, and proved their averages settle too. In 1913 he counted vowels and consonants through 20,000 letters of Pushkin’s Eugene Onegin, where each letter depends on the last, and the proportions settled all the same.",
+      s: "Pavel Nekrasov, 1902; Andrey Markov, 1906 and 1913" },
+    incompleteness: { w: "no system can vouch for itself", t: "From Hilbert to Gödel: every check needs something outside it.",
+      d: "Hilbert hoped mathematics could prove its own consistency. Gödel showed in 1931 that any consistent system rich enough for arithmetic cannot, and his sentence about itself works only through a coding held outside the system. Tarski showed that the truth of a language has to be defined from a level above it, and Turing that climbing such a tower of checks needs a step taken from outside. The paradoxes appear exactly where a whole is treated as closed: the liar, a sign pointing only at itself, and the set of all sets.",
+      s: "Kurt Gödel, 1931; Alfred Tarski, 1933; Alan Turing, 1939; Saul Kripke, 1975" },
+    kuhn: { w: "paradigm shifts", t: "When a science changes the ground it stands on.",
+      d: "Thomas Kuhn described how a science works inside a shared paradigm, the agreed assumptions, methods and standards that tell its practitioners what counts as a result, and how a paradigm shift replaces that ground, as when Copernicus moved the centre of the heavens or Einstein redefined space and time.",
+      s: "Thomas Kuhn, <i>The Structure of Scientific Revolutions</i>, 1962" },
+    verbalbehavior: { w: "verbal behaviour", t: "Meaning studied as something people do.",
+      d: "Skinner’s Verbal Behavior (1957) treated language as behaviour shaped by its effects. Relational frame theory extended it to the relations people derive without being taught: if A is the same as B and B the same as C, they treat A as the same as C, and if one thing is larger than another they derive the reverse. It underlies acceptance and commitment therapy and is used in language training for autistic children and in education.",
+      s: "B. F. Skinner, <i>Verbal Behavior</i>, 1957; Steven Hayes, Dermot Barnes-Holmes and Bryan Roche, <i>Relational Frame Theory</i>, 2001" },
+    towerphys: { w: "physics in the tower", t: "Decades of work building physics from the division algebras.",
+      d: "Geoffrey Dixon wrote the Standard Model in the algebra ℝ ⊗ ℂ ⊗ ℍ ⊗ 𝕆; Feza Gürsey and Murat Günaydin used the octonions for quarks in the 1970s; John Baez’s survey made the octonions widely known; Ivan Todorov and Michel Dubois-Violette, and Latham Boyle, used the exceptional Jordan algebra to look for three generations; Cohl Furey derived the Standard Model’s symmetries from the nested embeddings ℝ ⊂ ℂ ⊂ ℍ ⊂ 𝕆.",
+      s: "Gürsey and Günaydin, 1973; Dixon, 1994; Baez, 2002; Todorov and Dubois-Violette, 2018; Boyle, 2020; Furey, 2016–2026" },
+    wolfram: { w: "the Wolfram Physics Project", t: "Physics built from rules acting on relations.",
+      d: "Stephen Wolfram and colleagues model the universe as a network of relations updated by simple rules, with space, time, relativity and quantum mechanics emerging from how the network evolves and from all the ways its updates can be ordered.",
+      s: "Stephen Wolfram, <i>A Project to Find the Fundamental Theory of Physics</i>, 2020" },
     paradoxes: { w: "the paradoxes", t: "Each one takes a totality, or a sign about itself, as a finished thing.",
       d: "Russell’s set of all sets that do not contain themselves, Burali-Forti’s greatest ordinal and the liar all treat a whole that includes themselves as complete. Poincaré and Russell traced them to vicious circles, whatever involves all of a collection cannot be one of its members, and Kripke’s theory of truth leaves the liar ungrounded, with no truth value at all.",
       s: "Cesare Burali-Forti, 1897; Bertrand Russell, 1903; Henri Poincaré, 1906; Saul Kripke, 1975" }

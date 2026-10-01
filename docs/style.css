@@ -430,3 +430,17 @@ html.still .lbl.reveal { transition-delay: 0s; }
 .names .nm span:last-child { grid-column: 1 / -1; font: 400 15.5px/1.3 var(--serif); color: var(--soft); }
 .hotlist.links a { color: var(--cyan); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--cyan) 35%, transparent); }
 .hotlist.links a:hover { border-bottom-color: var(--cyan); }
+
+.copy p.binary-eq { font-size: clamp(24px, 2vw, 30px); margin: 4px 0 14px; letter-spacing: 0.01em; }
+
+.copy p.aside { font-size: clamp(15px, 1.1vw, 17px); color: var(--dim); margin-top: 14px; }
+
+/* Euler's identity in the figure's corner, with the constant each card measures lit */
+.euler-badge { position: absolute; top: 17%; right: 8%; z-index: 3; pointer-events: none; font: 400 clamp(38px, 3.3vw, 52px)/1 var(--serif); color: var(--dim); letter-spacing: 0.02em; }
+.euler-badge sup { font-size: 0.66em; }
+.euler-badge b.on { font-weight: 600; color: var(--math); text-shadow: 0 0 14px color-mix(in srgb, var(--math) 55%, transparent); }
+
+/* a numbered chain of steps, for the argument summaries */
+.copy ol.steps { margin: 6px 0 18px; padding-left: 1.6em; display: grid; gap: 8px; }
+.copy ol.steps li { font: 400 clamp(17px, 1.3vw, 20.5px)/1.4 var(--serif); color: var(--paper); padding-left: 4px; }
+.copy ol.steps li::marker { font: 600 13px var(--label); color: var(--cyan); }

@@ -2930,7 +2930,6 @@
     return tScene({
       stillT: 4.6,
       shapes: [{ pts: ringPts(0, cy, R, 120), c: "ice", a: 0.25, s: 0.7, at: 0 }, { pts: blobPts(0, cy, 0.014, 8), c: "paper", a: 0.9, s: 1.1, at: 0 }],
-      labels: [{ x: 0, y: -0.98, html: "carried through a full rotation, each one comes back: <i>e</i><sup>2πi</sup><i>A</i> = <i>A</i>", cls: "example" }],
       custom: {
         points: pts,
         update: (t, out, o) => {
@@ -2968,7 +2967,7 @@
     return tScene({
       stillT: 4.5,
       labels: [
-        ...base.map((p, i) => ({ x: L[0] + p[0] * 1.28, y: L[1] + p[1] * 1.28, html: names[i], cls: "example" })),
+        ...base.map((p, i) => i === 5 ? { x: L[0] + p[0] + 0.17, y: L[1] + p[1] - 0.1, html: names[i], cls: "example" } : { x: L[0] + p[0] * 1.28, y: L[1] + p[1] * 1.28, html: names[i], cls: "example" }),
         { x: L[0], y: -0.62, html: "my frame", cls: "tag" }, { x: Rr[0], y: -0.62, html: "your frame", cls: "tag" },
         { x: 0, y: -0.86, html: "", cls: "example", live: t => (t % P) < 4 ? "the same shape, turned: a rotation brings it back" : "what is left over is the meaning that was lost" }
       ],
@@ -3019,19 +3018,31 @@
   /* Four letters for every living thing: a double helix turning, its rungs the four bases in their two
      pairs, and the same four letters spelling a bacterium, a tree and a person. */
   SCENES.dnahelix = () => {
-    const N = 26, X0 = -1.45, X1 = 0.35, R = 0.24, cy = 0.12, S = 140, pts = [], meta = [];
+    const N = 22, X0 = -1.5, X1 = -0.3, R = 0.2, cy = 0.05, S = 120, pts = [], meta = [];
     const BASES = ["A", "T", "C", "G"], COL = { A: "coral", T: "cyan", C: "mint", G: "brass" }, PAIR = { A: "T", T: "A", C: "G", G: "C" };
     const seq = Array.from({ length: N }, () => BASES[Math.floor(Math.random() * 4)]);
-    for (let s2 = 0; s2 < 2; s2++) for (let k = 0; k < S; k++) { pts.push({ x: 0, y: cy, c: "ice", a: 0, s: 0.9 }); meta.push({ strand: s2, u: k / (S - 1) }); }
-    for (let k = 0; k < N; k++) for (let q = 0; q < 7; q++) { const b = q < 3.5 ? seq[k] : PAIR[seq[k]]; pts.push({ x: 0, y: cy, c: COL[b], a: 0, s: 0.95 }); meta.push({ k, rung: (q + 0.5) / 7 }); }
-    const at3 = (u, side, t) => { const a = u * 3.6 * TAU + t * 0.8 + (side ? Math.PI : 0); return [X0 + (X1 - X0) * u, cy + R * Math.cos(a), Math.sin(a)]; };
+    for (let s2 = 0; s2 < 2; s2++) for (let k = 0; k < S; k++) { pts.push({ x: 0, y: cy, c: "ice", a: 0, s: 0.85 }); meta.push({ strand: s2, u: k / (S - 1) }); }
+    for (let k = 0; k < N; k++) for (let q = 0; q < 6; q++) { const b = q < 3 ? seq[k] : PAIR[seq[k]]; pts.push({ x: 0, y: cy, c: COL[b], a: 0, s: 0.9 }); meta.push({ k, rung: (q + 0.5) / 6 }); }
+    const at3 = (u, side, t) => { const a = u * 3.2 * TAU + t * 0.8 + (side ? Math.PI : 0); return [X0 + (X1 - X0) * u, cy + R * Math.cos(a), Math.sin(a)]; };
+    // three living forms written from the same four letters
+    const FX = 0.85, forms = [
+      { y: 0.56, c: "coral", name: "a bacterium", pts: [...Array.from({ length: 30 }, (_, k) => { const a = Math.PI / 2 + k / 29 * Math.PI; return [FX - 0.12 + 0.07 * Math.cos(a), 0.56 + 0.07 * Math.sin(a)]; }), ...Array.from({ length: 30 }, (_, k) => { const a = -Math.PI / 2 + k / 29 * Math.PI; return [FX + 0.12 + 0.07 * Math.cos(a), 0.56 + 0.07 * Math.sin(a)]; }), ...segPts(FX - 0.12, 0.63, FX + 0.12, 0.63, 12), ...segPts(FX - 0.12, 0.49, FX + 0.12, 0.49, 12), ...Array.from({ length: 10 }, (_, k) => [FX + 0.2 + k * 0.012, 0.56 + 0.025 * Math.sin(k * 1.2)])] },
+      { y: 0.04, c: "mint", name: "a tree", pts: [...segPts(FX, -0.12, FX, 0.04, 12), ...ringPts(FX, 0.13, 0.11, 40), ...segPts(FX, 0.0, FX - 0.07, 0.07, 6), ...segPts(FX, 0.02, FX + 0.07, 0.09, 6)] },
+      { y: -0.5, c: "cyan", name: "you", pts: [...ringPts(FX, -0.32, 0.045, 18), ...segPts(FX, -0.37, FX, -0.53, 12), ...segPts(FX - 0.09, -0.42, FX + 0.09, -0.42, 12), ...segPts(FX, -0.53, FX - 0.07, -0.66, 9), ...segPts(FX, -0.53, FX + 0.07, -0.66, 9)] }
+    ];
+    const ex = X1 + 0.08, shapes = [], streams = [];
+    forms.forEach(f => {
+      shapes.push({ pts: f.pts, c: f.c, a: 0.9, s: 0.85, at: 0 });
+      const tx = FX - 0.26, ty = f.y;
+      streams.push({ path: u => [ex + (tx - ex) * u, cy + (ty - cy) * u], n: 7, speed: 0.3, c: f.c, ends: true, at: 0 });
+    });
     return tScene({
-      stillT: 2,
+      stillT: 2, shapes, streams,
       labels: [
-        { x: 0.6, y: 0.5, html: "A · T · C · G", cls: "math c-math left" },
-        { x: 0.6, y: 0.32, html: "four letters, two pairs", cls: "example left" },
-        { x: 0.6, y: 0.0, html: "a bacterium", cls: "example left" }, { x: 0.6, y: -0.17, html: "a tree", cls: "example left" }, { x: 0.6, y: -0.34, html: "you", cls: "example left" },
-        { x: 0, y: -0.9, html: "agree on four letters, and everything alive is written with them", cls: "example" }
+        { x: (X0 + X1) / 2, y: 0.42, html: "A · T · C · G", cls: "math c-math" },
+        { x: (X0 + X1) / 2, y: -0.28, html: "four letters, two pairs", cls: "example" },
+        ...forms.map(f => ({ x: FX + 0.4, y: f.y, html: f.name, cls: "example left" })),
+        { x: 0, y: -0.92, html: "agree on four letters, and everything alive is written with them", cls: "example" }
       ],
       custom: {
         points: pts,
@@ -3159,6 +3170,792 @@
     });
     labels.push({ x: 0, y: -0.95, html: "every way we meet a thing is something carried from it to us", cls: "example" });
     return tScene({ shapes, streams, labels, stillT: 2 });
+  };
+
+  /* One paradigm: every field starts as its own frame, its own reference axes at its own angle; then
+     they glide onto one shared circle and their axes line up with the one reference, and back again. */
+  SCENES.gparadigm = () => {
+    const F = [["mathematics", "gold"], ["physics", "cyan"], ["biology", "coral"], ["computing", "violet"], ["language", "mint"], ["engineering", "brass"]];
+    const R = 0.66, cy = 0.02, r = 0.13, P = 10;
+    const start = [[-1.25, 0.55], [-0.35, 0.72], [0.6, 0.6], [1.3, 0.35], [-1.05, -0.45], [1.0, -0.5]];
+    const spin = F.map((_, k) => 0.35 + 0.17 * k), a0 = F.map((_, k) => k * 1.7);
+    const pts = [], meta = [];
+    F.forEach(([n, c], k) => {
+      for (let q = 0; q < 26; q++) { pts.push({ x: 0, y: 0, c, a: 0, s: 0.75 }); meta.push({ k, ring: q / 26 * TAU }); }
+      for (let ax = 0; ax < 2; ax++) for (let q = 0; q < 9; q++) { pts.push({ x: 0, y: 0, c, a: 0, s: 0.75 }); meta.push({ k, ax, u: -1 + 2 * q / 8 }); }
+      for (let q = 0; q < 4; q++) { pts.push({ x: 0, y: 0, c: "paper", a: 0, s: 1.2 }); meta.push({ k, dot: 1 }); }
+    });
+    for (let q = 0; q < 140; q++) { pts.push({ x: 0, y: 0, c: "gold", a: 0, s: 0.8 }); meta.push({ big: q / 140 * TAU }); }
+    for (let ax = 0; ax < 2; ax++) for (let q = 0; q < 40; q++) { pts.push({ x: 0, y: 0, c: "gold", a: 0, s: 0.7 }); meta.push({ bigax: ax, u: -1.15 + 2.3 * q / 39 }); }
+    const ease = v => v <= 0 ? 0 : v >= 1 ? 1 : (1 - Math.cos(Math.PI * v)) / 2;
+    const mix = t => { const c = t % P; return c < 2.5 ? 0 : c < 5 ? ease((c - 2.5) / 2.5) : c < 8.5 ? 1 : 1 - ease((c - 8.5) / 1.5); };
+    const frame = (k, t) => {
+      const m = mix(t), ang = Math.PI / 2 - k / F.length * TAU, end = [R * Math.cos(ang), cy + R * Math.sin(ang)];
+      const x = start[k][0] + (end[0] - start[k][0]) * m, y = start[k][1] + (end[1] - start[k][1]) * m;
+      const own = a0[k] + t * spin[k], rot = own * (1 - m);
+      return { x, y, rot };
+    };
+    return tScene({
+      stillT: 6.5,
+      labels: [
+        ...F.map(([n], k) => ({ x: 0, y: 0, html: n, cls: "tag", at: t => { const f = frame(k, t); return [f.x, f.y - r - 0.1]; } })),
+        { x: 0, y: -0.98, html: "", cls: "example", live: t => mix(t) < 0.5 ? "each field checks against a reference of its own" : "one reference, shared by every field" }
+      ],
+      custom: {
+        points: pts,
+        update: (t, out, o) => {
+          const m = mix(t);
+          meta.forEach((p, i) => {
+            if (p.big !== undefined) { out[o + i] = { x: R * Math.cos(p.big), y: cy + R * Math.sin(p.big), a: 0.5 * m }; return; }
+            if (p.bigax !== undefined) { out[o + i] = p.bigax ? { x: 0, y: cy + p.u * R, a: 0.35 * m } : { x: p.u * R, y: cy, a: 0.35 * m }; return; }
+            const f = frame(p.k, t);
+            if (p.ring !== undefined) out[o + i] = { x: f.x + r * Math.cos(p.ring), y: f.y + r * Math.sin(p.ring), a: 0.75 };
+            else if (p.ax !== undefined) { const a = f.rot + (p.ax ? Math.PI / 2 : 0); out[o + i] = { x: f.x + r * p.u * Math.cos(a), y: f.y + r * p.u * Math.sin(a), a: 0.8 }; }
+            else out[o + i] = { x: f.x + gauss() * 0.01, y: f.y + gauss() * 0.01, a: 1 };
+          });
+        }
+      }
+    });
+  };
+
+  /* Meaning in a model, in 3D: words as points on a sphere, clustered by meaning, the view slowly
+     turning. An English cloud and a Portuguese cloud start in different frames; one rotation brings
+     the second onto the first, and each word lands on its translation. */
+  SCENES.gembed3d = () => {
+    const R = 0.8, cy = 0.02, P = 11, tilt = 0.35;
+    const norm = v => { const l = Math.hypot(...v); return v.map(c => c / l); };
+    const CL = [
+      { d: [0.8, 0.5, 0.3], en: ["apple", "pear"], pt: ["maçã", "pera"] },
+      { d: [-0.7, 0.6, 0.2], en: ["love", "care"], pt: ["amor", "carinho"] },
+      { d: [0.2, -0.7, 0.7], en: ["dog", "cat"], pt: ["cão", "gato"] },
+      { d: [-0.3, -0.4, -0.85], en: ["king", "queen"], pt: ["rei", "rainha"] }
+    ].map(c => ({ ...c, d: norm(c.d) }));
+    const near = (d, s) => norm([d[0] + gauss() * s, d[1] + gauss() * s, d[2] + gauss() * s]);
+    const base = [], words = [];
+    CL.forEach((c, ci) => {
+      for (let k = 0; k < 34; k++) base.push({ v: near(c.d, 0.2), ci });
+      c.en.forEach((w, k) => { const v = near(c.d, 0.2); words.push({ v, en: w, pt: c.pt[k] }); base.push({ v, ci, word: true }); });
+    });
+    for (let k = 0; k < 60; k++) base.push({ v: near([gauss(), gauss(), gauss()], 0), ci: -1 });
+    const axis = norm([1, 1, 0.3]), ANG = 1.7;
+    const rot = (v, a) => { const [x, y, z] = v, [u, w, q] = axis, c = Math.cos(a), sn = Math.sin(a), dot = u * x + w * y + q * z;
+      return [x * c + (w * z - q * y) * sn + u * dot * (1 - c), y * c + (q * x - u * z) * sn + w * dot * (1 - c), z * c + (u * y - w * x) * sn + q * dot * (1 - c)]; };
+    const ease = v => v <= 0 ? 0 : v >= 1 ? 1 : (1 - Math.cos(Math.PI * v)) / 2;
+    const mix = t => { const c = t % P; return c < 3 ? 0 : c < 6.5 ? ease((c - 3) / 3.5) : c < 10 ? 1 : 1 - ease(c - 10); };
+    const proj = (v, t) => { const [X, Y, d] = view3(v[0] * R, v[1] * R, v[2] * R, 0.4 + t * 0.12, tilt); return [X, cy + Y, d]; };
+    const pts = [], meta = [];
+    const COL = ["brass", "coral", "mint", "violet"];
+    base.forEach(b => { pts.push({ x: 0, y: 0, c: b.ci < 0 ? "dim" : "cyan", a: 0, s: b.word ? 1.6 : 0.85 }); meta.push({ b, side: 0 }); });
+    base.forEach(b => { if (b.ci < 0) return; pts.push({ x: 0, y: 0, c: "coral", a: 0, s: b.word ? 1.6 : 0.85 }); meta.push({ b, side: 1 }); });
+    const wire = [];
+    for (let k = 0; k < 120; k++) { const a = k / 120 * TAU; wire.push([Math.cos(a), 0, Math.sin(a)], [Math.cos(a), Math.sin(a), 0], [0, Math.sin(a), Math.cos(a)]); }
+    wire.forEach(v => { pts.push({ x: 0, y: 0, c: "ice", a: 0, s: 0.55 }); meta.push({ wire: v }); });
+    const place = (v, side, t) => side ? rot(v, ANG * (1 - mix(t))) : v;
+    return tScene({
+      stillT: 8,
+      labels: [
+        ...words.map(w => ({ x: 0, y: 0, html: w.en, cls: "example c-cyan", at: t => { const [x, y] = proj(w.v, t); return [x + 0.09, y + 0.05]; } })),
+        ...words.map(w => ({ x: 0, y: 0, html: w.pt, cls: "example c-coral", at: t => { const [x, y] = proj(place(w.v, 1, t), t); return [x + 0.09, y - 0.07]; } })),
+        { x: -0.5, y: 1.0, html: "English", cls: "tag c-cyan" }, { x: 0.5, y: 1.0, html: "Portuguese", cls: "tag c-coral" },
+        { x: 0, y: -1.02, html: "", cls: "example", live: t => mix(t) < 0.5 ? "each language arranges meanings in its own frame" : "one rotation lines them up: each word lands on its translation" }
+      ],
+      custom: {
+        points: pts,
+        update: (t, out, o) => {
+          meta.forEach((m, i) => {
+            if (m.wire) { const [x, y, d] = proj(m.wire, t); out[o + i] = { x, y, a: 0.06 + 0.16 * d }; return; }
+            const [x, y, d] = proj(place(m.b.v, m.side, t), t);
+            out[o + i] = { x, y, a: (m.b.ci < 0 ? 0.25 : m.b.word ? 1 : 0.55) * (0.25 + 0.75 * d) };
+          });
+        }
+      }
+    });
+  };
+
+  /* Science almost does it already: Euler's identity at the centre, and every field that already writes
+     it into its equations scattered around in rings, coloured by field, each fed by a thread from the centre. */
+  SCENES.gconstellation = () => {
+    const G = [["Mathematics", "math", "gold", ["complex analysis", "Fourier analysis", "roots of unity", "the zeta function", "groups of rotations", "winding numbers", "differential equations"]], ["Physics", "cyan", "cyan", ["classical mechanics", "quantum mechanics", "relativity", "light", "optics", "holography", "spin", "particle forces", "superconductivity"]], ["Engineering", "brass", "brass", ["alternating current", "control and stability", "signal processing", "radio", "the Smith chart", "vibration analysis", "aircraft attitude"]], ["Computing", "violet", "violet", ["the FFT", "JPEG", "MP3", "quantum computing", "3D graphics", "language models"]], ["Chemistry", "mint", "mint", ["atomic orbitals", "NMR", "infrared spectra", "crystallography"]], ["Biology and medicine", "coral", "coral", ["MRI", "EEG", "ECG", "grid cells", "brain rhythms", "daily clocks", "DNA’s structure"]], ["Earth and space", "ice", "ice", ["tides", "seismology", "orbits", "black hole imaging", "GPS"]], ["Music and economics", "math", "gold", ["pitch", "tuning", "synthesis", "business cycles", "option pricing"]]];
+    const cy = -0.12, RINGS = [[0.78, 0.33], [1.25, 0.47], [1.72, 0.6], [2.2, 0.72]];
+    const shapes = [{ pts: ringPts(0, cy, 0.3, 90), c: "gold", a: 0.8, s: 0.9, at: 0 }], streams = [];
+    const labels = [{ x: 0, y: cy + 0.02, html: "<i>e</i><sup><i>iπ</i></sup> + 1 = 0", cls: "fword c-math eqc" }, { x: 0, y: cy - 0.12, html: "identity", cls: "tag" }];
+    const total = G.reduce((a, g) => a + g[3].length, 0);
+    let idx = 0; const words = [];
+    G.forEach(([name, cls, col, items], gi) => {
+      items.forEach((it, k) => {
+        const a = Math.PI / 2 - (idx + 0.5) / total * TAU, ring = RINGS[(idx * 3) % RINGS.length];
+        const x = ring[0] * Math.cos(a), y = cy + ring[1] * Math.sin(a) * 1.0;
+        shapes.push({ pts: blobPts(x, y, 0.008, 3), c: col, a: 0.95, s: 1, at: 0 });
+        const ux = Math.cos(a), uy = Math.sin(a), sx = 0.32 * ux, sy = cy + 0.32 * uy * 0.6, ex = x - 0.05 * ux, ey = y - 0.03 * uy;
+        streams.push({ path: u => [sx + (ex - sx) * u, sy + (ey - sy) * u], n: 2, speed: 0.22 + 0.04 * (k % 3), c: col, ends: true, at: 0, a: 0.75 });
+        words.push({ x, y: y + (uy >= 0 ? 0.07 : -0.07), html: it, cls: "fword c-" + cls });
+        idx++;
+      });
+    });
+    // push apart any two words whose boxes overlap, so the cloud stays dense but readable
+    const w = t => t.html.replace(/<[^>]+>/g, "").length * 0.031 + 0.05;
+    for (let it = 0; it < 80; it++) for (let a = 0; a < words.length; a++) for (let b = a + 1; b < words.length; b++) {
+      const A = words[a], B = words[b], ox = (w(A) + w(B)) / 2 - Math.abs(A.x - B.x), oy = 0.085 - Math.abs(A.y - B.y);
+      if (ox > 0 && oy > 0) { const d = (oy / 2 + 0.002) * (A.y >= B.y ? 1 : -1); A.y += d; B.y -= d; }
+    }
+    labels.push(...words);
+    labels.push({ x: 0, y: -1.03, html: G.map(([n, cls]) => `<span class="c-${cls}">${n}</span>`).join(""), cls: "tag legend" });
+    labels.push({ x: 0, y: -1.15, html: "each field uses it with a reference of its own, and stating it as the one law they share is the step left", cls: "example" });
+    return tScene({ shapes, streams, labels, stillT: 2 });
+  };
+
+  /* Level C: the word "lighter" goes out across the top, the receiver hands the lighter back along the
+     bottom, and the returned lighter lands on the sender's own reference outline, which lights when they match. */
+  SCENES.greply = () => {
+    const SX = -1.1, RX = 1.1, cy = 0.0, P = 9;
+    const person = (x, y) => [...ringPts(x, y + 0.2, 0.06, 20), ...segPts(x, y + 0.14, x, y - 0.08, 10), ...segPts(x - 0.11, y + 0.06, x + 0.11, y + 0.06, 10), ...segPts(x, y - 0.08, x - 0.08, y - 0.24, 8), ...segPts(x, y - 0.08, x + 0.08, y - 0.24, 8)];
+    const lighter = (x, y) => [...segPts(x - 0.05, y - 0.1, x + 0.05, y - 0.1, 6), ...segPts(x - 0.05, y - 0.1, x - 0.05, y + 0.06, 9), ...segPts(x + 0.05, y - 0.1, x + 0.05, y + 0.06, 9), ...segPts(x - 0.05, y + 0.06, x + 0.05, y + 0.06, 6)];
+    const L = lighter(0, 0), refX = SX + 0.32, refY = cy - 0.02;
+    const top = u => [SX + 0.2 + (RX - SX - 0.4) * u, cy + 0.42 * Math.sin(Math.PI * u) + 0.12];
+    const bot = u => [RX - 0.2 - (RX - SX - 0.4) * u, cy - 0.42 * Math.sin(Math.PI * u) - 0.12];
+    const pts = [];
+    L.forEach(() => pts.push({ x: 0, y: 0, c: "gold", a: 0, s: 1 }));
+    for (let k = 0; k < 6; k++) pts.push({ x: 0, y: 0, c: "coral", a: 0, s: 1.1 });
+    for (let k = 0; k < 36; k++) pts.push({ x: 0, y: 0, c: "mint", a: 0, s: 0.9 });
+    const phase = t => t % P;
+    return tScene({
+      stillT: 7.6,
+      shapes: [
+        { pts: person(SX, cy), c: "brass", a: 0.9, s: 0.9, at: 0 }, { pts: person(RX, cy), c: "cyan", a: 0.9, s: 0.9, at: 0 },
+        { pts: lighter(refX, refY), c: "dim", a: 0.6, s: 0.8, at: 0 },
+        { pts: Array.from({ length: 50 }, (_, k) => top(k / 49)), c: "dim", a: 0.2, s: 0.55, at: 0 },
+        { pts: Array.from({ length: 50 }, (_, k) => bot(k / 49)), c: "dim", a: 0.2, s: 0.55, at: 0 }
+      ],
+      labels: [
+        { x: SX, y: cy - 0.38, html: "me", cls: "example" }, { x: RX, y: cy - 0.38, html: "you", cls: "example" },
+        { x: refX + 0.02, y: refY + 0.26, html: "what I meant", cls: "tag" },
+        { x: 0, y: -0.98, html: "", cls: "example", live: t => { const c = phase(t); return c < 3 ? "Level A and B: “lighter” goes out, and you understand it" : c < 6 ? "Level C: your action is a reply" : "it comes back to me and matches what I meant"; } },
+        { x: 0, y: 0.75, html: "", cls: "example c-math", live: t => phase(t) < 2.8 ? "“pass me the lighter”" : "", at: t => { const c = phase(t); const [x, y] = top(Math.min(1, c / 3)); return [x, y + 0.1]; } }
+      ],
+      custom: {
+        points: pts,
+        update: (t, out, o) => {
+          const c = phase(t); let i = o;
+          let cx, cyy, a = 1;
+          if (c < 3) { cx = RX - 0.32; cyy = cy - 0.02; a = Math.max(0, (c - 2.2) / 0.8); }
+          else if (c < 6) { [cx, cyy] = bot((c - 3) / 3); }
+          else { cx = refX; cyy = refY; }
+          L.forEach(([x, y]) => { out[i++] = { x: cx + x, y: cyy + y, a }; });
+          for (let k = 0; k < 6; k++) out[i++] = { x: cx + gauss() * 0.015, y: cyy + 0.1 + Math.abs(gauss()) * 0.03, a };
+          const g = c >= 6 ? Math.max(0, 1 - (c - 6) / 3) : 0;
+          for (let k = 0; k < 36; k++) { const q = k / 36 * TAU, r = 0.15 + 0.05 * (1 - g); out[i++] = { x: refX + r * Math.cos(q), y: refY + r * Math.sin(q), a: 0.9 * g }; }
+        }
+      }
+    });
+  };
+
+  /* Levels A, B and C solved: three lanes completing in turn. A: the symbols arrive identical. B: a
+     meaning turns into line with its reference. C: an action loops back to where it began. Each closes green. */
+  SCENES.glanes = () => {
+    const Y = [0.62, 0.0, -0.62], X0 = -1.2, X1 = 0.9, P = 9, pts = [], meta = [];
+    const ease = v => v <= 0 ? 0 : v >= 1 ? 1 : (1 - Math.cos(Math.PI * v)) / 2;
+    const prog = (t, k) => ease(((t % P) - k * 2.4) / 2);
+    for (let q = 0; q < 6; q++) { pts.push({ x: 0, y: 0, c: "cyan", a: 0, s: 1.3 }); meta.push({ lane: 0, q }); }
+    const tri = [[0, 0.13], [0.12, -0.08], [-0.12, -0.08]], shapeP = [];
+    for (let e = 0; e < 3; e++) for (let q = 0; q < 8; q++) { const A = tri[e], B = tri[(e + 1) % 3]; shapeP.push([A[0] + (B[0] - A[0]) * q / 8, A[1] + (B[1] - A[1]) * q / 8]); }
+    shapeP.forEach(p => { pts.push({ x: 0, y: 0, c: "violet", a: 0, s: 0.95 }); meta.push({ lane: 1, p }); });
+    for (let q = 0; q < 60; q++) { pts.push({ x: 0, y: 0, c: "coral", a: 0, s: 0.9 }); meta.push({ lane: 2, u: q / 59 }); }
+    for (let k = 0; k < 3; k++) for (let q = 0; q < 30; q++) { pts.push({ x: 0, y: 0, c: "mint", a: 0, s: 0.95 }); meta.push({ check: k, u: q / 30 * TAU }); }
+    const shapes = [
+      ...Y.map(y => ({ pts: segPts(X0 + 0.25, y, X1 - 0.1, y, 50), c: "dim", a: 0.18, s: 0.55, at: 0 })),
+      ...[0, 1, 2, 3, 4, 5].map(q => ({ pts: blobPts(X0 + 0.06 * q, Y[0], 0.008, 3), c: "dim", a: 0.6, s: 1, at: 0 })),
+      { pts: shapeP.map(([x, y]) => [X1 - 0.35 + x, Y[1] + y]), c: "dim", a: 0.45, s: 0.8, at: 0 },
+      { pts: blobPts(X0 + 0.15, Y[2], 0.015, 6), c: "paper", a: 0.9, s: 1.1, at: 0 }
+    ];
+    return tScene({
+      stillT: 8.5, shapes,
+      labels: [
+        { x: -1.5, y: Y[0], html: "A", cls: "role c-cyan" }, { x: -1.5, y: Y[1], html: "B", cls: "role c-violet" }, { x: -1.5, y: Y[2], html: "C", cls: "role c-coral" },
+        { x: -0.15, y: Y[0] + 0.17, html: "the symbols arrive", cls: "tag" }, { x: -0.15, y: Y[1] + 0.22, html: "the meaning lines up", cls: "tag" }, { x: -0.15, y: Y[2] + 0.3, html: "the action comes back", cls: "tag" }
+      ],
+      custom: {
+        points: pts,
+        update: (t, out, o) => {
+          const pa = prog(t, 0), pb = prog(t, 1), pc = prog(t, 2);
+          meta.forEach((m, i) => {
+            if (m.check !== undefined) { const p = [pa, pb, pc][m.check], on = p >= 0.999 ? 1 : 0; out[o + i] = { x: X1 + 0.28 + 0.1 * Math.cos(m.u), y: Y[m.check] + 0.1 * Math.sin(m.u), a: 0.95 * on }; return; }
+            if (m.lane === 0) { const x0 = X0 + 0.06 * m.q, x1 = X1 - 0.35 + 0.06 * m.q; out[o + i] = { x: x0 + (x1 - x0) * pa, y: Y[0], a: 0.95 }; return; }
+            if (m.lane === 1) { const a = 1.6 * (1 - pb), x0 = X0 + 0.2, xx = x0 + (X1 - 0.35 - x0) * Math.min(1, pb * 1.6); const [px, py] = m.p; out[o + i] = { x: xx + px * Math.cos(a) - py * Math.sin(a), y: Y[1] + px * Math.sin(a) + py * Math.cos(a), a: 0.9 }; return; }
+            const cx = (X0 + 0.15 + X1 - 0.1) / 2, rx = (X1 - 0.1 - X0 - 0.15) / 2, u = m.u * pc, ang = Math.PI - u * TAU;
+            out[o + i] = { x: cx + rx * Math.cos(ang), y: Y[2] + 0.2 * Math.sin(ang), a: m.u <= 1 && u > 0 ? 0.8 : 0 };
+          });
+        }
+      }
+    });
+  };
+
+  /* What a number is: a mark goes round the circle, and each time the circle closes a new whole thing
+     appears beside it, one, two, three: discreteness is the circle closing. */
+  /* What Shannon did with his bit: bits combine into a message at the source, travel through a channel
+     of fixed width, and noise flips some of them on the way; the three questions his paper answers. */
+  SCENES.gshannonops = () => {
+    const N = 14, X0 = -1.35, X1 = 1.25, CH0 = -0.42, CH1 = 0.62, Y = 0.12, V = 0.16, SP = (X1 - X0) / N;
+    const bits = Array.from({ length: N }, (_, k) => (Math.sin(k * 7.3 + 1) > 0 ? 1 : 0)), flip = new Set([3, 8, 11]);
+    const pts = [], meta = [];
+    const add = (m, p) => { meta.push(m); pts.push(p); };
+    for (let w = 0; w < 2; w++) for (let q = 0; q < 70; q++) add({ kind: "wall", w, u: q / 69 }, { x: CH0, y: Y, c: "ice", a: 0.5, s: 0.6 });
+    for (let q = 0; q < 26; q++) add({ kind: "zap", q, j: Math.random() * TAU }, { x: 0.2, y: Y, c: "coral", a: 0, s: 0.7 });
+    const xOf = (k, t) => X0 + ((k * SP + t * V) % (X1 - X0));
+    return tScene({
+      stillT: 4.2,
+      labels: [
+        ...Array.from({ length: N }, (_, k) => ({ x: 0, y: Y, html: "", cls: "slot", at: t => [xOf(k, t), Y - 0.035], live: t => { const x = xOf(k, t), f = flip.has(k) && x > 0.25 && x < X1 - 0.05; const b = f ? 1 - bits[k] : bits[k]; const a = Math.min(1, (x - X0) / 0.15, (X1 - x) / 0.15); return `<span style="opacity:${Math.max(0, a).toFixed(2)};color:${f ? "var(--coral)" : "inherit"}">${b}</span>`; } })),
+        { x: (X0 + CH0) / 2 - 0.05, y: 0.48, html: "how bits combine", cls: "example" },
+        { x: (CH0 + CH1) / 2, y: 0.48, html: "how much a channel carries", cls: "example" },
+        { x: (CH1 + X1) / 2 + 0.05, y: 0.48, html: "what noise does", cls: "example" },
+        { x: (X0 + CH0) / 2 - 0.05, y: -0.22, html: "source", cls: "tag" }, { x: (CH0 + CH1) / 2, y: -0.22, html: "channel", cls: "tag" }, { x: (CH1 + X1) / 2 + 0.05, y: -0.22, html: "receiver", cls: "tag" }
+      ],
+      custom: {
+        points: pts,
+        update: (t, out, o) => {
+          meta.forEach((m, i) => {
+            let v;
+            if (m.kind === "wall") v = { x: CH0 + (CH1 - CH0) * m.u, y: Y + (m.w ? 0.13 : -0.13), a: 0.5 };
+            else { const ph = (t * 1.3 + m.q * 0.13) % 1; v = { x: 0.25 + 0.05 * Math.cos(m.j + t * 3), y: Y + (ph - 0.5) * 0.24, a: 0.55 * Math.sin(Math.PI * ph) }; }
+            out[o + i] = v;
+          });
+        }
+      }
+    });
+  };
+
+  /* Opener of 06: one ring doubles into two, four and eight, keeping its shape each time; at sixteen
+     the rings come apart, the way composition stops after the octonions. */
+  SCENES.topdouble = () => {
+    const cy = -0.8, NL = [1, 2, 4, 8, 16], RA = [0, 0.15, 0.2, 0.23, 0.25], RR = [0.09, 0.064, 0.048, 0.036, 0.027];
+    const COL = ["ice", "cyan", "mint", "violet", "coral"], ST = [0.2, 1.7, 3.2, 4.7, 6.2], P = 10, Q = 26, pts = [], meta = [];
+    const sm = u => u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u);
+    for (let s = 0; s < 16; s++) for (let q = 0; q < Q; q++) { meta.push({ s, b: q / Q * TAU, d: [gauss(), gauss()] }); pts.push({ x: 0, y: cy, c: "ice", a: 0, s: 0.75 }); }
+    const centre = (k, s) => { const n = NL[k], j = Math.floor(s * n / 16), a = Math.PI / 2 - (j + 0.5) / n * TAU; return [RA[k] * Math.cos(a), cy + RA[k] * Math.sin(a)]; };
+    return tScene({
+      stillT: 8.5,
+      custom: {
+        points: pts,
+        update: (t, out, o) => {
+          const c = t < 2.4 ? -1 : (t - 2.4) % P;
+          const k = Math.max(0, ST.filter(x => c >= x).length - 1), u = k ? sm((c - ST[k]) / 1.0) : 1;
+          const burst = k === 4 ? sm((c - ST[4] - 1.3) / 1.8) : 0, show = c < 0 ? 0 : Math.min(1, c / 0.5) * (c > P - 0.6 ? (P - c) / 0.6 : 1);
+          meta.forEach((m, i) => {
+            const [x1, y1] = centre(k, m.s), [x0, y0] = k ? centre(k - 1, m.s) : [x1, y1], r = (k ? RR[k - 1] + (RR[k] - RR[k - 1]) * u : RR[0]);
+            const x = x0 + (x1 - x0) * u + r * Math.cos(m.b) + m.d[0] * 0.14 * burst, y = y0 + (y1 - y0) * u + r * Math.sin(m.b) + m.d[1] * 0.14 * burst;
+            out[o + i] = { x, y, a: 0.85 * show * (1 - 0.85 * burst), c: COL[u > 0.5 ? k : Math.max(0, k - 1)] };
+          });
+        }
+      }
+    });
+  };
+
+  /* Side by side: three rotations running on their own add up to one signal, and the whole signal is
+     one point on a sphere of fixed power. Noise blurs each sent point into a small sphere; Shannon's
+     capacity counts how many small spheres fit in the large one. */
+  SCENES.gpacking = () => {
+    const CX = -1.24, CY = [0.5, 0.14, -0.22], RS = 0.1, RATE = [1, 2, 3], AMP = [0.11, 0.07, 0.05], PH = [0, 1.1, 2.3], w = 1.25;
+    const TX0 = -1.04, TX1 = -0.2, TY = 0.14, SPAN = 5, BX = 0.74, BY = 0.12, BR = 0.5, r = 0.084, d = 0.174;
+    const sig = t => AMP.reduce((s, A, k) => s + A * Math.sin(RATE[k] * w * t + PH[k]), 0);
+    const cells = [];
+    for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) { const x = d * (i + j / 2), y = d * j * Math.sqrt(3) / 2; if (Math.hypot(x, y) <= BR - r - 0.01) cells.push([BX + x, BY + y]); }
+    const ORDER = [7, 2, 15, 0, 11, 4, 17, 9, 13, 5], SLOT = 1.9, noise = ORDER.map(() => { const a = Math.random() * TAU, q = 0.25 + 0.4 * Math.random(); return [q * r * Math.cos(a), q * r * Math.sin(a)]; });
+    const pts = [], meta = [];
+    const add = (m, p) => { meta.push(m); pts.push(p); };
+    CY.forEach((y, k) => { for (let q = 0; q < 30; q++) add({ kind: "ring", k, b: q / 30 * TAU }, { x: CX, y, c: "dim", a: 0.5, s: 0.6 }); for (let q = 0; q < 6; q++) add({ kind: "rot", k, j: [gauss() * 0.008, gauss() * 0.008] }, { x: CX, y, c: "gold", a: 1, s: 1.1 }); });
+    for (let q = 0; q < 90; q++) add({ kind: "trace", u: q / 89 }, { x: TX0, y: TY, c: "gold", a: 0.6, s: 0.65 });
+    for (let q = 0; q < 140; q++) add({ kind: "big", b: q / 140 * TAU }, { x: BX, y: BY, c: "ice", a: 0.4, s: 0.65 });
+    cells.forEach((cc, ci) => { for (let q = 0; q < 20; q++) add({ kind: "cell", ci, b: q / 20 * TAU }, { x: cc[0], y: cc[1], c: "cyan", a: 0.35, s: 0.55 }); add({ kind: "dot", ci }, { x: cc[0], y: cc[1], c: "cyan", a: 0.5, s: 0.7 }); });
+    for (let q = 0; q < 7; q++) add({ kind: "fly", q }, { x: TX1, y: TY, c: "gold", a: 0, s: 1 });
+    for (let q = 0; q < 7; q++) add({ kind: "got", j: [gauss() * 0.009, gauss() * 0.009] }, { x: BX, y: BY, c: "paper", a: 0, s: 1.05 });
+    return tScene({
+      stillT: 7.0,
+      labels: [
+        { x: CX, y: -0.48, html: "rotations side by side", cls: "example" },
+        { x: (TX0 + TX1) / 2, y: -0.2, html: "add up to one signal", cls: "example" },
+        { x: BX, y: BY - BR - 0.13, html: "each signal is one point on a sphere", cls: "example" },
+        { x: BX, y: BY - BR - 0.27, html: "and noise blurs it into a small sphere", cls: "example" }
+      ],
+      custom: {
+        points: pts,
+        update: (t, out, o) => {
+          const slot = Math.floor(t / SLOT), ph = t - slot * SLOT, cur = ORDER[slot % ORDER.length], nz = noise[slot % ORDER.length], target = cells[cur];
+          meta.forEach((m, i) => {
+            let v;
+            switch (m.kind) {
+              case "ring": v = { x: CX + RS * Math.cos(m.b), y: CY[m.k] + RS * Math.sin(m.b), a: 0.5 }; break;
+              case "rot": { const a = RATE[m.k] * w * t + PH[m.k]; v = { x: CX + RS * Math.cos(a) + m.j[0], y: CY[m.k] + RS * Math.sin(a) + m.j[1], a: 1 }; break; }
+              case "trace": { const tau = (1 - m.u) * SPAN; v = { x: TX0 + (TX1 - TX0) * m.u, y: TY + sig(t - tau), a: 0.2 + 0.6 * m.u }; break; }
+              case "big": v = { x: BX + BR * Math.cos(m.b), y: BY + BR * Math.sin(m.b), a: 0.4 }; break;
+              case "cell": { const lit = m.ci === cur && ph > 0.7; const [x, y] = cells[m.ci]; v = { x: x + r * Math.cos(m.b), y: y + r * Math.sin(m.b), a: lit ? 0.95 : 0.3, c: lit ? "brass" : "cyan" }; break; }
+              case "dot": { const [x, y] = cells[m.ci]; v = { x, y, a: m.ci === cur && ph > 0.7 ? 0.95 : 0.45, c: m.ci === cur && ph > 0.7 ? "brass" : "cyan" }; break; }
+              case "fly": { const u = Math.min(1, Math.max(0, (ph - m.q * 0.05) / 0.6)), x0 = TX1, y0 = TY + sig(t); v = { x: x0 + (target[0] + nz[0] - x0) * u, y: y0 + (target[1] + nz[1] - y0) * u + Math.sin(Math.PI * u) * 0.12, a: u > 0 && u < 1 ? 0.9 : 0 }; break; }
+              default: v = { x: target[0] + nz[0] + m.j[0], y: target[1] + nz[1] + m.j[1], a: ph > 0.6 ? 1 : 0 };
+            }
+            out[o + i] = v;
+          });
+        }
+      }
+    });
+  };
+
+  /* Noise as a blur and noise as a direction. Left, Shannon: a sent point and the received points
+     scattered round it at random, so only the radius of the cloud can be known. Right, closure: the
+     gap between two composed streams is one rotation; its scalar part is the brightness at the centre
+     (is the record there?) and its vector part an arrow among three axes (where did it go?). The two
+     cases alternate: a record missing dims the light, a record moved leaves the light and points. */
+  SCENES.gblur = () => {
+    const L = [-0.8, 0.08], C = [0.74, 0.08], P = 9, AX = 0.56, pts = [], meta = [];
+    const add = (m, p) => { meta.push(m); pts.push(p); };
+    const rnd = (a, b) => { const v = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return v - Math.floor(v); };
+    const g = (a, b) => (rnd(a, b) + rnd(a + 7, b) + rnd(a + 13, b) - 1.5) * 1.15;
+    for (let q = 0; q < 10; q++) add({ kind: "sent", j: [gauss() * 0.012, gauss() * 0.012] }, { x: L[0], y: L[1], c: "gold", a: 1, s: 1.25 });
+    for (let k = 0; k < 80; k++) add({ kind: "cloud", k }, { x: L[0], y: L[1], c: "cyan", a: 0.7, s: 0.75 });
+    for (let q = 0; q < 70; q++) add({ kind: "ring", b: q / 70 * TAU }, { x: L[0], y: L[1], c: "dim", a: 0.45, s: 0.55 });
+    const E = [[1, 0, 0], [0, 1, 0], [0, 0, 1]], AC = ["coral", "mint", "cyan"];
+    E.forEach((e, i) => { for (let q = 0; q < 34; q++) add({ kind: "axis", i, u: q / 33 - 0.5 }, { x: C[0], y: C[1], c: AC[i], a: 0.5, s: 0.55 }); });
+    for (let q = 0; q < 22; q++) add({ kind: "light", j: [gauss() * 0.028, gauss() * 0.028] }, { x: C[0], y: C[1], c: "paper", a: 1, s: 1.4 });
+    for (let q = 0; q < 40; q++) add({ kind: "halo", b: q / 40 * TAU }, { x: C[0], y: C[1], c: "paper", a: 0.5, s: 0.6 });
+    for (let q = 0; q < 30; q++) add({ kind: "arrow", u: (q + 1) / 30 }, { x: C[0], y: C[1], c: "gold", a: 0, s: q > 26 ? 1.4 : 0.85 });
+    const dir = (() => { const d = [0.8, 0.5, 0.25], n = Math.hypot(...d); return d.map(v => v / n * 0.42); })();
+    const sm = u => u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u);
+    const state = t => { const c = t % P; if (c < P / 2) { const k = sm((c - 0.8) / 0.8) * (c < P / 2 - 0.5 ? 1 : sm((P / 2 - c) / 0.5)); return { W: 1 - 0.8 * k, A: 0.6 * k, miss: true }; } return { W: 1, A: sm((c - P / 2 - 0.8) / 0.8) * (c > P - 0.5 ? sm((P - c) / 0.5) : 1), miss: false }; };
+    const yaw = t => 0.6 + t * 0.25, pr = (v, t) => view3(v[0], v[1], v[2], yaw(t), 0.45);
+    return tScene({
+      stillT: 6.6,
+      labels: [
+        { x: L[0], y: 0.64, html: "Shannon", cls: "role" }, { x: C[0], y: 0.64, html: "closure", cls: "role" },
+        { x: L[0], y: -0.42, html: "random: only its size can be known", cls: "example" },
+        { x: C[0], y: -0.42, html: "", cls: "example", live: t => state(t).miss ? "missing: the light at the centre changes" : "moved: the light holds, and only the direction changes" },
+        ...["R", "G", "B"].map((h, i) => ({ x: 0, y: 0, html: h, cls: "tag", at: t => { const [x, y] = pr(E[i].map(v => v * (AX / 2 + 0.05)), t); return [C[0] + x, C[1] + y]; } }))
+      ],
+      custom: {
+        points: pts,
+        update: (t, out, o) => {
+          const st = state(t), tip = dir.map(v => v * st.A);
+          meta.forEach((m, i) => {
+            let v;
+            switch (m.kind) {
+              case "sent": v = { x: L[0] + m.j[0], y: L[1] + m.j[1], a: 1 }; break;
+              case "cloud": { const n = Math.floor(t / 0.35 + m.k * 0.37); v = { x: L[0] + g(m.k, n) * 0.11, y: L[1] + g(m.k + 101, n) * 0.11, a: 0.65 }; break; }
+              case "ring": v = { x: L[0] + 0.27 * Math.cos(m.b), y: L[1] + 0.27 * Math.sin(m.b), a: 0.45 }; break;
+              case "axis": { const [x, y, d] = pr(E[m.i].map(e => e * m.u * AX), t); v = { x: C[0] + x, y: C[1] + y, a: 0.2 + 0.45 * d }; break; }
+              case "light": v = { x: C[0] + m.j[0], y: C[1] + m.j[1], a: 0.12 + 0.88 * st.W }; break;
+              case "halo": v = { x: C[0] + 0.09 * Math.cos(m.b), y: C[1] + 0.09 * Math.sin(m.b), a: 0.55 * st.W }; break;
+              default: { const [x, y] = pr(tip.map(e => e * m.u), t); v = { x: C[0] + x, y: C[1] + y, a: st.A > 0.02 ? 0.95 : 0 }; }
+            }
+            out[o + i] = v;
+          });
+        }
+      }
+    });
+  };
+
+  /* The noise theorem as a prism: a sent and a received stream of the same records, each composed into
+     one rotation; the gap between the two enters a prism and splits into the existence channel (W) and
+     the three position channels (R, G, B). A missing record lights only W; two swapped records light
+     only R, G and B. */
+  SCENES.gprism = () => {
+    const N = 9, X0 = -1.38, DX = 0.105, YA = 0.42, YB = 0.1, PA = [-0.2, YA], PB = [-0.2, YB], PR = [0.38, 0.26], P = 10;
+    const OUT = [{ y: 0.58, c: "paper", w: true }, { y: 0.2, c: "coral" }, { y: 0.04, c: "mint" }, { y: -0.12, c: "cyan" }], TX = 1.12;
+    const pts = [], meta = [];
+    const add = (m, p) => { meta.push(m); pts.push(p); };
+    const sm = u => u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u);
+    const RC = ["gold", "coral", "mint", "cyan", "violet", "ice", "brass", "gold", "coral"];
+    for (let side = 0; side < 2; side++) for (let k = 0; k < N; k++) for (let q = 0; q < 6; q++) add({ kind: "rec", side, k, j: [gauss() * 0.011, gauss() * 0.011] }, { x: X0 + k * DX, y: side ? YB : YA, c: RC[k], a: 1, s: 1 });
+    for (let q = 0; q < 14; q++) add({ kind: "hole", b: q / 14 * TAU }, { x: X0 + 5 * DX, y: YB, c: "dim", a: 0, s: 0.55 });
+    [PA, PB].forEach((pp, side) => { for (let q = 0; q < 22; q++) add({ kind: "prod", side, b: q / 22 * TAU }, { x: pp[0], y: pp[1], c: "ice", a: 0.7, s: 0.6 }); });
+    const tri = [[PR[0] - 0.1, PR[1] - 0.1], [PR[0] - 0.1, PR[1] + 0.12], [PR[0] + 0.1, PR[1] + 0.01]];
+    [[0, 1], [1, 2], [2, 0]].forEach(([a, b]) => { for (let q = 0; q < 18; q++) { const u = q / 18; add({ kind: "fixed", x: tri[a][0] + (tri[b][0] - tri[a][0]) * u, y: tri[a][1] + (tri[b][1] - tri[a][1]) * u }, { x: PR[0], y: PR[1], c: "paper", a: 0.75, s: 0.65 }); } });
+    const caseOf = t => (t % P) < P / 2 ? 0 : 1;
+    const level = (o, t) => { const c = t % P, cs = caseOf(t), on = sm(((c % (P / 2)) - 1.2) / 0.8); if (cs === 0) return o.w ? 0.25 + 0.7 * on : 0.12 + 0.3 * on; return o.w ? 0.08 : 0.25 + 0.7 * on; };
+    const streams = [
+      ...[PA, PB].map((pp, side) => ({ path: u => [X0 + N * DX - 0.04 + (pp[0] - 0.035 - (X0 + N * DX - 0.04)) * u, pp[1]], n: 3, speed: 0.5, c: "ice", ends: true, s: 0.8 })),
+      ...[PA, PB].map(pp => ({ path: u => [pp[0] + 0.04 + (PR[0] - 0.12 - pp[0] - 0.04) * u, pp[1] + (PR[1] - pp[1]) * u], n: 4, speed: 0.45, c: "paper", ends: true, s: 0.85 }))
+    ];
+    OUT.forEach((o, i) => { for (let q = 0; q < 34; q++) add({ kind: "beam", i, u: q / 33 }, { x: PR[0], y: PR[1], c: o.c, a: 0, s: o.w ? 1 : 0.85 }); });
+    return tScene({
+      stillT: 7.6,
+      streams,
+      labels: [
+        { x: X0 + 0.42, y: YA + 0.13, html: "sent", cls: "tag" }, { x: X0 + 0.42, y: YB - 0.13, html: "received", cls: "tag" },
+        { x: PA[0], y: YA + 0.13, html: "composed", cls: "tag" },
+        { x: TX + 0.06, y: OUT[0].y, html: "W · is it there", cls: "fword left" },
+        { x: TX + 0.06, y: OUT[2].y, html: "R G B · where it went", cls: "fword left" },
+        { x: -0.1, y: -0.42, html: "", cls: "example", live: t => caseOf(t) ? "two records swapped: the existence channel stays exactly dark" : "one record missing: the existence channel lights" }
+      ],
+      custom: {
+        points: pts,
+        update: (t, out, o) => {
+          const c = t % P, cs = caseOf(t), sw = cs ? sm(((c - P / 2) - 0.2) / 0.8) : 0, miss = cs ? 0 : sm((c - 0.2) / 0.6);
+          meta.forEach((m, i) => {
+            let v;
+            switch (m.kind) {
+              case "rec": {
+                let x = X0 + m.k * DX, y = m.side ? YB : YA, a = 1;
+                if (m.side && cs === 0 && m.k === 5) a = 1 - miss;
+                if (m.side && cs === 1 && (m.k === 2 || m.k === 6)) { const to = X0 + (m.k === 2 ? 6 : 2) * DX; x = x + (to - x) * sw; y += Math.sin(Math.PI * sw) * (m.k === 2 ? 0.08 : -0.08); }
+                v = { x: x + m.j[0], y: y + m.j[1], a }; break;
+              }
+              case "hole": v = { x: X0 + 5 * DX + 0.035 * Math.cos(m.b), y: YB + 0.035 * Math.sin(m.b), a: cs === 0 ? 0.6 * miss : 0 }; break;
+              case "prod": { const pp = m.side ? PB : PA; v = { x: pp[0] + 0.045 * Math.cos(m.b), y: pp[1] + 0.045 * Math.sin(m.b), a: 0.7 }; break; }
+              case "fixed": v = { x: m.x, y: m.y, a: 0.75 }; break;
+              default: { const ob = OUT[m.i], sx = PR[0] + 0.1, sy = PR[1] + 0.01, flow = (m.u + t * 0.35) % 1; v = { x: sx + (TX - sx) * flow, y: sy + (ob.y - sy) * flow, a: level(ob, t) * (0.4 + 0.6 * Math.sin(Math.PI * flow)) }; }
+            }
+            out[o + i] = v;
+          });
+        }
+      }
+    });
+  };
+
+  /* The ladder of fibrations: two points over a circle (the Möbius double cover), a circle over a
+     sphere (Hopf, Dirac's monopole), a three-sphere over a four-sphere (the instanton) and a
+     seven-sphere over an eight-sphere, the only four, as Adams proved. */
+  SCENES.gladder = () => {
+    const X = [-1.08, -0.36, 0.36, 1.08], FY = 0.42, BYc = -0.12, BRr = 0.17, pts = [], meta = [];
+    const add = (m, p) => { meta.push(m); pts.push(p); };
+    const COL = ["ice", "cyan", "mint", "violet"];
+    const fib = n => Array.from({ length: n }, (_, k) => { const y = 1 - 2 * (k + 0.5) / n, rr = Math.sqrt(1 - y * y), a = k * 2.39996; return [rr * Math.cos(a), y, rr * Math.sin(a)]; });
+    for (let q = 0; q < 70; q++) add({ kind: "bcirc", b: q / 70 * TAU }, { x: X[0], y: BYc, c: COL[0], a: 0.5, s: 0.6 });
+    [1, 2, 3].forEach(col => fib(col === 1 ? 90 : 110).forEach(p => add({ kind: "bsph", col, p }, { x: X[col], y: BYc, c: COL[col], a: 0.5, s: 0.6 })));
+    for (let col = 0; col < 4; col++) for (let q = 0; q < 8; q++) add({ kind: "bpt", col, j: [gauss() * 0.01, gauss() * 0.01] }, { x: X[col], y: BYc, c: "gold", a: 1, s: 1.1 });
+    for (let col = 0; col < 4; col++) for (let q = 0; q < 18; q++) add({ kind: "link", col, u: q / 17 }, { x: X[col], y: 0, c: "dim", a: 0.35, s: 0.5 });
+    for (let s2 = 0; s2 < 2; s2++) for (let q = 0; q < 8; q++) add({ kind: "two", s2, j: [gauss() * 0.011, gauss() * 0.011] }, { x: X[0], y: FY, c: s2 ? "cyan" : "gold", a: 1, s: 1.15 });
+    for (let q = 0; q < 50; q++) add({ kind: "fcirc", b: q / 50 * TAU }, { x: X[1], y: FY, c: COL[1], a: 0.7, s: 0.65 });
+    for (let q = 0; q < 6; q++) add({ kind: "fcpt", j: [gauss() * 0.008, gauss() * 0.008] }, { x: X[1], y: FY, c: "gold", a: 1, s: 1 });
+    const eta = Math.PI / 4;
+    for (let f = 0; f < 7; f++) for (let k = 0; k < 34; k++) { const phi = f / 7 * TAU, psi = k / 34 * TAU, x1 = Math.cos(eta) * Math.cos(psi), x2 = Math.cos(eta) * Math.sin(psi), x3 = Math.sin(eta) * Math.cos(psi + phi), x4 = Math.sin(eta) * Math.sin(psi + phi), dd = 1 - x4; add({ kind: "hopf", p: [x1 / dd, x3 / dd, x2 / dd] }, { x: X[2], y: FY, c: COL[2], a: 0.6, s: 0.55 }); }
+    fib(150).forEach(p => add({ kind: "s7", p, j: Math.random() * TAU }, { x: X[3], y: FY, c: COL[3], a: 0.4, s: 0.55 }));
+    return tScene({
+      stillT: 3.2,
+      labels: [
+        ...["ℝ", "ℂ", "ℍ", "𝕆"].map((h, k) => ({ x: X[k], y: 0.76, html: h, cls: "math c-math" })),
+        ...["two points", "a circle", "a three-sphere", "a seven-sphere"].map((h, k) => ({ x: X[k], y: 0.2, html: h, cls: "fword" })),
+        ...["over a circle", "over a sphere", "over a four-sphere", "over an eight-sphere"].map((h, k) => ({ x: X[k], y: -0.38, html: h, cls: "fword" })),
+        ...["the Möbius band", "Dirac’s monopole", "the instanton", "still open"].map((h, k) => ({ x: X[k], y: -0.51, html: h, cls: `fword c-${["cyan", "cyan", "mint", "violet"][k]}` })),
+        { x: 0, y: -0.76, html: "spheres over spheres exist only at these four levels", cls: "example" }
+      ],
+      custom: {
+        points: pts,
+        update: (t, out, o) => {
+          const th = t * 0.8, yaw = t * 0.3;
+          const sph = (col, p, rad) => { const [x, y, d] = view3(p[0], p[1], p[2], yaw + col, 0.35); return [X[col] + x * rad, BYc + y * rad, d]; };
+          const bp = col => col === 0 ? [X[0] + BRr * Math.cos(th), BYc + BRr * 0.45 * Math.sin(th)] : sph(col, [Math.cos(th * 0.7) * 0.8, 0.45, Math.sin(th * 0.7) * 0.8], BRr);
+          meta.forEach((m, i) => {
+            let v;
+            switch (m.kind) {
+              case "bcirc": v = { x: X[0] + BRr * Math.cos(m.b), y: BYc + BRr * 0.45 * Math.sin(m.b), a: 0.5 }; break;
+              case "bsph": { const [x, y, d] = sph(m.col, m.p, BRr); v = { x, y, a: 0.12 + 0.55 * d }; break; }
+              case "bpt": { const [x, y] = bp(m.col); v = { x: x + m.j[0], y: y + m.j[1], a: 1 }; break; }
+              case "link": { const [x, y] = bp(m.col); v = { x: x + (X[m.col] - x) * m.u, y: y + (FY - 0.14 - y) * m.u, a: 0.35 }; break; }
+              case "two": { const c = Math.cos(th / 2) * (m.s2 ? -1 : 1); v = { x: X[0] + 0.1 * c + m.j[0], y: FY + 0.035 * Math.sin(th / 2) * (m.s2 ? -1 : 1) + m.j[1], a: 1 }; break; }
+              case "fcirc": v = { x: X[1] + 0.12 * Math.cos(m.b), y: FY + 0.05 * Math.sin(m.b), a: 0.7 }; break;
+              case "fcpt": { const a = t * 1.6; v = { x: X[1] + 0.12 * Math.cos(a) + m.j[0], y: FY + 0.05 * Math.sin(a) + m.j[1], a: 1 }; break; }
+              case "hopf": { const [x, y, d] = view3(m.p[0], m.p[1], m.p[2], t * 0.25, 0.9); v = { x: X[2] + x * 0.075, y: FY + y * 0.075, a: 0.15 + 0.7 * d }; break; }
+              default: { const [x, y, d] = view3(m.p[0], m.p[1], m.p[2], -t * 0.2, 0.5), fl = 0.5 + 0.5 * Math.sin(t * 2 + m.j); v = { x: X[3] + x * 0.13, y: FY + y * 0.13, a: (0.1 + 0.45 * d) * (0.5 + 0.5 * fl) }; }
+            }
+            out[o + i] = v;
+          });
+        }
+      }
+    });
+  };
+
+  /* No abstract mathematics: one circle on the left, and from it, along flowing lines, every structure
+     the section built: closures as whole numbers, rotations side by side as signals, rotations into each
+     other as the four number systems, spacetime at the quaternion level, and spheres over spheres. */
+  SCENES.gfrom = () => {
+    const SX = -0.92, SY = 0.02, SR = 0.24, NX = 0.22, NY = [0.66, 0.33, 0, -0.33, -0.66], pts = [], meta = [];
+    const add = (m, p) => { meta.push(m); pts.push(p); };
+    for (let q = 0; q < 80; q++) add({ kind: "src", b: q / 80 * TAU }, { x: SX, y: SY, c: "ice", a: 0.5, s: 0.7 });
+    for (let q = 0; q < 10; q++) add({ kind: "spt", j: [gauss() * 0.012, gauss() * 0.012] }, { x: SX, y: SY, c: "gold", a: 1, s: 1.25 });
+    for (let k = 0; k < 3; k++) for (let q = 0; q < 16; q++) add({ kind: "num", k, b: q / 16 * TAU }, { x: NX, y: NY[0], c: "gold", a: 0, s: 0.6 });
+    for (let q = 0; q < 40; q++) add({ kind: "wave", u: q / 39 }, { x: NX, y: NY[1], c: "gold", a: 0.8, s: 0.6 });
+    [1, 2, 4, 8].forEach((h, c) => { for (let q = 0; q < h; q++) add({ kind: "bar", c, q }, { x: NX, y: NY[2], c: ["ice", "cyan", "mint", "violet"][c], a: 0.9, s: 0.8 }); });
+    for (let ax = 0; ax < 3; ax++) for (let q = 0; q < 10; q++) add({ kind: "axis", ax, u: q / 9 }, { x: NX, y: NY[3], c: "mint", a: 0.8, s: 0.6 });
+    for (let rg = 0; rg < 2; rg++) for (let q = 0; q < 30; q++) add({ kind: "lnk", rg, b: q / 30 * TAU }, { x: NX, y: NY[4], c: rg ? "violet" : "cyan", a: 0.8, s: 0.6 });
+    const line = k => u => [SX + SR + 0.03 + (NX - 0.17 - SX - SR - 0.03) * u, SY + (NY[k] - SY) * u];
+    return tScene({
+      stillT: 5.2,
+      streams: NY.map((_, k) => ({ path: line(k), n: 6, speed: 0.22, c: "gold", ends: true, at: 0.3 + k * 0.25, s: 0.9 })),
+      shapes: NY.map((_, k) => ({ pts: Array.from({ length: 34 }, (_, q) => line(k)(q / 33)), c: "dim", a: 0.3, s: 0.5, at: 0.3 + k * 0.25 })),
+      labels: [
+        { x: SX, y: SY - SR - 0.12, html: "one circle", cls: "example" },
+        ...["closures: whole numbers", "side by side: signals", "into each other: four number systems", "three and one: spacetime", "spheres over spheres: fibrations"].map((h, k) => ({ x: NX + 0.2, y: NY[k], html: h, cls: "example left" }))
+      ],
+      custom: {
+        points: pts,
+        update: (t, out, o) => {
+          const a = t * 1.1, lit = Math.floor(t / 0.9) % 4;
+          meta.forEach((m, i) => {
+            let v;
+            switch (m.kind) {
+              case "src": v = { x: SX + SR * Math.cos(m.b), y: SY + SR * Math.sin(m.b), a: 0.5 }; break;
+              case "spt": v = { x: SX + SR * Math.cos(a) + m.j[0], y: SY + SR * Math.sin(a) + m.j[1], a: 1 }; break;
+              case "num": v = { x: NX - 0.09 + m.k * 0.09 + 0.032 * Math.cos(m.b), y: NY[0] + 0.032 * Math.sin(m.b), a: m.k < lit ? 0.9 : 0.15 }; break;
+              case "wave": { const x = -0.13 + 0.26 * m.u, ph = t * 2.2 - x * 30; v = { x: NX + x, y: NY[1] + 0.05 * Math.sin(ph) + 0.025 * Math.sin(2 * ph + 1), a: 0.8 }; break; }
+              case "bar": v = { x: NX - 0.105 + m.c * 0.07, y: NY[2] - 0.1 + m.q * 0.028, a: 0.9 }; break;
+              case "axis": { const e = [[1, 0, 0], [0, 1, 0], [0, 0, 1]][m.ax], [x, y, d] = view3(e[0] * (m.u - 0.5) * 0.22, e[1] * (m.u - 0.5) * 0.22, e[2] * (m.u - 0.5) * 0.22, t * 0.5, 0.4); v = { x: NX + x, y: NY[3] + y, a: 0.3 + 0.6 * d }; break; }
+              default: { const R = 0.07, p = m.rg ? [R * 0.55 + R * Math.cos(m.b), 0, R * Math.sin(m.b)] : [-R * 0.55 + R * Math.cos(m.b), R * Math.sin(m.b), 0], [x, y, d] = view3(p[0], p[1], p[2], t * 0.6, 0.3); v = { x: NX + x, y: NY[4] + y, a: 0.3 + 0.6 * d }; }
+            }
+            out[o + i] = v;
+          });
+        }
+      }
+    });
+  };
+
+  /* One object: a point going round a circle (mathematics), a weight on a spring (physics) and a
+     program stepping twelve times a turn (computation), joined by one level line. The spring leaves a
+     smooth wave on the left, the program a stepped one on the right, the same wave in both. */
+  SCENES.gsame = () => {
+    const cy = 0.1, R = 0.38, PER = 6, w = TAU / PER, XM = -0.74, XP = 0.74, V = 0.11, NS = 12;
+    const th = t => w * t, lvl = t => cy + R * Math.sin(th(t)), step = t => cy + R * Math.sin(Math.floor(th(t) / (TAU / NS)) * (TAU / NS));
+    const pts = [], meta = [];
+    const add = (m, p) => { meta.push(m); pts.push(p); };
+    for (let k = 0; k < 96; k++) add({ kind: "ring", a: k / 96 * TAU }, { x: R, y: cy, c: "ice", a: 0.4, s: 0.7 });
+    for (let k = 0; k < NS; k++) add({ kind: "tick", a: k / NS * TAU }, { x: R, y: cy, c: "brass", a: 0.55, s: 0.9 });
+    for (let q = 0; q < 12; q++) add({ kind: "pt", j: [gauss() * 0.012, gauss() * 0.012] }, { x: R, y: cy, c: "gold", a: 1, s: 1.3 });
+    for (let k = 0; k < 26; k++) add({ kind: "bar", x: XM - 0.13 + k * 0.01 }, { x: XM, y: 0.68, c: "dim", a: 0.6, s: 0.7 });
+    for (let k = 0; k < 64; k++) add({ kind: "spring", u: k / 63 }, { x: XM, y: 0.6, c: "cyan", a: 0.7, s: 0.6 });
+    for (let q = 0; q < 16; q++) add({ kind: "mass", j: [gauss() * 0.022, gauss() * 0.022] }, { x: XM, y: cy, c: "cyan", a: 1, s: 1.15 });
+    for (let k = 0; k < 70; k++) add({ kind: "wave", u: k / 70 }, { x: XM, y: cy, c: "cyan", a: 0.5, s: 0.65 });
+    for (let k = 0; k < 140; k++) add({ kind: "stair", u: k / 140 }, { x: XP, y: cy, c: "brass", a: 0.6, s: 0.65 });
+    for (let k = 0; k < 13; k++) for (let q = 0; q < 7; q++) add({ kind: "riser", k, u: q / 6 }, { x: XP, y: cy, c: "brass", a: 0, s: 0.6 });
+    for (let k = 0; k < 8; k++) add({ kind: "reg", j: [gauss() * 0.012, gauss() * 0.012] }, { x: XP, y: cy, c: "brass", a: 1, s: 1.25 });
+    for (let k = 0; k < 90; k++) add({ kind: "level", u: k / 89 }, { x: 0, y: cy, c: "paper", a: 0.22, s: 0.5 });
+    return tScene({
+      stillT: 2.1,
+      labels: [
+        ...[["physics", XM - 0.28], ["mathematics", 0], ["computation", XP + 0.28]].map(([h, x]) => ({ x, y: -0.48, html: h, cls: "role" })),
+        { x: XM - 0.28, y: -0.62, html: "a weight on a spring", cls: "example" },
+        { x: 0, y: -0.62, html: "a point going round", cls: "example" },
+        { x: XP + 0.28, y: -0.62, html: "a program, twelve steps a turn", cls: "example" }
+      ],
+      custom: {
+        points: pts,
+        update: (t, out, o) => {
+          const a = th(t), h = lvl(t), hs = step(t), span = V * PER;
+          meta.forEach((m, k) => {
+            let r;
+            switch (m.kind) {
+              case "ring": r = { x: R * Math.cos(m.a), y: cy + R * Math.sin(m.a), a: 0.4 }; break;
+              case "tick": r = { x: R * Math.cos(m.a), y: cy + R * Math.sin(m.a), a: 0.55 }; break;
+              case "pt": r = { x: R * Math.cos(a) + m.j[0], y: cy + R * Math.sin(a) + m.j[1], a: 1 }; break;
+              case "bar": r = { x: m.x, y: 0.68, a: 0.6 }; break;
+              case "spring": { const top = 0.68, bot = h + 0.05, y = top + (bot - top) * m.u, z = (m.u * 14) % 2, tri = z < 1 ? z : 2 - z; r = { x: XM + (m.u > 0.04 && m.u < 0.96 ? (tri - 0.5) * 0.09 : 0), y, a: 0.7 }; break; }
+              case "mass": r = { x: XM + m.j[0], y: h + m.j[1], a: 1 }; break;
+              case "wave": { const tau = m.u * PER; r = { x: XM - 0.06 - V * tau, y: lvl(t - tau), a: 0.55 * (1 - m.u * 0.7) }; break; }
+              case "stair": { const tau = m.u * PER; r = { x: XP + 0.06 + V * tau, y: step(t - tau), a: 0.65 * (1 - m.u * 0.7) }; break; }
+              case "riser": { const d = PER / NS, kb = Math.floor(t / d) - m.k, tau = t - kb * d, y0 = cy + R * Math.sin((kb - 1) * TAU / NS), y1 = cy + R * Math.sin(kb * TAU / NS);
+                r = { x: XP + 0.06 + V * tau, y: y0 + (y1 - y0) * m.u, a: tau > 0 && tau < PER ? 0.6 * (1 - tau / PER * 0.7) : 0 }; break; }
+              case "reg": r = { x: XP + m.j[0], y: hs + m.j[1], a: 1 }; break;
+              default: r = { x: XM + (XP - XM) * m.u, y: h, a: 0.22 };
+            }
+            out[o + k] = r;
+          });
+          void span;
+        }
+      }
+    });
+  };
+
+  /* What this work shows, built in six stages that follow the six claims: a shape that moves and keeps
+     itself; the circle with its right angle and its opposite; the circle read by quadrant as two bits;
+     a full rotation returning to the start; a turned copy of the shape lined up with it; and the one
+     circle shared by physics, mathematics and computation. */
+  SCENES.gshows = () => {
+    const cy = 0.12, R = 0.46, P = 18, S = [0, 2.7, 5.4, 8.1, 10.8, 13.5], END = 17.3;
+    const sm = u => u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u);
+    const VA = [0.35, 2.25, 4.15], pts = [], meta = [];
+    const add = (m, p) => { meta.push(m); pts.push(p); };
+    for (let k = 0; k < 110; k++) add({ kind: "ring", a: k / 110 * TAU }, { x: 0, y: cy, c: "ice", a: 0, s: 0.75 });
+    [[0, 1], [1, 2], [2, 0]].forEach(([i, j]) => { for (let q = 0; q < 26; q++) { add({ kind: "tri", i, j, u: q / 26 }, { x: 0, y: cy, c: "gold", a: 0, s: 0.85 }); add({ kind: "copy", i, j, u: q / 26 }, { x: 0, y: cy, c: "cyan", a: 0, s: 0.85 }); } });
+    for (let q = 0; q < 10; q++) add({ kind: "perp", j: [gauss() * 0.013, gauss() * 0.013] }, { x: 0, y: cy + R, c: "cyan", a: 0, s: 1.2 });
+    for (let q = 0; q < 10; q++) add({ kind: "opp", j: [gauss() * 0.013, gauss() * 0.013] }, { x: -R, y: cy, c: "violet", a: 0, s: 1.2 });
+    for (let q = 0; q < 10; q++) add({ kind: "start", j: [gauss() * 0.013, gauss() * 0.013] }, { x: R, y: cy, c: "paper", a: 0, s: 1.2 });
+    for (let k = 0; k < 2; k++) for (let q = 0; q < 40; q++) add({ kind: "axis", k, u: q / 39 }, { x: 0, y: cy, c: "dim", a: 0, s: 0.55 });
+    for (let q = 0; q < 12; q++) add({ kind: "runner", j: [gauss() * 0.012, gauss() * 0.012] }, { x: R, y: cy, c: "gold", a: 0, s: 1.3 });
+    const stageOf = c => S.filter(s => c >= s).length;
+    const shapeAngle = t => 0.35 * t;
+    const vert = (i, t, c, rot = 0) => { const rr = 0.24 + (R - 0.24) * sm((c - S[1]) / 1.4), a = VA[i] + shapeAngle(t) + rot; return [rr * Math.cos(a), cy + rr * Math.sin(a)]; };
+    const show = (c, k) => stageOf(c) === k;
+    const lab = (k, x, y, html, cls) => ({ x, y, html: "", cls, live: t => show(t % P, k) && (t % P) < END ? html : "" });
+    return tScene({
+      stillT: 9.4,
+      labels: [
+        lab(2, 0, cy + R + 0.12, "a right angle", "example"), lab(2, -R - 0.08, cy, "the opposite", "example left-of"), lab(2, R + 0.08, cy, "the start", "example left"),
+        ...[["00", 1], ["10", 3], ["11", 5], ["01", 7]].map(([h, n]) => lab(3, (R + 0.13) * Math.cos(n * Math.PI / 4), cy + (R + 0.13) * Math.sin(n * Math.PI / 4), h, "slot")),
+        lab(4, 0, cy - R - 0.12, "<i>e</i><sup>2π<i>i</i></sup> = 1", "math c-math"),
+        lab(6, 0, cy + R + 0.14, "physics", "role"), lab(6, -(R + 0.12) * 0.87, cy - (R + 0.12) * 0.5, "mathematics", "role left-of"), lab(6, (R + 0.12) * 0.87, cy - (R + 0.12) * 0.5, "computation", "role left"),
+        { x: 0, y: -0.68, html: "", cls: "example", live: t => { const c = t % P; if (c > END) return ""; return ["1 · it moves and keeps its shape", "2 · the circle: a right angle and an opposite", "3 · read by quadrant, it gives Shannon’s two bits", "4 · a full rotation returns exactly to the start", "5 · a turned copy lines up with the original", "6 · one circle in physics, mathematics and computation"][stageOf(c) - 1]; } }
+      ],
+      custom: {
+        points: pts,
+        update: (t, out, o) => {
+          const c = t % P, F = Math.min(1, c / 0.4) * (c > END ? Math.max(0, (P - c) / (P - END)) : 1), st = stageOf(c);
+          meta.forEach((m, k) => {
+            let r;
+            if (m.kind === "ring") { const drawn = sm((c - S[1]) / 1.4), on = m.a / TAU < drawn ? 1 : 0, flash = st === 4 && c > S[3] + 2.1 && c < S[3] + 2.6; r = { x: R * Math.cos(m.a), y: cy + R * Math.sin(m.a), a: on * (flash ? 0.95 : 0.45) * F, c: flash ? "cyan" : "ice" }; }
+            else if (m.kind === "tri") { const [x1, y1] = vert(m.i, t, c), [x2, y2] = vert(m.j, t, c); r = { x: x1 + (x2 - x1) * m.u, y: y1 + (y2 - y1) * m.u, a: 0.9 * F }; }
+            else if (m.kind === "copy") { const on = sm((c - S[4]) / 0.5), rot = 1.3 * (1 - sm((c - S[4] - 0.6) / 1.6)), [x1, y1] = vert(m.i, t, c, rot), [x2, y2] = vert(m.j, t, c, rot); r = { x: x1 + (x2 - x1) * m.u, y: y1 + (y2 - y1) * m.u, a: (st >= 5 ? 0.85 * on : 0) * F }; }
+            else if (m.kind === "perp" || m.kind === "opp" || m.kind === "start") { const [bx, by] = m.kind === "perp" ? [0, cy + R] : m.kind === "opp" ? [-R, cy] : [R, cy]; r = { x: bx + m.j[0], y: by + m.j[1], a: (st >= 2 ? sm((c - S[1] - 1.2) / 0.5) : 0) * F }; }
+            else if (m.kind === "axis") { const L = R; r = m.k ? { x: 0, y: cy - L + 2 * L * m.u, a: (st >= 3 ? 0.4 * sm((c - S[2]) / 0.6) : 0) * F } : { x: -L + 2 * L * m.u, y: cy, a: (st >= 3 ? 0.4 * sm((c - S[2]) / 0.6) : 0) * F }; }
+            else { const u = sm((c - S[3]) / 2.1), a = u * TAU; r = { x: R * Math.cos(a) + m.j[0], y: cy + R * Math.sin(a) + m.j[1], a: st === 4 ? F : 0 }; }
+            out[o + k] = r;
+          });
+        }
+      }
+    });
+  };
+
+  /* One object, three fields: in each a change and what it keeps. A planet sweeps equal areas in equal
+     times (Kepler's second law, angular momentum kept); a 3-4-5 triangle is moved, turned and flipped and
+     keeps its sides; 23 is divided into fives and every step keeps 5 × q + r = 23. */
+  SCENES.gkeeps = () => {
+    const X = [-1.02, 0, 1.02], cy = 0.12, pts = [], meta = [];
+    const add = (m, p) => { meta.push(m); pts.push(p); };
+    const smooth = u => u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u);
+    /* physics: the orbit, the sun at a focus, eight sectors of equal area */
+    const a = 0.32, ecc = 0.62, b = a * Math.sqrt(1 - ecc * ecc), T = 7, SUN = [X[0] - a * ecc, cy];
+    const kepler = M => { let E = M; for (let k = 0; k < 8; k++) E -= (E - ecc * Math.sin(E) - M) / (1 - ecc * Math.cos(E)); return [X[0] + a * Math.cos(E), cy + b * Math.sin(E)]; };
+    for (let k = 0; k < 110; k++) { const E = k / 110 * TAU; add({ kind: "orbit" }, { x: X[0] + a * Math.cos(E), y: cy + b * Math.sin(E), c: "dim", a: 0.4, s: 0.6 }); }
+    for (let sct = 0; sct < 8; sct++) for (let r = 0; r < 6; r++) for (let q = 1; q <= 9; q++) {
+      const M = (sct + r / 6) / 8 * TAU + 0.001, f = q / 9, [px, py] = kepler(M);
+      add({ kind: "area", M, edge: r === 0, x: SUN[0] + (px - SUN[0]) * f, y: SUN[1] + (py - SUN[1]) * f }, { x: SUN[0], y: SUN[1], c: sct % 2 ? "violet" : "cyan", a: 0, s: r === 0 ? 0.8 : 0.6 });
+    }
+    for (let q = 0; q < 10; q++) add({ kind: "sun", j: [gauss() * 0.016, gauss() * 0.016] }, { x: SUN[0], y: SUN[1], c: "gold", a: 1, s: 1.3 });
+    for (let q = 0; q < 7; q++) add({ kind: "planet", j: [gauss() * 0.01, gauss() * 0.01] }, { x: SUN[0], y: SUN[1], c: "paper", a: 1, s: 1.2 });
+    /* mathematics: a 3-4-5 triangle under moves */
+    const u = 0.085, V = [[0, 0], [4 * u, 0], [0, 3 * u]], G = [4 * u / 3, u], L = V.map(([x, y]) => [x - G[0], y - G[1]]);
+    const KF = [[0, 0, 0, 0, 1], [1.5, 1.1, 0.05, 0.04, 1], [3.0, 1.1, 0.05, 0.04, -1], [4.5, 2.7, -0.05, -0.03, -1], [6.0, 2.7, -0.05, -0.03, 1], [7.5, TAU, 0, 0, 1]];
+    const pose = t => {
+      const c = t % 8; let k = 0; while (k < KF.length - 2 && c > KF[k + 1][0]) k++;
+      const A = KF[k], B = KF[k + 1], w = smooth((c - A[0]) / (B[0] - A[0]));
+      return A.slice(1).map((v, i) => v + (B[i + 1] - v) * w);
+    };
+    const place = ([x, y], P) => { const [th, dx, dy, f] = P, xx = x * f; return [X[1] + dx + xx * Math.cos(th) - y * Math.sin(th), cy + dy + xx * Math.sin(th) + y * Math.cos(th)]; };
+    [[0, 1, 32], [1, 2, 40], [2, 0, 24]].forEach(([i, j, n]) => { for (let q = 0; q < n; q++) add({ kind: "tri", i, j, w: q / n }, { x: 0, y: cy, c: "violet", a: 0.9, s: 0.85 }); });
+    const sq = 0.035;
+    [[0, sq], [sq * 0.5, sq], [sq, sq], [sq, sq * 0.5], [sq, 0]].forEach(([x, y]) => add({ kind: "corner", p: [L[0][0] + x, L[0][1] + y] }, { x: 0, y: cy, c: "violet", a: 0.6, s: 0.6 }));
+    const side = (i, j, t) => { const P = pose(t), [x1, y1] = place(L[i], P), [x2, y2] = place(L[j], P), [gx, gy] = place([0, 0], P), mx = (x1 + x2) / 2, my = (y1 + y2) / 2, d = Math.hypot(mx - gx, my - gy); return [mx + (mx - gx) / d * 0.08, my + (my - gy) / d * 0.08]; };
+    /* computation: 23 divided into fives */
+    const P = 9, STEP = [0.9, 2.3, 3.7, 5.1], pile = i => [X[2] - 0.25 + (i % 6) * 0.1, cy - 0.1 - Math.floor(i / 6) * 0.085];
+    const row = (q, j) => [X[2] - 0.2 + j * 0.1, cy + 0.36 - q * 0.085];
+    for (let i = 0; i < 23; i++) { const s = i >= 3 ? 4 - Math.floor((i - 3) / 5) : -1; for (let q = 0; q < 5; q++) add({ kind: "apple", i, s, j: [gauss() * 0.009, gauss() * 0.009] }, { x: pile(i)[0], y: pile(i)[1], c: "brass", a: 0, s: 1.05 }); }
+    const steps = c => STEP.filter(s => c > s + 0.4).length;
+    return tScene({
+      stillT: 6.2,
+      labels: [
+        ...["physics", "mathematics", "computation"].map((w, k) => ({ x: X[k], y: 0.72, html: w, cls: "role" })),
+        { x: X[0], y: -0.5, html: "equal areas in equal times", cls: "example" },
+        { x: X[1], y: -0.5, html: "the sides stay 3, 4 and 5", cls: "example" },
+        { x: X[2], y: -0.5, html: "every step keeps 23", cls: "example" },
+        { x: X[2], y: -0.37, html: "", cls: "example", live: t => { const q = steps(t % P); return `5 × ${q} + ${23 - 5 * q} = 23`; } },
+        ...[[0, 1, "4"], [1, 2, "5"], [2, 0, "3"]].map(([i, j, h]) => ({ x: 0, y: cy, html: h, cls: "example", at: t => side(i, j, t) }))
+      ],
+      custom: {
+        points: pts,
+        update: (t, out, o) => {
+          const Mnow = (t % T) / T * TAU, fadeK = (t % T) > T - 0.6 ? (T - t % T) / 0.6 : 1, planet = kepler(Mnow), PZ = pose(t);
+          const c = t % P, fadeC = Math.min(1, c / 0.4) * (c > P - 0.5 ? (P - c) / 0.5 : 1);
+          meta.forEach((m, k) => {
+            let r;
+            if (m.kind === "orbit") r = { x: pts[k].x, y: pts[k].y, a: 0.4 };
+            else if (m.kind === "area") r = { x: m.x, y: m.y, a: m.M <= Mnow ? (m.edge ? 0.85 : 0.5) * fadeK : 0 };
+            else if (m.kind === "sun") r = { x: SUN[0] + m.j[0], y: SUN[1] + m.j[1], a: 1 };
+            else if (m.kind === "planet") r = { x: planet[0] + m.j[0], y: planet[1] + m.j[1], a: 1 };
+            else if (m.kind === "tri") { const [x1, y1] = place(L[m.i], PZ), [x2, y2] = place(L[m.j], PZ); r = { x: x1 + (x2 - x1) * m.w, y: y1 + (y2 - y1) * m.w, a: 0.9 }; }
+            else if (m.kind === "corner") { const [x, y] = place(m.p, PZ); r = { x, y, a: 0.6 }; }
+            else {
+              let [x, y] = pile(m.i);
+              if (m.s >= 0) { const w = smooth((c - STEP[m.s - 1]) / 0.8), [rx, ry] = row(m.s - 1, (m.i - 3) % 5); x += (rx - x) * w; y += (ry - y) * w + Math.sin(Math.PI * w) * 0.08; }
+              r = { x: x + m.j[0], y: y + m.j[1], a: 0.95 * fadeC };
+            }
+            out[o + k] = r;
+          });
+        }
+      }
+    });
+  };
+
+  /* One thing, and many: a single identity is one circle (gold). A second forms at a right angle,
+     linked through it, and the rest follow until the circles fill a closed space, the fibration. */
+  SCENES.gcompose = () => {
+    /* Hopf circles on one torus, projected to space. Each projected fibre is an exact circle; it is
+       rebuilt from three of its points so its dots are evenly spaced. Fibre 0 is the single identity,
+       fibre N/2 is the one at a right angle to it, then the rest fill in. */
+    const N = 12, K = 70, eta = Math.PI / 4, sc = 0.34, TILT = 0.5, fib = [];
+    const order = [0, 6, 3, 9, 1, 7, 4, 10, 2, 8, 5, 11], rank = [];
+    order.forEach((f, r) => { rank[f] = r; });
+    const hopf = (phi, psi) => {
+      const x1 = Math.cos(eta) * Math.cos(psi), x2 = Math.cos(eta) * Math.sin(psi), x3 = Math.sin(eta) * Math.cos(psi + phi), x4 = Math.sin(eta) * Math.sin(psi + phi);
+      const d = 1 - x4;
+      return [x1 / d, x3 / d, x2 / d];
+    };
+    const sub = (u, v) => [u[0] - v[0], u[1] - v[1], u[2] - v[2]], dot = (u, v) => u[0] * v[0] + u[1] * v[1] + u[2] * v[2];
+    const cross = (u, v) => [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+    const unit = u => { const l = Math.hypot(...u); return u.map(c => c / l); };
+    const circle = phi => {
+      const A = hopf(phi, 0), B = hopf(phi, TAU / 3), C = hopf(phi, 2 * TAU / 3);
+      const ab = sub(B, A), ac = sub(C, A), n = cross(ab, ac), nn = dot(n, n);
+      const w = cross(n, ab).map((c, i) => c * dot(ac, ac)), v = cross(ac, n).map((c, i) => c * dot(ab, ab));
+      const o = A.map((c, i) => c + (w[i] + v[i]) / (2 * nn)), rho = Math.hypot(...sub(A, o));
+      const u = unit(sub(A, o)), e = cross(unit(n), u);
+      return { o, rho, u, e, n: unit(n) };
+    };
+    const circles = [];
+    for (let f = 0; f < N; f++) circles.push(circle((f / N) * TAU));
+    /* start turned so the single circle faces the viewer */
+    const n0 = circles[0].n, sg = n0[1] < 0 ? -1 : 1, yaw0 = Math.atan2(sg * n0[0], sg * n0[2]);
+    circles.forEach((c, f) => { for (let k = 0; k < K; k++) { const s = (k / K) * TAU; fib.push({ f, u: k / K, p: [0, 1, 2].map(i => c.o[i] + c.rho * (Math.cos(s) * c.u[i] + Math.sin(s) * c.e[i])) }); } });
+    const start = f => [0, 1.9][rank[f]] ?? 3.5 + (rank[f] - 2) * 0.24, dur = f => rank[f] < 2 ? 1.1 : 0.5;
+    return tScene({
+      stillT: 9,
+      labels: [
+        { x: 0, y: -1.0, html: "", cls: "example", live: t => t < 1.9 ? "one identity: a single circle" : t < 3.5 ? "a second, at a right angle, linked through the first" : "composed, they fill a closed space: the fibration" }
+      ],
+      custom: {
+        points: fib.map(m => ({ x: 0, y: 0, c: m.f === 0 ? "gold" : m.f === 6 ? "violet" : "cyan", a: 0, s: m.f === 0 ? 1.2 : m.f === 6 ? 1.05 : 0.8 })),
+        update: (t, out, o) => {
+          const yaw = yaw0 + t * 0.04 + Math.max(0, t - 3.5) * 0.08;
+          fib.forEach((m, i) => {
+            const u = Math.min(1, Math.max(0, (t - start(m.f)) / dur(m.f)));
+            const [X, Y, d] = view3(m.p[0], m.p[1], m.p[2], yaw, TILT);
+            const lit = m.u < u ? 1 : 0, depth = rank[m.f] < 2 ? 0.6 + 0.4 * d : 0.3 + 0.7 * d, base = rank[m.f] < 2 ? 0.95 : 0.7;
+            out[o + i] = { x: X * sc, y: Y * sc + 0.1, a: lit * base * depth };
+          });
+        }
+      }
+    });
+  };
+
+  SCENES.gcount = () => {
+    const cx = -0.55, cy = 0.04, R = 0.5, T = 2.2, N = 5, P = T * (N + 1.2), pts = [];
+    for (let k = 0; k < 12; k++) pts.push({ x: cx, y: cy + R, c: "gold", a: 0, s: 1.5 - k * 0.08 });
+    for (let k = 0; k < 120; k++) pts.push({ x: cx, y: cy, c: "cyan", a: 0, s: 0.85 });
+    for (let n = 0; n < N; n++) for (let q = 0; q < 24; q++) pts.push({ x: 0, y: 0, c: "cyan", a: 0, s: 0.8 });
+    const X = n => 0.35 + n * 0.26, Y = cy;
+    const count = t => Math.min(N, Math.floor((t % P) / T));
+    return tScene({
+      stillT: T * 3.6,
+      labels: [
+        ...Array.from({ length: N }, (_, n) => ({ x: X(n), y: Y - 0.2, html: "", cls: "slot", live: t => count(t) > n ? String(n + 1) : "" })),
+        { x: cx, y: cy - R - 0.2, html: "a rotation that closes", cls: "tag" },
+        { x: X(2), y: Y + 0.28, html: "whole things", cls: "tag" },
+        { x: 0, y: -0.9, html: "each closure is one whole thing, and counting counts closures", cls: "example" }
+      ],
+      custom: {
+        points: pts,
+        update: (t, out, o) => {
+          const c = t % P, n = count(t), u = c >= N * T ? 1 : (c % T) / T, a = Math.PI / 2 - u * TAU; let i = o;
+          for (let k = 0; k < 12; k++) { const q = a + k * 0.05; out[i++] = { x: cx + R * Math.cos(q), y: cy + R * Math.sin(q), a: (1 - k / 12) * (c < N * T ? 1 : 0.4) }; }
+          for (let k = 0; k < 120; k++) { const v = k / 120, q = Math.PI / 2 - v * TAU; out[i++] = { x: cx + R * Math.cos(q), y: cy + R * Math.sin(q), a: v <= u ? 0.6 : 0.12 }; }
+          for (let m = 0; m < N; m++) for (let q = 0; q < 24; q++) { const b = q / 24 * TAU; out[i++] = { x: X(m) + 0.09 * Math.cos(b), y: Y + 0.09 * Math.sin(b), a: m < n ? 0.9 : 0 }; }
+        }
+      }
+    });
   };
 
   /* The two bits side by side: Shannon's composes into the turning tesseract of "Computers already
@@ -3458,6 +4255,27 @@
     dof: { w: "independent degrees of freedom", t: "Each independent way to vary is its own axis.",
       d: "The state of a physical system is a point in phase space, one coordinate for each independent position and momentum, and these coordinates are orthogonal axes. Boltzmann’s entropy, <i>S</i> = <i>k</i> log <i>W</i>, counts the states <i>W</i> compatible with what we observe, and for independent parts those counts multiply, so their entropies add, just as independent bits add. At equilibrium each independent quadratic degree of freedom holds the same share of energy, ½<i>kT</i>.",
       s: "Ludwig Boltzmann, 1877; J. Willard Gibbs, <i>Elementary Principles in Statistical Mechanics</i>, 1902" },
+    erlangen: { w: "the Erlangen program", t: "A geometry is the study of what stays the same under its allowed moves.",
+      d: "Klein sorted the geometries by the moves each one allows and what those moves keep. Euclidean geometry allows shifts, turns and reflections and keeps lengths and angles; similarity geometry also allows scaling and keeps only angles and ratios; projective geometry allows projections and keeps which points lie on which lines. Each geometry is defined by what it keeps.",
+      s: "Felix Klein, “Vergleichende Betrachtungen über neuere geometrische Forschungen”, Erlangen, 1872" },
+    hoare: { w: "proving a program correct", t: "A loop is proved correct by a statement that every pass keeps true.",
+      d: "Floyd attached statements to the points of a program, and Hoare turned them into a system of proof: to show a loop does what it should, find an invariant, a statement that holds before the loop and that every pass keeps true; when the loop ends, the invariant and the exit condition give the result. Dividing 23 into fives keeps 5 × <i>q</i> + <i>r</i> = 23 true at every step while <i>q</i> and <i>r</i> change.",
+      s: "Robert W. Floyd, “Assigning Meanings to Programs”, 1967; C. A. R. Hoare, “An Axiomatic Basis for Computer Programming”, 1969" },
+    shannon1949: { w: "Communication in the Presence of Noise", t: "Shannon’s geometric proof of a channel’s capacity.",
+      d: "Shannon wrote a signal of bandwidth <i>W</i> and duration <i>T</i> as a point in a space of 2<i>WT</i> dimensions. Signals of power <i>P</i> lie on a sphere of radius √(2<i>WTP</i>), and noise of power <i>N</i> moves each one by about √(2<i>WTN</i>), so every point sent arrives somewhere inside a small sphere around it. Counting how many small spheres fit without overlapping gives the capacity, <i>W</i> log₂(1 + <i>P</i>/<i>N</i>) bits per second.",
+      s: "Claude E. Shannon, “Communication in the Presence of Noise”, <i>Proceedings of the IRE</i> 37, 1949" },
+    adams: { w: "Adams’s theorem", t: "Spheres fibre over spheres this way only at the four levels of the tower.",
+      d: "A sphere filled with spheres over another sphere, like the Hopf fibration, needs a map of Hopf invariant one. Frank Adams proved that such maps exist only from the 1-, 3-, 7- and 15-spheres, the real numbers, complex numbers, quaternions and octonions, so the same four levels Hurwitz found in algebra appear again in the shapes of spheres.",
+      s: "J. F. Adams, “On the Non-Existence of Elements of Hopf Invariant One”, <i>Annals of Mathematics</i> 72, 1960" },
+    instanton: { w: "the instanton", t: "The basic twisted field of Yang–Mills theory is the quaternionic Hopf fibration.",
+      d: "Yang–Mills theory is the framework of the strong and weak forces. Its basic instanton, found in 1975, is a field that twists once over the four-sphere, and the bundle it lives on is the quaternionic Hopf fibration: a three-sphere over every point of the four-sphere.",
+      s: "Belavin, Polyakov, Schwarz and Tyupkin, 1975; Michael Atiyah, <i>Geometry of Yang–Mills Fields</i>, 1979" },
+    zerothlaw: { w: "the Zeroth Law", t: "Two compositions of the same ordered records disagree in exactly two ways: something is missing, or something moved.",
+      d: "Compare the two composed streams where they part, in the frame their shared path provides. A missing record <i>g</i> leaves the difference <i>g</i> − 1, whose scalar part is never zero. A record <i>a</i> moved past a block <i>M</i> leaves <i>aM</i> − <i>Ma</i>, whose scalar part is exactly zero, since the scalar part of a product ignores the order of its factors, and whose vector part is twice the cross product of the two, at a right angle to both. Two more results make the reading exact: an error of size ε anywhere moves the composed result by exactly ε, and every position is equally visible. The same holds on every unitary group through the trace, and up the tower the octonions add a third kind, regrouping, until the sedenions, where errors can multiply to zero.",
+      s: "Walter Henrique Alves da Silva, <i>The Zeroth Law: Identity and Coherence</i>, 2026; the Closure SDK" },
+    hurwitz: { w: "Hurwitz’s theorem", t: "Only four number systems multiply while keeping length.",
+      d: "A number system whose multiplication keeps lengths, so that the length of a product is the product of the lengths, exists only in dimensions 1, 2, 4 and 8: the real numbers, the complex numbers, the quaternions and the octonions. Doubling once more, to the sedenions, gives numbers that multiply to zero without either being zero.",
+      s: "Adolf Hurwitz, 1898" },
     noether: { w: "Noether’s theorem", t: "Every continuous symmetry of a system’s laws has a conserved quantity.",
       d: "If the laws do not change when the whole system is shifted in time, energy is conserved; if they do not change when it is moved in space, momentum is conserved; and if they do not change when it is rotated, angular momentum is conserved. The sameness under the change is the thing that is kept.",
       s: "Emmy Noether, “Invariante Variationsprobleme”, <i>Nachrichten der Gesellschaft der Wissenschaften zu Göttingen</i>, 1918" },
@@ -3632,6 +4450,9 @@
     wolfram: { w: "the Wolfram Physics Project", t: "Physics built from rules acting on relations.",
       d: "Stephen Wolfram and colleagues model the universe as a network of relations updated by simple rules, with space, time, relativity and quantum mechanics emerging from how the network evolves and from all the ways its updates can be ordered.",
       s: "Stephen Wolfram, <i>A Project to Find the Fundamental Theory of Physics</i>, 2020" },
+    aicost: { w: "the cost of language models", t: "Data and energy, compared with a person.",
+      d: "Training GPT-3 was estimated to use about 1,287 megawatt-hours of electricity; a human brain uses about 20 watts, so the same energy would run a brain for roughly 7,300 years. Recent large models are trained on around 15 trillion tokens of text, while children are exposed to fewer than 100 million words by the age of 13, the figure the BabyLM challenge uses as its budget for human-scale learning.",
+      s: "David Patterson and colleagues, “Carbon Emissions and Large Neural Network Training”, 2021; Meta, Llama 3, 2024; Warstadt and colleagues, the BabyLM Challenge, 2023" },
     paradoxes: { w: "the paradoxes", t: "Each one takes a totality, or a sign about itself, as a finished thing.",
       d: "Russell’s set of all sets that do not contain themselves, Burali-Forti’s greatest ordinal and the liar all treat a whole that includes themselves as complete. Poincaré and Russell traced them to vicious circles, whatever involves all of a collection cannot be one of its members, and Kripke’s theory of truth leaves the liar ungrounded, with no truth value at all.",
       s: "Cesare Burali-Forti, 1897; Bertrand Russell, 1903; Henri Poincaré, 1906; Saul Kripke, 1975" }

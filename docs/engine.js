@@ -374,6 +374,58 @@
     try { history.replaceState(null, "", "#" + id); } catch (e) {}
   });
 
+  /* The cards of the section map each carry a small live drawing in their part's colour, drawn only
+     while the map is on screen: a circle closing and counting (mathematics), a turning sphere of points
+     (physics), a field of small rotations aligning (computation), one thing sending to many (information). */
+  const arts = [...document.querySelectorAll(".arc-art")];
+  const ARTS = {
+    count(g, t, w, h) {
+      const r = h * 0.3, cx = w * 0.32, cy = h * 0.5, P = 1.8, c = (t % (P * 5)) / P, n = Math.floor(c), u = c - n, a = -Math.PI / 2 + u * 6.2832;
+      g.globalAlpha = 0.3; for (let k = 0; k < 70; k++) { const b = k / 70 * 6.2832; g.fillRect(cx + r * Math.cos(b) - 0.7, cy + r * Math.sin(b) - 0.7, 1.4, 1.4); }
+      g.globalAlpha = 1; g.beginPath(); g.arc(cx + r * Math.cos(a), cy + r * Math.sin(a), 2.6, 0, 6.2832); g.fill();
+      for (let m = 0; m < n; m++) { g.globalAlpha = 0.85; g.beginPath(); g.arc(w * 0.58 + m * 18, cy, 5, 0, 6.2832); g.stroke(); }
+    },
+    sphere(g, t, w, h) {
+      const r = h * 0.42, cx = w / 2, cy = h / 2, yaw = t * 0.35, tilt = 0.35;
+      for (let k = 0; k < 160; k++) {
+        const y = 1 - (2 * (k + 0.5)) / 160, rr = Math.sqrt(1 - y * y), u = k * 2.39996 + yaw;
+        const x = rr * Math.cos(u), z = rr * Math.sin(u), y2 = y * Math.cos(tilt) - z * Math.sin(tilt), d = (y * Math.sin(tilt) + z * Math.cos(tilt) + 1) / 2;
+        g.globalAlpha = 0.15 + 0.8 * d; g.beginPath(); g.arc(cx + x * r, cy - y2 * r, 0.8 + 1.1 * d, 0, 6.2832); g.fill();
+      }
+    },
+    field(g, t, w, h) {
+      const nx = 11, ny = 5, sx = w / (nx + 1), sy = h / (ny + 1), settle = Math.min(1, (t % 8) / 6);
+      for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+        const seed = Math.sin(i * 12.9898 + j * 78.233) * 43758.5453, rnd = seed - Math.floor(seed);
+        const a = (1 - settle) * rnd * 6.2832 + settle * (i < nx / 2 ? 0.3 : 1.9) + 0.15 * Math.sin(t + i), x = sx * (i + 1), y = sy * (j + 1);
+        g.globalAlpha = 0.85; g.beginPath(); g.moveTo(x - 6 * Math.cos(a), y - 6 * Math.sin(a)); g.lineTo(x + 6 * Math.cos(a), y + 6 * Math.sin(a)); g.stroke();
+      }
+    },
+    flow(g, t, w, h) {
+      const cx = w / 2, cy = h / 2, T = [[w * 0.14, h * 0.25], [w * 0.86, h * 0.25], [w * 0.14, h * 0.78], [w * 0.86, h * 0.78]];
+      g.globalAlpha = 0.9; g.beginPath(); g.arc(cx, cy, 9, 0, 6.2832); g.stroke();
+      T.forEach(([x, y]) => { g.globalAlpha = 0.55; g.beginPath(); g.arc(x, y, 6, 0, 6.2832); g.stroke();
+        for (let k = 0; k < 4; k++) { const u = (t * 0.35 + k / 4) % 1, px = cx + (x - cx) * u, py = cy + (y - cy) * u; g.globalAlpha = Math.sin(Math.PI * u) * 0.95; g.beginPath(); g.arc(px, py, 1.8, 0, 6.2832); g.fill(); } });
+    }
+  };
+  function drawArts(t) {
+    arts.forEach(cv => {
+      const dpr = Math.min(2, window.devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight;
+      if (!w) return;
+      if (cv.width !== Math.round(w * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+      const g = cv.getContext("2d"), col = getComputedStyle(cv.parentElement).getPropertyValue("--ac").trim() || "#45dcff";
+      g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+      g.fillStyle = col; g.strokeStyle = col; g.lineWidth = 1.4;
+      ARTS[cv.dataset.art](g, t, w, h);
+      g.globalAlpha = 1;
+    });
+  }
+  if (arts.length) {
+    const hubStep = arts[0].closest(".step");
+    const artLoop = now => { if (hubStep.classList.contains("is-active")) drawArts(now / 1000); requestAnimationFrame(artLoop); };
+    if (STILL) setTimeout(() => drawArts(4.5), 50); else requestAnimationFrame(artLoop);
+  }
+
   /* the light and dark themes: recolour the particles by re-handing them the current scene */
   const themeButton = document.getElementById("theme");
   function setTheme(t) {

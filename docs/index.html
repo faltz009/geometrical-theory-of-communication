@@ -386,7 +386,7 @@
       <h2>Composing geometric bits: hyperspheres</h2>
       <p><span class="hotword recall" data-recall="hypercube" tabindex="0" role="button">Shannon’s bits compose by adding one perpendicular direction per bit</span>, which builds the corners of a square, a cube and a hypercube.</p>
       <p>Geometric bits compose by holding their rotations together to one unit of length, so one rotation traces the circle, two trace the three-sphere, a sphere one dimension beyond the ones we can picture, and <i>n</i> rotations trace a sphere of 2<i>n</i> − 1 dimensions.</p>
-      <p>Every point on these spheres is a list of rotations, and a circle runs through every point, the rotation they all share, so the geometric bit stays whole inside every sphere it composes.</p>
+      <p>Every point on these spheres is a list of rotations, and a circle runs through every point, the rotation they all share, so the geometric bit stays whole inside every sphere it composes. What these compositions can do, and where they stop, is the subject of section 06.</p>
     </div>
   </section>
 
@@ -550,6 +550,7 @@
     <div class="copy">
       <p class="intro-q">What changes once identity is measured instead of assumed?</p>
       <h1 class="intro-title">Identity, Measured</h1>
+      <p class="intro-sub">One science</p>
     </div>
   </section>
 
@@ -637,12 +638,12 @@
     </div>
   </section>
 
-  <section class="step" id="runs-on-it" data-part="exist" data-part-num="05" data-part-label="Identity, measured" data-scene="gembed" data-fig="compact">
+  <section class="step" id="runs-on-it" data-part="exist" data-part-num="05" data-part-label="Identity, measured" data-scene="gembed3d" data-fig="compact">
     <div class="copy dense">
       <span class="kicker">05 / Identity, measured</span>
       <h2>Does it still look weird?</h2>
-      <p>Language models are already approximating the shape of meaning. Every word becomes a point, words that mean similar things end up close together, <span class="hotword" data-def="rope" tabindex="0" role="button">the order of the words is written as a rotation</span>, and two languages learned separately <span class="hotword" data-def="crossling" tabindex="0" role="button">line up by a single rotation</span>.</p>
-      <p>Models trained on different data, and even on pictures instead of text, <span class="hotword" data-def="platonic" tabindex="0" role="button">end up agreeing on which things relate to which</span> as they get better, and the latest studies find that what they share is exactly that pattern of relations. So the shapes come from the world they all learn from, which is how your words reach me.</p>
+      <p>Language models already do a rough version of this. Each word becomes a point, and words with similar meanings end up close together, so apple sits near pear and love sits near care. Two languages learned separately <span class="hotword" data-def="crossling" tabindex="0" role="button">line up by a single rotation</span>, well enough to translate.</p>
+      <p>Models trained on different data, and even on pictures instead of words, <span class="hotword" data-def="platonic" tabindex="0" role="button">end up agreeing on which things relate to which</span>. The shape of meaning comes from the world they all learn from, which is how your words reach me.</p>
     </div>
   </section>
 
@@ -650,12 +651,16 @@
     <div class="copy dense">
       <span class="kicker">05 / Identity, measured</span>
       <h2>The rest is residue</h2>
-      <p>What the models do not share looks more and more like statistical residue, the overhead of guessing every relation separately from enormous amounts of text. It is like studying a sandpile by tracking where every grain might be instead of watching how the whole pile moves, the same mistake as treating dependent things as independent.</p>
-      <p>That is where the cost goes: each gain needs more data and more power, while <span class="hotword" data-def="brainwatts" tabindex="0" role="button">the brain does the same work on about 20 watts</span> by computing with rotation and return, in rhythms, in cells that fire at shifting phases of a cycle, in grid cells whose activity lies on a torus and head direction held on a ring. What the models lack is the reference, something fixed to line a meaning up against and check that it came back, and that is what the geometric bit adds.</p>
+      <p>The models find that shape by guessing it from enormous amounts of text, with no fixed reference to check against, and the guessing is expensive:</p>
+      <ul class="hotlist">
+        <li>a large model reads over ten trillion words, while a child learns a language from fewer than a hundred million, over 100,000 times less</li>
+        <li>a brain runs on about 20 watts, a dim light bulb, while <span class="hotword" data-def="aicost" tabindex="0" role="button">training a single model the size of GPT-3</span> used about 1,300 megawatt-hours, what a brain uses in over 7,000 years</li>
+      </ul>
+      <p>Most of that cost is residue: the work of guessing each relation from statistics instead of checking it. <span class="hotword" data-def="brainwatts" tabindex="0" role="button">The brain computes with rotation and return</span>, and what the models lack is the reference, something fixed to line a meaning up against and check that it came back.</p>
     </div>
   </section>
 
-  <section class="step" id="paradigm" data-part="exist" data-part-num="05" data-part-label="Identity, measured" data-scene="closurefields" data-fig="compact">
+  <section class="step" id="paradigm" data-part="exist" data-part-num="05" data-part-label="Identity, measured" data-scene="gparadigm" data-fig="compact">
     <div class="copy dense">
       <span class="kicker">05 / Identity, measured</span>
       <h2>One paradigm for science</h2>
@@ -665,19 +670,11 @@
     </div>
   </section>
 
-  <section class="step" id="almost" data-part="exist" data-part-num="05" data-part-label="Identity, measured" data-scene="galmost" data-fig="compact">
-    <div class="copy dense">
+  <section class="step" id="almost" data-part="exist" data-part-num="05" data-part-label="Identity, measured" data-layout="full" data-scene="gconstellation">
+    <div class="copy">
       <span class="kicker">05 / Identity, measured</span>
       <h2>Science almost does it already</h2>
-      <p>Every science already checks identity, and many already write that check with Euler’s identity and the complex plane:</p>
-      <ul class="hotlist tagged">
-        <li><b class="tagf c-math">Mathematics</b><span>proofs end in sameness, and complex and Fourier analysis are rotations</span></li>
-        <li><b class="tagf c-cyan">Physics</b><span>conservation names what stays the same, and <span class="hotword recall" data-recall="theories" tabindex="0" role="button">all three theories of motion</span> are rotations</span></li>
-        <li><b class="tagf c-brass">Engineering</b><span>alternating current, radio and feedback run on rotations</span></li>
-        <li><b class="tagf c-violet">Computing</b><span>files are checked against copies, and signals are rotations</span></li>
-        <li><b class="tagf c-coral">Biology</b><span>a body tells self from foreign, and brain rhythms keep phase</span></li>
-      </ul>
-      <p>Each field uses it as a method and checks against a reference of its own, a proof against its axioms, a lab against its instruments, a file against a copy of itself, and stating it as the one law they all share is the step left.</p>
+      <p class="names-sub">Euler’s identity and the complex plane are already written into the equations of all of these.</p>
     </div>
   </section>
 
@@ -714,7 +711,7 @@
     </div>
   </section>
 
-  <section class="step" id="s5-summary" data-part="exist" data-part-num="05" data-part-label="Identity, measured" data-scene="gshape" data-fig="compact">
+  <section class="step" id="s5-summary" data-part="exist" data-part-num="05" data-part-label="Identity, measured" data-scene="gcircle" data-fig="compact">
     <div class="copy dense">
       <span class="kicker">05 / Identity, measured</span>
       <h2>The argument so far</h2>
@@ -731,204 +728,263 @@
     </div>
   </section>
 
-  <section class="step" id="t-conclusion" data-part="conclusion" data-part-num="06" data-part-label="Implications" data-layout="full" data-scene="tclose">
+  <section class="step" id="t-operate" data-part="operate" data-part-num="06" data-part-label="Operating geometric bits" data-layout="full" data-scene="topdouble">
     <div class="copy">
-      <p class="intro-q">What follows from it?</p>
-      <h1 class="intro-title">Implications</h1>
+      <p class="intro-q">What can geometric bits do, and where do they stop?</p>
+      <h1 class="intro-title">Operating Geometric Bits</h1>
+      <p class="intro-sub">One object</p>
     </div>
   </section>
 
-  <section class="step" id="levelc" data-part="conclusion" data-part-num="06" data-part-label="Implications" data-scene="loop">
+  <section class="step" id="shannon-ops" data-part="operate" data-part-num="06" data-part-label="Operating geometric bits" data-scene="gshannonops" data-fig="compact">
     <div class="copy dense">
-      <span class="kicker">06 / Implications</span>
-      <h2>What about Level C?</h2>
-      <p>Weaver’s third level asks whether the meaning that arrived changes what the receiver does, the way the sender intended. If I ask you for the lighter and you hand it to me, your action is a reply: it travels back to me, and I compare it with what I meant.</p>
-      <p>So Level C is Level B run in the other direction. The action is a meaning sent back and checked against the same reference, and once Level B can be checked, Level C can be checked the same way.</p>
+      <span class="kicker">06 / Operating geometric bits</span>
+      <h2>What did Shannon do with his bit?</h2>
+      <p>Once Shannon had the bit, most of his 1948 paper is about operating it: how bits combine into messages, how much a channel can carry, and what noise does to what is sent. Those answers, more than the bit itself, are what every modem, phone and network is built on.</p>
+      <p>The geometric bit needs the same answers: how geometric bits combine, how far combining can go, and what noise does to them.</p>
     </div>
   </section>
 
-  <section class="step" id="gbit-gives" data-part="conclusion" data-part-num="06" data-part-label="Implications" data-scene="gives2" data-fig="compact">
+  <section class="step" id="m-number" data-part="operate" data-part-num="06" data-part-label="Operating geometric bits" data-scene="gcount" data-fig="compact">
     <div class="copy dense">
-      <span class="kicker">06 / Implications</span>
-      <h2>Levels B and C, solved</h2>
-      <p><span class="hotword recall" data-recall="gives" tabindex="0" role="button">Shannon solved Level A</span> in 1948 by agreeing on the symbols beforehand. The geometric bit carries the reference with the message, so the receiver can check the meaning instead of assuming it, and the reply can be checked the same way.</p>
-      <div class="levelbars">
-        <div class="lb solved"><span>Level A · the technical problem</span><em>solved, 1948</em></div>
-        <div class="lb solved"><span>Level B · the semantic problem</span><em>solved</em></div>
-        <div class="lb solved"><span>Level C · the effectiveness problem</span><em>solved</em></div>
+      <span class="kicker">06 / Operating geometric bits</span>
+      <h2>What is a number?</h2>
+      <p>A whole number is discreteness, and discreteness is the circle closing. A circle is the smallest whole thing in curved space, a rotation that comes back to where it started and so is complete in itself, and counting things is counting those closures.</p>
+      <p>The rest of arithmetic comes from the same circle: −1 is half a rotation, 0 is the unit meeting its opposite, a fraction is a rotation that closes after a few steps, and the continuum is the rotation that never quite closes.</p>
+    </div>
+  </section>
+
+  <section class="step" id="one-many" data-part="operate" data-part-num="06" data-part-label="Operating geometric bits" data-scene="gcompose" data-fig="compact">
+    <div class="copy dense">
+      <span class="kicker">06 / Operating geometric bits</span>
+      <h2>How do geometric bits combine?</h2>
+      <p>A single geometric bit is a circle, the smallest whole thing. But a single thing never exists alone, since <span class="hotword recall" data-recall="dependent" tabindex="0" role="button">to exist is to interact</span>, so every identity we meet is identities composed, a chain of perpendicular rotations inside a closed space with each circle linked through the others.</p>
+      <p>Rotations compose in two ways. Side by side, each one keeps running on its own and they are only held together; into each other, one rotation acts on the next. The first gives the mathematics of signals, and the second gives the number systems physics is built from.</p>
+    </div>
+  </section>
+
+  <section class="step" id="side-by-side" data-part="operate" data-part-num="06" data-part-label="Operating geometric bits" data-scene="gpacking" data-fig="compact">
+    <div class="copy dense">
+      <span class="kicker">06 / Operating geometric bits</span>
+      <h2>Side by side: signals</h2>
+      <p><span class="hotword" data-def="signals" tabindex="0" role="button">Every signal is a sum of rotations</span>. A signal using frequencies up to <i>W</i> for a time <i>T</i> holds <i>W</i> × <i>T</i> of them, each with two perpendicular components, which is why it takes 2<i>WT</i> numbers to record it, the count in Shannon’s sampling theorem.</p>
+      <p>Fixing the signal’s power holds all those rotations to one length, so every signal is a point on one of the <span class="hotword recall" data-recall="compose" tabindex="0" role="button">hyperspheres that geometric bits compose into</span>, and <span class="hotword" data-def="shannon1949" tabindex="0" role="button">Shannon drew his channels this way in 1949</span>: noise blurs each point into a small sphere, and the capacity of a channel is how many small spheres fit inside the large one. Shannon’s signal mathematics is geometric bits composed side by side, read as lists of numbers.</p>
+    </div>
+  </section>
+
+  <section class="step" id="algebras" data-part="operate" data-part-num="06" data-part-label="Operating geometric bits" data-scene="tower" data-fig="compact">
+    <div class="copy dense">
+      <span class="kicker">06 / Operating geometric bits</span>
+      <h2>Into each other: four number systems</h2>
+      <p>Into each other, one rotation acts on the next, and the composition only lasts while perpendicularity and symmetry survive it.</p>
+      <div class="def">
+        <p class="def-main">Rotations composed into each other keep perpendicularity and symmetry in exactly four number systems.</p>
+        <p class="def-note">The limit theorem, <span class="hotword" data-def="hurwitz" tabindex="0" role="button">proved by Hurwitz in 1898</span>: the real numbers, the complex numbers, the quaternions and the octonions.</p>
       </div>
+      <p>Each one doubles the one before: the complex numbers give up the order of the line, the quaternions give up commutativity, so the order of rotations matters, and the octonions give up associativity, so their grouping matters. At the next doubling, the sedenions, two things can multiply to nothing and identity can no longer be checked.</p>
     </div>
   </section>
 
-  <section class="step" id="one-object" data-part="conclusion" data-part-num="06" data-part-label="Implications" data-scene="gtwoviews" data-fig="compact">
+  <section class="step" id="fractal" data-part="operate" data-part-num="06" data-part-label="Operating geometric bits" data-scene="gpizza" data-fig="compact">
     <div class="copy dense">
-      <span class="kicker">06 / Implications</span>
-      <h2>Physics and mathematics are one object</h2>
-      <p>Information, mathematics and physics turned out to be described by the same thing: perpendicularity and symmetry, measured by <i>e</i> and π, and checked by Euler’s identity. Physics is that rotation happening in the world, as particles, forces and waves, and mathematics is the same rotation written down, as numbers, shapes and functions.</p>
-      <p>That makes them one object read two ways, and each reading has consequences of its own, first for mathematics and then for physics.</p>
-    </div>
-  </section>
-
-  <section class="step" id="where-how-many" data-part="conclusion" data-part-num="06" data-part-label="Implications" data-scene="tcover" data-fig="compact">
-    <div class="copy dense">
-      <span class="kicker">06 / Implications</span>
-      <h2>What a number is</h2>
-      <p>This work gave the whole numbers a definition. A whole number counts completed returns of a rotation: 1 is one full rotation, −1 is half of one, and a fraction <i>p</i>/<i>q</i> is a rotation that returns after <i>q</i> steps, while the continuum is the rotations that never quite return.</p>
-      <p>A whole number is then something measured, the count of a closure that actually happened. Where you are on the circle and how many times you went around are two readings of the same motion, and <span class="hotword" data-def="pontryagin" tabindex="0" role="button">mathematics already proves that each determines the other</span>, so every statement about numbers becomes a statement about rotations and their returns.</p>
-    </div>
-  </section>
-
-  <section class="step" id="no-abstract" data-part="conclusion" data-part-num="06" data-part-label="Implications" data-scene="gbitdef" data-fig="compact">
-    <div class="copy dense">
-      <span class="kicker">06 / Implications</span>
-      <h2>There is no abstract mathematics</h2>
-      <p>Mathematics is called abstract because its objects seem to live nowhere: a number, a group, an infinite series. Here each of them is a relation between rotations, so each can be given a physical form or points to one, a count of returns, a composition of rotations, a rotation that never closes.</p>
-      <p>The abstract part was the notation, the symbols set apart from what they measure. With the measurement put back, mathematics is the most precise description of the world we have.</p>
-    </div>
-  </section>
-
-  <section class="step" id="math-works" data-part="conclusion" data-part-num="06" data-part-label="Implications" data-scene="unroll" data-fig="compact">
-    <div class="copy dense">
-      <span class="kicker">06 / Implications</span>
-      <h2>Why mathematics works</h2>
-      <p><span class="hotword" data-def="wigner" tabindex="0" role="button">Wigner called the effectiveness of mathematics in physics unreasonable</span>, a gift we neither understand nor deserve. Mathematics has two parts: the symbols, which we choose, and the relationships the symbols record, which we measure.</p>
-      <p>The symbols change from one notation to another, while the relationships stay the same for anyone who measures them. Those relationships are what predict the laws of physics so accurately, since physics measures the same rotation that mathematics writes down.</p>
-    </div>
-  </section>
-
-  <section class="step" id="algebras" data-part="conclusion" data-part-num="06" data-part-label="Implications" data-scene="tower" data-fig="compact">
-    <div class="copy dense">
-      <span class="kicker">06 / Implications</span>
-      <h2>Only four number systems keep both</h2>
-      <p>A thing exists only while perpendicularity and symmetry survive every composition, since it has to stay told apart from everything else and recognizable as itself. Multiplying in a way that keeps lengths, so that both survive, is possible in exactly four number systems, as Hurwitz proved in 1898: the real numbers, the complex numbers, the quaternions and the octonions.</p>
-      <p>Each one doubles the one before. The complex numbers give up the order of the line, the quaternions give up commutativity, so the order of two rotations matters, and the octonions give up associativity, so their grouping matters. At the next doubling, the sedenions, two things can multiply to nothing, and identity can no longer be checked.</p>
-    </div>
-  </section>
-
-  <section class="step" id="fractal" data-part="conclusion" data-part-num="06" data-part-label="Implications" data-scene="gpizza" data-fig="compact">
-    <div class="copy dense">
-      <span class="kicker">06 / Implications</span>
+      <span class="kicker">06 / Operating geometric bits</span>
       <h2>The tower repeats itself</h2>
-      <p>Cut a pizza into four and the two cuts are perpendicular, one system of right angles. Cut it into eight and there are four cuts in two perpendicular pairs, each pair at a right angle within itself and only related to the other. Dividing the circle further while keeping the right angles is what costs commutativity, then associativity, then the lengths themselves.</p>
-      <p>Each level also holds the whole of the level below it: the circle sits inside the three-sphere, and the three-sphere inside the seven-sphere. The same structure repeats at every step of the tower.</p>
+      <p>Keeping perpendicularity while dividing the circle further is what builds the tower. Cut a pizza into four and the two cuts are perpendicular, one system of right angles. Cut it into eight and there are four cuts in two perpendicular pairs, each pair at a right angle within itself and only related to the other, which is what the octonions do when grouping starts to matter. Divide further and the right angles cannot all be kept, and the lengths themselves fail.</p>
+      <p>Each level also holds the whole of the level below, the circle inside the three-sphere and the three-sphere inside the seven-sphere, so the same structure repeats at every step, which is what the fibrations show.</p>
     </div>
   </section>
 
-  <section class="step" id="cup" data-part="conclusion" data-part-num="06" data-part-label="Implications" data-scene="cup" data-fig="compact">
+  <section class="step" id="noise-blur" data-part="operate" data-part-num="06" data-part-label="Operating geometric bits" data-scene="gblur" data-fig="compact">
     <div class="copy dense">
-      <span class="kicker">06 / Implications</span>
-      <h2>A single thing never exists alone</h2>
-      <p>A circle is the smallest thing there is, one rotation and its return, and a single circle never exists alone: everything we meet is a composition of them. Look straight down at a cup and its rim is a circle, tilt it and the rim becomes an ellipse, and recognizing one cup through those changing views takes three directions of space and the time to move between them.</p>
-      <p>The composition available to us is quaternionic, three directions of space and one of time, and physics is already finding hints of the octonionic level above it.</p>
+      <span class="kicker">06 / Operating geometric bits</span>
+      <h2>What does noise do to a composition?</h2>
+      <p>In Shannon’s channel the noise is random, so every direction of error is equally likely, and all his theory can know about it is its size, the radius of the small sphere. That is enough for his question, how much can get through, and his answer is to space the messages so their spheres never overlap and to throw the noise away.</p>
+      <p>The quaternions give noise a direction. Compose two streams of the same records, the one sent and the one received, and compare them where they part: the difference has a scalar part, which ignores order, and three vector parts, which carry it. A missing record changes the scalar part, and a moved record leaves it exactly as it was and shows up in the vector parts, at a right angle to both records it passed.</p>
     </div>
   </section>
 
-  <section class="step" id="three" data-part="conclusion" data-part-num="06" data-part-label="Implications" data-scene="three" data-fig="compact">
+  <section class="step" id="noise-theorem" data-part="operate" data-part-num="06" data-part-label="Operating geometric bits" data-scene="gprism" data-fig="compact">
     <div class="copy dense">
-      <span class="kicker">06 / Implications</span>
+      <span class="kicker">06 / Operating geometric bits</span>
+      <h2>Noise is precise</h2>
+      <div class="def">
+        <p class="def-main">Two compositions of the same ordered records disagree in exactly two ways: something is missing, or something moved.</p>
+        <p class="def-note">The noise theorem, <span class="hotword" data-def="zerothlaw" tabindex="0" role="button">the Zeroth Law</span>.</p>
+      </div>
+      <p>The scalar part of a product ignores the order of its factors, so it breaks only when something is missing, and a moved record shows only in the vector parts, at a right angle to the records it passed. An error of size ε anywhere in a chain moves the result by exactly ε, so the reading is exact.</p>
+      <p>It holds for everything composed on the three-sphere, and through the trace for every quantum circuit. Up the tower, the complex numbers see only what is missing, the quaternions add what moved, the octonions add what was regrouped, and at the sedenions, where composition stops, noise can no longer be read.</p>
+      <p>Shannon’s theorem says how much gets through noise, and this one says exactly what the noise did.</p>
+    </div>
+  </section>
+
+  <section class="step" id="cup" data-part="operate" data-part-num="06" data-part-label="Operating geometric bits" data-scene="cup" data-fig="compact">
+    <div class="copy dense">
+      <span class="kicker">06 / Operating geometric bits</span>
+      <h2>Where do we live in the tower?</h2>
+      <p>We live at the quaternionic level of this tower, three directions of space read against one reference while things change through time.</p>
+      <p>Look straight down at a round cup and its rim is a circle. Tilt it and the rim becomes an ellipse, and nearly edge on it becomes a line. The cup has not changed, one picture cannot tell you the direction it was taken from, and recognizing one cup through all its views takes three directions of space and the time to move between them.</p>
+    </div>
+  </section>
+
+  <section class="step" id="three" data-part="operate" data-part-num="06" data-part-label="Operating geometric bits" data-scene="three" data-fig="compact">
+    <div class="copy dense">
+      <span class="kicker">06 / Operating geometric bits</span>
       <h2>Why 3 + 1?</h2>
       <p>In two dimensions, every motion that stays bounded and keeps going settles into a repeating cycle, which is the Poincaré–Bendixson theorem: the plane can hold a rotation that returns, and nothing new. Three dimensions allow motion that never repeats, the room that change and novelty need, and the fourth direction carries the phase that accumulates as time.</p>
       <p>So three directions of space and one of time is the smallest setup where perpendicularity and symmetry are both kept and new things can still happen, which is the quaternion level of the tower.</p>
     </div>
   </section>
 
-  <section class="step" id="matter-tower" data-part="conclusion" data-part-num="06" data-part-label="Implications" data-scene="mobius" data-fig="compact">
+  <section class="step" id="matter-tower" data-part="operate" data-part-num="06" data-part-label="Operating geometric bits" data-scene="gladder" data-fig="compact">
     <div class="copy dense">
-      <span class="kicker">06 / Implications</span>
-      <h2>Matter in the tower</h2>
-      <p>Working from physics down, <span class="hotword" data-def="furey" tabindex="0" role="button">Cohl Furey builds the symmetries of the Standard Model</span>, its particles and its forces, out of the nested number systems ℝ ⊂ ℂ ⊂ ℍ ⊂ 𝕆, and working from the geometry up, <span class="hotword" data-def="shapeofreality" tabindex="0" role="button">The Shape of Reality derives the proton-to-electron mass ratio and the fine-structure constant</span> from closed paths on the three-sphere.</p>
-      <p>The open problems are the ones <span class="hotword" data-def="towerphys" tabindex="0" role="button">physics has been working on in this tower</span> for decades: why there are three generations of particles, how gravity fits the same structure, and what the octonionic level adds above the one we observe.</p>
+      <span class="kicker">06 / Operating geometric bits</span>
+      <h2>Where is physics heading?</h2>
+      <p>The geometric bit sits one level below the spacetime we live in, and composing it climbs the tower as spheres laid over spheres: two points over a circle, circles over a sphere, three-spheres over a four-sphere and seven-spheres over an eight-sphere. <span class="hotword" data-def="adams" tabindex="0" role="button">Adams proved in 1960</span> that these fibrations exist only at the four levels of the tower, so they are the tower read as shapes.</p>
+      <p>Physics is already working on these rungs: <span class="hotword" data-def="monopole" tabindex="0" role="button">Dirac’s monopole</span> is the circle over the sphere, <span class="hotword" data-def="instanton" tabindex="0" role="button">the instanton</span> of the theories behind the strong and weak forces is the three-sphere over the four-sphere, <span class="hotword" data-def="furey" tabindex="0" role="button">Cohl Furey builds the Standard Model</span> from ℝ ⊂ ℂ ⊂ ℍ ⊂ 𝕆, and <span class="hotword" data-def="shapeofreality" tabindex="0" role="button">The Shape of Reality derives the proton-to-electron mass ratio and the fine-structure constant</span> from closed paths on the three-sphere. The open problems are the ones <span class="hotword" data-def="towerphys" tabindex="0" role="button">physics has been working on in this tower</span> for decades: why there are three generations of particles, how gravity fits the same structure, and what the octonionic level adds above the spacetime we perceive.</p>
     </div>
   </section>
 
-  <section class="step" id="compute-physics" data-part="conclusion" data-part-num="06" data-part-label="Implications" data-scene="gfield" data-fig="compact">
+  <section class="step" id="no-abstract" data-part="operate" data-part-num="06" data-part-label="Operating geometric bits" data-scene="gfrom" data-fig="compact">
     <div class="copy dense">
-      <span class="kicker">06 / Implications</span>
-      <h2>A computational model of physics</h2>
-      <p>If information, mathematics and physics are one object, physics can be computed the way the geometric bit is: as rotations composed on the three-sphere, each step checked against its return. Particles become closed paths that stay closed, and forces become how one path turns another.</p>
-      <p><span class="hotword" data-def="wolfram" tabindex="0" role="button">Stephen Wolfram’s physics project</span> reached the same idea from computation, building physics out of rules applied to relations, and the geometric bit gives such a model its primitive, the rotation that closes.</p>
+      <span class="kicker">06 / Operating geometric bits</span>
+      <h2>So, what is mathematics?</h2>
+      <p class="plain">There is no abstract mathematics.</p>
+      <p>Everything in this section came out of one circle: the whole numbers as its closures, signals as circles side by side, the four number systems as circles composed into each other, spacetime at the quaternion level, and the spheres laid over spheres above it.</p>
+      <p>Mathematics is called abstract because its objects seem to live nowhere, and each of them lives here, in the composition of one physical rotation. That also answers <span class="hotword" data-def="wigner" tabindex="0" role="button">Wigner’s question</span> of why mathematics works so well in physics: the two were always reading one object, and the abstract part was only the notation, the symbols set apart from what they measure.</p>
     </div>
   </section>
 
-  <section class="step" id="all-information" data-part="conclusion" data-part-num="06" data-part-label="Implications" data-scene="ginfo" data-fig="compact">
+  <section class="step" id="one-object" data-part="operate" data-part-num="06" data-part-label="Operating geometric bits" data-scene="gsame" data-fig="compact">
     <div class="copy dense">
-      <span class="kicker">06 / Implications</span>
-      <h2>Everything we touch is information</h2>
-      <p>We only meet reality through interactions, and every interaction carries information: light, heat, a push, a reading on an instrument. So the reality available to us is information, in the sense this work defined it, what stays the same through a change.</p>
-      <p>That is why physics, DNA and language turned out to share one structure: a particle is what stays itself through its interactions, a genome is what stays itself through copying, and a word is what stays itself through being said.</p>
+      <span class="kicker">06 / Operating geometric bits</span>
+      <h2>Physics, mathematics and computation are one object</h2>
+      <p>This whole presentation has been about one object. Information is invariance over change, and its smallest form is the circle. When we measured it with a string, a clock and a plumb line, it was physics; when we wrote it as Euler’s identity and counted its closures as numbers, it was mathematics; when we composed rotations and checked their return, it was computation.</p>
+      <p>Each time it was the same circle, so physics, mathematics and computation are one object, and that object is information.</p>
     </div>
   </section>
 
-  <section class="step" id="names" data-part="conclusion" data-part-num="06" data-part-label="Implications" data-layout="full" data-scene="dust">
+  <section class="step" id="t-conclusion" data-part="conclusion" data-part-num="07" data-part-label="Implications" data-layout="full" data-scene="tclose">
     <div class="copy">
-      <span class="kicker">06 / Implications</span>
-      <h2>Theories that meet here</h2>
-      <p class="names-sub">Each of these reached part of the same object from its own field.</p>
-      <div class="names"><div class="nm"><b>Wheeler</b><span class="yr">1990</span><span>“it from bit”: every physical thing arises from yes-or-no answers</span></div><div class="nm"><b>Rovelli</b><span class="yr">1996</span><span>relational quantum mechanics: properties exist only between systems</span></div><div class="nm"><b>’t Hooft and Susskind</b><span class="yr">1990s</span><span>holography: a region’s information is held on its boundary</span></div><div class="nm"><b>Furey</b><span class="yr">2016–26</span><span>the Standard Model built from ℝ ⊂ ℂ ⊂ ℍ ⊂ 𝕆</span></div><div class="nm"><b>Wolfram</b><span class="yr">2020</span><span>physics as rules acting on relations</span></div><div class="nm"><b>Landauer</b><span class="yr">1961</span><span>information is physical, and erasing it costs energy</span></div><div class="nm"><b>Klein</b><span class="yr">1872</span><span>a geometry is what stays the same under its moves</span></div><div class="nm"><b>Noether</b><span class="yr">1918</span><span>every symmetry carries something conserved</span></div><div class="nm"><b>Homotopy type theory</b><span class="yr">2013</span><span>identity is a path, and equal means connected</span></div><div class="nm"><b>Friston</b><span class="yr">2006</span><span>a brain keeps itself by checking what arrives against what it expects</span></div><div class="nm"><b>Relational frame theory</b><span class="yr">2001</span><span>meaning is the relations people derive</span></div><div class="nm"><b>Huh and colleagues</b><span class="yr">2024</span><span>models converge on one shared structure of relations</span></div></div>
+      <p class="intro-q">What follows from it?</p>
+      <h1 class="intro-title">Implications</h1>
+      <p class="intro-sub">One language</p>
     </div>
   </section>
 
-  <section class="step" id="humanities" data-part="conclusion" data-part-num="06" data-part-label="Implications" data-scene="frames" data-fig="compact">
+  <section class="step" id="levelc" data-part="conclusion" data-part-num="07" data-part-label="Implications" data-scene="greply" data-fig="compact">
     <div class="copy dense">
-      <span class="kicker">06 / Implications</span>
+      <span class="kicker">07 / Implications</span>
+      <h2>What about Level C?</h2>
+      <p>Weaver’s third level asks whether the meaning that arrived changes what the receiver does, the way the sender intended. If I ask you for the lighter and you hand it to me, your action is a reply: it travels back to me, and I compare it with what I meant.</p>
+      <p>So Level C is Level B run in the other direction. The action is a meaning sent back and checked against the same reference, and once Level B can be checked, Level C can be checked the same way.</p>
+    </div>
+  </section>
+
+  <section class="step" id="gbit-gives" data-part="conclusion" data-part-num="07" data-part-label="Implications" data-scene="glanes" data-fig="compact">
+    <div class="copy dense">
+      <span class="kicker">07 / Implications</span>
+      <h2>Levels B and C, solved</h2>
+      <p><span class="hotword recall" data-recall="gives" tabindex="0" role="button">Shannon solved Level A</span> in 1948 by agreeing on the symbols beforehand. The geometric bit carries the reference with the message, so the receiver can check the meaning instead of assuming it, and the reply can be checked the same way.</p>
+      <div class="levelbars">
+        <div class="lb checked"><span>Level A · the technical problem</span><em>solved, 1948</em></div>
+        <div class="lb checked"><span>Level B · the semantic problem</span><em>solved</em></div>
+        <div class="lb checked"><span>Level C · the effectiveness problem</span><em>solved</em></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="step" id="all-information" data-part="conclusion" data-part-num="07" data-part-label="Implications" data-scene="ginfo" data-fig="compact">
+    <div class="copy dense">
+      <span class="kicker">07 / Implications</span>
+      <h2>Everything we touch is information</h2>
+      <p>We only meet reality through interactions, and every interaction carries information: light, heat, a push, a reading on an instrument. So the reality available to us is information, and physics and DNA are information too, as far as anything about them can reach us.</p>
+      <p>That is why one structure kept appearing: a particle is what stays itself through its interactions, a genome is what stays itself through copying, and a word is what stays itself through being said.</p>
+    </div>
+  </section>
+
+  <section class="step" id="humanities" data-part="conclusion" data-part-num="07" data-part-label="Implications" data-scene="frames" data-fig="compact">
+    <div class="copy dense">
+      <span class="kicker">07 / Implications</span>
       <h2>Identity in the humanities</h2>
       <p>Psychology studies meaning as something people do. Skinner called it <span class="hotword" data-def="verbalbehavior" tabindex="0" role="button">verbal behaviour</span>, and relational frame theory, its current form, measures how people derive relations nobody taught them: learn that an igniter is a lighter, and that a lighter is the thing on the desk, and you know an igniter is the thing on the desk without being told.</p>
       <p>The simplest of those derived relations is sameness, <i>A</i> = <i>A</i>, the identity principle this whole work started from. The same account is used today in therapy, in teaching language to autistic children and in schools, and with a measured reference it becomes a check: whether a person understood is whether the relations they derive come back the same, so meaning becomes something we can check at the scale of a person.</p>
     </div>
   </section>
 
-  <section class="step" id="seed" data-part="conclusion" data-part-num="06" data-part-label="Implications" data-scene="tseed" data-fig="compact">
+  <section class="step" id="machine-meaning" data-part="conclusion" data-part-num="07" data-part-label="Implications" data-scene="gshape" data-fig="compact">
     <div class="copy dense">
-      <span class="kicker">06 / Implications</span>
-      <h2>A seed</h2>
-      <p><span class="hotword recall" data-recall="gives" tabindex="0" role="button">Shannon’s theory is a communication protocol</span>, and it worked because everyone agreed to use it: every modem, phone and network speaks the same bits because the people who built them adopted the same agreement. A correct theory can still go unused, since a protocol only works once the people communicating share it.</p>
-      <p>The geometric bit works the same way, only once it is adopted, and <span class="hotword recall" data-recall="where" tabindex="0" role="button">most of our descriptions already use it</span> without naming it. Like Shannon’s theory in 1948, this is a seed.</p>
-      <ul class="hotlist links">
-        <li><a href="https://github.com/faltz009/geometrical-theory-of-communication" target="_blank" rel="noopener">This thesis, the paper</a></li>
-        <li><a href="https://doi.org/10.5281/zenodo.19140055" target="_blank" rel="noopener">The Zeroth Law: identity and coherence</a></li>
-        <li><a href="https://doi.org/10.5281/zenodo.18906682" target="_blank" rel="noopener">The Shape of Reality: physics from π and e</a></li>
-        <li><a href="https://doi.org/10.5281/zenodo.20349033" target="_blank" rel="noopener">Geometric Calculus</a></li>
-        <li><a href="https://doi.org/10.5281/zenodo.19578024" target="_blank" rel="noopener">The Geometric Computer</a></li>
-        <li><a href="https://github.com/faltz009/Closure-SDK" target="_blank" rel="noopener">Closure SDK, the protocol in code</a></li>
-        <li><a href="map.html">The map of the thesis</a></li>
-      </ul>
+      <span class="kicker">07 / Implications</span>
+      <h2>Meaning a machine can check</h2>
+      <p>Language models already hold meanings as shapes, guessed from statistics. Written in the full tower of rotations, a meaning becomes a shape carried with its reference: a machine could send it, the receiver could line it up, and whatever fails to line up would be measured, so the machine would know how much of the meaning arrived.</p>
+      <p>That is the next technical step, and it is where <span class="hotword recall" data-recall="strain" tabindex="0" role="button">the 20-watt question</span> points: computing with the reference instead of guessing around it.</p>
     </div>
   </section>
 
-  <section class="step" id="what-stays" data-part="conclusion" data-part-num="06" data-part-label="Implications" data-scene="tadopt" data-fig="compact">
+  <section class="step" id="names" data-part="conclusion" data-part-num="07" data-part-label="Implications" data-layout="full" data-scene="dust">
+    <div class="copy">
+      <span class="kicker">07 / Implications</span>
+      <h2>Theories that meet here</h2>
+      <p class="names-sub">Each of these reached part of the same object from its own field.</p>
+      <div class="names"><div class="nm"><b>Wheeler</b><span class="yr">1990</span><span>“it from bit”: every physical thing arises from yes-or-no answers</span></div><div class="nm"><b>Bateson</b><span class="yr">1972</span><span>information is a difference that makes a difference</span></div><div class="nm"><b>Landauer</b><span class="yr">1961</span><span>information is physical, and erasing it costs energy</span></div><div class="nm"><b>Rovelli</b><span class="yr">1996</span><span>properties exist only between systems</span></div><div class="nm"><b>’t Hooft and Susskind</b><span class="yr">1990s</span><span>a region’s information is held on its boundary</span></div><div class="nm"><b>Penrose</b><span class="yr">1967</span><span>spacetime rebuilt from complex geometry, twistors</span></div><div class="nm"><b>Hestenes</b><span class="yr">1966</span><span>physics written in one algebra of rotations</span></div><div class="nm"><b>Tegmark</b><span class="yr">2008</span><span>physical reality is a mathematical structure</span></div><div class="nm"><b>Wolfram</b><span class="yr">2020</span><span>physics as rules acting on relations</span></div><div class="nm"><b>Furey</b><span class="yr">2016–26</span><span>the Standard Model built from ℝ ⊂ ℂ ⊂ ℍ ⊂ 𝕆</span></div><div class="nm"><b>Klein</b><span class="yr">1872</span><span>a geometry is what stays the same under its moves</span></div><div class="nm"><b>Noether</b><span class="yr">1918</span><span>every symmetry carries something conserved</span></div><div class="nm"><b>Homotopy type theory</b><span class="yr">2013</span><span>identity is a path, and equal means connected</span></div><div class="nm"><b>Friston</b><span class="yr">2006</span><span>a brain keeps itself by checking what arrives against what it expects</span></div><div class="nm"><b>Relational frame theory</b><span class="yr">2001</span><span>meaning is the relations people derive</span></div><div class="nm"><b>Huh and colleagues</b><span class="yr">2024</span><span>models converge on one shared structure of relations</span></div></div>
+    </div>
+  </section>
+
+  <section class="step" id="compute-physics" data-part="conclusion" data-part-num="07" data-part-label="Implications" data-scene="gfield" data-fig="compact">
     <div class="copy dense">
-      <span class="kicker">06 / Implications</span>
+      <span class="kicker">07 / Implications</span>
+      <h2>A computational model of physics</h2>
+      <p>If physics, mathematics and computation are one object, physics can be computed directly: rotations composed on the three-sphere, each step checked against its return. A particle is a closed path that stays closed, a force is how one path turns another, and a state of matter is a pattern the composition settles into as it cools.</p>
+      <p><span class="hotword" data-def="wolfram" tabindex="0" role="button">Stephen Wolfram’s physics project</span> reached a similar idea from computation, building physics out of rules acting on relations, and the geometric bit gives such a model its primitive, the rotation that closes.</p>
+    </div>
+  </section>
+
+  <section class="step" id="protocol" data-part="conclusion" data-part-num="07" data-part-label="Implications" data-scene="cbreak" data-fig="compact">
+    <div class="copy dense">
+      <span class="kicker">07 / Implications</span>
+      <h2>Closure as a protocol</h2>
+      <p>Composing records as rotations gives a running product. If every record arrives, in order, the product comes back to where it started, and if not, it drifts by exactly how much went wrong. A message can break in only two ways, in symmetry when something is missing, or in perpendicularity when something is in the wrong place, and the drift says which.</p>
+      <p>Two systems can then check that they hold the same thing by exchanging one rotation instead of all the data. The Closure SDK already does this in code.</p>
+    </div>
+  </section>
+
+  <section class="step" id="what-stays" data-part="conclusion" data-part-num="07" data-part-label="Implications" data-scene="tadopt" data-fig="compact">
+    <div class="copy dense">
+      <span class="kicker">07 / Implications</span>
       <h2>What doesn’t change</h2>
       <p>Nothing that works today has to be thrown away. Shannon’s bit, entropy, binary computers and the language models all stay correct, as readings of the geometric bit with the reference set aside, the way Newton’s physics stays correct inside Einstein’s at everyday speeds.</p>
       <p>And the adoption is already underway. Every theory is made of information, so wherever a science describes something that stays the same through change, it is already using the geometric bit, and what this work found will keep being found in every field.</p>
     </div>
   </section>
 
-  <section class="step" id="lenses" data-part="conclusion" data-part-num="06" data-part-label="Implications" data-scene="tests" data-fig="compact">
+  <section class="step" id="seed" data-part="conclusion" data-part-num="07" data-part-label="Implications" data-scene="tseed" data-fig="compact">
     <div class="copy dense">
-      <span class="kicker">06 / Implications</span>
-      <h2>One thesis, many doors</h2>
-      <p>Information is invariance over change, its shape is the circle, and Euler’s identity, measured as a physical law, is how we check it. Every field can read that in its own terms:</p>
-      <ul class="hotlist tagged">
-        <li><b class="tagf c-cyan">Information</b><span>entropy gets its other half, closure</span></li>
-        <li><b class="tagf c-cyan">Communication</b><span>Levels B and C become checks we can perform</span></li>
-        <li><b class="tagf c-violet">Physics</b><span>matter is what stays and force is what moves, in one tower</span></li>
-        <li><b class="tagf c-math">Mathematics</b><span>every branch composes one rotation, or reads part of it</span></li>
-        <li><b class="tagf c-mint">Philosophy</b><span>Gödel’s limit gets a reference anyone can measure</span></li>
-        <li><b class="tagf c-coral">Mind and language</b><span>a meaning is a shape, recovered by rotation</span></li>
-        <li><b class="tagf c-brass">Computing</b><span>computing with the whole circle, reference and return</span></li>
-        <li><b class="tagf c-math">History</b><span>many people found parts of it under their own names</span></li>
-      </ul>
+      <span class="kicker">07 / Implications</span>
+      <h2>A communication protocol</h2>
+      <p><span class="hotword recall" data-recall="gives" tabindex="0" role="button">Shannon’s theory is a communication protocol</span>, and it worked because everyone agreed to use it: every modem, phone and network speaks the same bits because the people who built them adopted the same agreement. A correct theory can still go unused, since a protocol only works once the people communicating share it.</p>
+      <p>The geometric bit works the same way, only once it is adopted, and <span class="hotword recall" data-recall="where" tabindex="0" role="button">most of our descriptions already use it</span> without naming it. Like Shannon’s theory in 1948, this is a seed.</p>
     </div>
   </section>
 
-  <section class="step" id="coda" data-part="conclusion" data-part-num="06" data-part-label="Implications" data-scene="coda">
+  <section class="step" id="lenses" data-part="conclusion" data-part-num="07" data-part-label="Implications" data-scene="gshows" data-fig="compact">
     <div class="copy dense">
-      <span class="kicker">06 / Implications</span>
+      <span class="kicker">07 / Implications</span>
+      <h2>What this work shows</h2>
+      <ol class="steps">
+        <li>Information is invariance over change: something that stays the same while something else changes.</li>
+        <li>Its smallest form is the circle, a rotation that comes back to where it started, made of perpendicularity, measured by <i>e</i>, and symmetry, measured by π.</li>
+        <li>Shannon’s bit and entropy are a reading of the circle with the reference set aside, and closure, the check that what arrived is what was sent, is entropy’s other half.</li>
+        <li>Euler’s identity checks the return and is measured the same way in every lab, so identity is a physical law and only the symbols are chosen.</li>
+        <li>Since identity is physical, a meaning has a shape that sender and receiver can compare, and Levels B and C become checks, the way Level A became one in 1948.</li>
+        <li>Physics, mathematics and computation study this same object.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="step" id="coda" data-part="conclusion" data-part-num="07" data-part-label="Implications" data-scene="coda">
+    <div class="copy dense">
+      <span class="kicker">07 / Implications</span>
       <h2>When I say A, you get A</h2>
-      <p>The lighter on the desk has not been replaced by its name, its image or its measurements, since each gives access to relationships in the same encounter, and knowing what a description means is knowing how to bring it back to them.</p>
-      <p>Shannon’s bit answers how to tell things apart, and the circle answers what a thing is, by carrying the reference, the rotation and the check that recognizes the result, so the demand on communication is direct: changing the description must preserve the comparisons it is meant to carry.</p>
-      <p class="plain">The shape of information is the structure of the comparisons that remain possible after the message has made the trip.</p>
+      <p>We began with a lighter on a desk and the question of what it takes to communicate it. Shannon’s theory delivers the symbols and leaves the lighter out, so whether you understood me was assumed. This work puts the lighter back: the thing, the word for it and what you do with it are compared against one reference, so when I say <i>A</i>, you get <i>A</i>, and both of us can check it.</p>
       <div class="colophon">
         <span>Working draft · <a href="https://github.com/faltz009/geometrical-theory-of-communication">github.com/faltz009/geometrical-theory-of-communication</a></span>
         <span>Continues <a href="https://doi.org/10.5281/zenodo.15715747">The Geometrical Theory of Communication (2025)</a> · CC BY-NC-SA 4.0</span>
@@ -936,16 +992,16 @@
     </div>
   </section>
 
-  <section class="step" id="t-forward" data-part="map" data-part-num="07" data-part-label="Going forward" data-layout="full" data-scene="tforward">
+  <section class="step" id="t-forward" data-part="map" data-part-num="08" data-part-label="Going forward" data-layout="full" data-scene="tforward">
     <div class="copy">
       <p class="intro-q">Where does it lead?</p>
       <h1 class="intro-title">Going Forward</h1>
     </div>
   </section>
 
-  <section class="step" id="map" data-part="map" data-part-num="07" data-part-label="Going forward" data-layout="full" data-scene="dust">
+  <section class="step" id="map" data-part="map" data-part-num="08" data-part-label="Going forward" data-layout="full" data-scene="dust">
     <div class="copy">
-      <span class="kicker">07 / Going forward</span>
+      <span class="kicker">08 / Going forward</span>
       <h2>The map of the thesis</h2>
       <p>Beyond the explanation, the questions the geometric bit reaches, from Euclid’s fifth postulate and the Riemann Hypothesis to the Standard Model and the mind, each with the papers where it is worked out in full.</p>
       <p><a class="mapopen" href="map.html">Open the map →</a></p>
@@ -953,7 +1009,7 @@
     </div>
   </section>
 
-  <section class="step topic" id="goedel" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="coding">
+  <section class="step topic" id="goedel" hidden data-part="map" data-part-num="08" data-part-label="Going forward" data-scene="coding">
     <div class="copy dense">
       <span class="kicker">What can be proved?</span>
       <h2>What did Gödel prove?</h2>
@@ -964,7 +1020,7 @@
     </div>
   </section>
 
-  <section class="step topic" id="closed" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="selfref">
+  <section class="step topic" id="closed" hidden data-part="map" data-part-num="08" data-part-label="Going forward" data-scene="selfref">
     <div class="copy dense">
       <span class="kicker">What can be proved?</span>
       <h2>There are no closed systems</h2>
@@ -975,7 +1031,7 @@
     </div>
   </section>
 
-  <section class="step topic" id="tower" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="tower" data-fig="compact">
+  <section class="step topic" id="tower" hidden data-part="map" data-part-num="08" data-part-label="Going forward" data-scene="tower" data-fig="compact">
     <div class="copy dense">
       <span class="kicker">What is matter made of?</span>
       <h2>How the rotations compose</h2>
@@ -991,7 +1047,7 @@
     </div>
   </section>
 
-  <section class="step topic" id="hopf" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="hopf">
+  <section class="step topic" id="hopf" hidden data-part="map" data-part-num="08" data-part-label="Going forward" data-scene="hopf">
     <div class="copy dense">
       <span class="kicker">What do we measure?</span>
       <h2>Shannon’s bit is the first row</h2>
@@ -1010,7 +1066,7 @@
     </div>
   </section>
 
-  <section class="step topic" id="bridge" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="gbridge" data-fig="compact">
+  <section class="step topic" id="bridge" hidden data-part="map" data-part-num="08" data-part-label="Going forward" data-scene="gbridge" data-fig="compact">
     <div class="copy dense">
       <span class="kicker">What do we measure?</span>
       <h2>What counts as one?</h2>
@@ -1021,7 +1077,7 @@
     </div>
   </section>
 
-  <section class="step topic" id="convey" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="frames">
+  <section class="step topic" id="convey" hidden data-part="map" data-part-num="08" data-part-label="Going forward" data-scene="frames">
     <div class="copy dense">
       <span class="kicker">How do minds mean?</span>
       <h2>How do we convey it?</h2>
@@ -1031,7 +1087,7 @@
     </div>
   </section>
 
-  <section class="step topic" id="hamilton" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="stone">
+  <section class="step topic" id="hamilton" hidden data-part="map" data-part-num="08" data-part-label="Going forward" data-scene="stone">
     <div class="copy dense">
       <span class="kicker">What is matter made of?</span>
       <h2>Hamilton’s search</h2>
@@ -1041,7 +1097,7 @@
     </div>
   </section>
 
-  <section class="step topic" id="split" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="split">
+  <section class="step topic" id="split" hidden data-part="map" data-part-num="08" data-part-label="Going forward" data-scene="split">
     <div class="copy dense">
       <span class="kicker">What is matter made of?</span>
       <h2>What the notation split</h2>
@@ -1051,7 +1107,7 @@
     </div>
   </section>
 
-  <section class="step topic" id="perpendicular" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="gcircle">
+  <section class="step topic" id="perpendicular" hidden data-part="map" data-part-num="08" data-part-label="Going forward" data-scene="gcircle">
     <div class="copy dense">
       <span class="kicker">What is matter made of?</span>
       <h2>A perpendicular at every point</h2>
@@ -1061,7 +1117,7 @@
     </div>
   </section>
 
-  <section class="step topic" id="matter" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="mobius">
+  <section class="step topic" id="matter" hidden data-part="map" data-part-num="08" data-part-label="Going forward" data-scene="mobius">
     <div class="copy dense">
       <span class="kicker">What is matter made of?</span>
       <h2>Matter rotates twice</h2>
@@ -1071,7 +1127,7 @@
     </div>
   </section>
 
-  <section class="step topic" id="measure" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="unroll">
+  <section class="step topic" id="measure" hidden data-part="map" data-part-num="08" data-part-label="Going forward" data-scene="unroll">
     <div class="copy dense">
       <span class="kicker">What do we measure?</span>
       <h2>What do we measure?</h2>
@@ -1081,7 +1137,7 @@
     </div>
   </section>
 
-  <section class="step topic" id="metre" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="earth">
+  <section class="step topic" id="metre" hidden data-part="map" data-part-num="08" data-part-label="Going forward" data-scene="earth">
     <div class="copy dense">
       <span class="kicker">What do we measure?</span>
       <h2>The metre was a quarter circle</h2>
@@ -1092,7 +1148,7 @@
     </div>
   </section>
 
-  <section class="step topic" id="language" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="anysize">
+  <section class="step topic" id="language" hidden data-part="map" data-part-num="08" data-part-label="Going forward" data-scene="anysize">
     <div class="copy dense">
       <span class="kicker">What can be proved?</span>
       <h2>Mathematics is language made precise</h2>
@@ -1102,7 +1158,7 @@
     </div>
   </section>
 
-  <section class="step topic" id="next" hidden data-part="map" data-part-num="07" data-part-label="Going forward" data-scene="tests">
+  <section class="step topic" id="next" hidden data-part="map" data-part-num="08" data-part-label="Going forward" data-scene="tests">
     <div class="copy dense">
       <span class="kicker">What can we build?</span>
       <h2>What we can test next</h2>

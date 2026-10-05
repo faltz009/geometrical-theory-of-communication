@@ -1,0 +1,15 @@
+\begin{tikzpicture}[>=Stealth,every node/.style={font=\small},
+ ctx/.style={draw=black!35,fill=black!2,minimum width=18mm,minimum height=9mm},
+ edit/.style={draw=inkblue,fill=inkblue!5,minimum width=32mm,minimum height=9mm}]
+\node[ctx](l)at(0,0){$L$};\node[edit](a)at(3,0){$g$ or $aM$};
+\node[ctx](r)at(6,0){$R$};
+\node[ctx](ll)at(0,-1.35){$L$};\node[edit](b)at(3,-1.35){$1$ or $Ma$};
+\node[ctx](rr)at(6,-1.35){$R$};
+\draw[->](l)--(a);\draw[->](a)--(r);
+\draw[->](ll)--(b);\draw[->](b)--(rr);
+\node[anchor=east]at(-1.1,0){$P$};\node[anchor=east]at(-1.1,-1.35){$P'$};
+\draw[<->,inkblue](a)--node[right,font=\footnotesize]{local comparison}(b);
+\node[align=left,anchor=west,text width=44mm]at(7,-.65)
+ {$\Delta=\bar L(P-P')\bar R$\\[5pt]
+ Missing: $g-1$\\Moved: $aM-Ma$};
+\end{tikzpicture}

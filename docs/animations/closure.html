@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Two Layers Compared</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+  html, body { margin: 0; height: 100%; background: #03080b; overflow: hidden; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+/* Two layers of one field, compared exactly.
+   1. A field on the three-sphere, drawn in our space by stereographic projection: nested layers, the Hopf tori
+      |z1| = cos η, |z2| = sin η, each a torus of revolution with radius sec η and tube tan η, cut open at the front.
+   2. Two layers (η = 0.4 and η = 0.72) are picked out, each filled with its Hopf circles, the points with
+      arg z1 − arg z2 fixed. The Hopf map (|z1|² − |z2|², 2 z1 z̄2) sends each circle to one point of a sphere, so
+      each layer becomes one circle of latitude there, at height cos 2η; a circle's colour is its longitude.
+   3. Each layer is flat in the three-sphere, a rectangle 2π cos η by 2π sin η, so it unrolls with nothing
+      stretched (first bent open in our space, then straightened from the projection to its true shape), and its
+      circles become parallel lines at angle η.
+   4. On each flat layer a walk goes straight across the circles, crossing every one of them once. It comes back
+      to the circle it started on, moved along it by 2π sin²η: 0.95 on the inner layer, 2.73 on the outer one.
+      The moves shown are measured from the pair (z1, z2) at the two ends of the walk, not taken from the formula.
+   5. The two moves differ by exactly half the area between the two circles of latitude, the field of the Hopf
+      fibration passing between the layers (1.78 = 1.78; checked numerically to 1e-10). Left out, that difference
+      is noise; kept, it is computed exactly.
+   Space pauses; ?t=seconds freezes a frame. Embedded in the presentation, wheel and keys pass to the deck, and
+   the animation runs only while its step is the active one. */
+const cv = document.getElementById("c"), g = cv.getContext("2d");
+const VW = 1920, VH = 1080, TAU = Math.PI * 2;
+const COL = { cyan: "#45dcff", ice: "#b8eaf4", brass: "#e3b36e", mint: "#7ae0b0", gold: "#ffde6e", violet: "#b298ff", coral: "#ff9676", paper: "#eef1ea", soft: "#c9d4d0", dim: "#7f9692" };
+const SERIF = '"EB Garamond", Georgia, serif', LABEL = '"Segoe UI", Ubuntu, Roboto, "Helvetica Neue", Arial, sans-serif';
+function resize() { const dpr = Math.min(2, devicePixelRatio || 1), w = innerWidth, h = innerHeight, s = Math.min(w / VW, h / VH); cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); g.setTransform(dpr * s, 0, 0, dpr * s, dpr * (w - VW * s) / 2, dpr * (h - VH * s) / 2); }
+addEventListener("resize", resize); resize();
+const q = new URLSearchParams(location.search), FREEZE = q.has("t") ? parseFloat(q.get("t")) : null;
+let paused = false, tP = 0, t0 = performance.now();
+const EMBED = window.parent !== window;
+let live = true, stopAt = 0;                               // in the deck: run only while the host step is active
+const hostActive = () => { try { const s = window.frameElement && window.frameElement.closest(".step"); return !s || s.classList.contains("is-active"); } catch (e) { return true; } };
+addEventListener("message", e => { if (e.data && e.data.deck === "play" && !live) { live = true; t0 += performance.now() - stopAt; requestAnimationFrame(frame); } });
+addEventListener("keydown", e => { if (!EMBED && e.code === "Space") { e.preventDefault(); if (paused) t0 = performance.now() - tP * 1000; paused = !paused; } });
+if (EMBED) {
+  addEventListener("wheel", e => { e.preventDefault(); const d = parent.document.getElementById("deck"); if (d) d.dispatchEvent(new WheelEvent("wheel", { deltaY: e.deltaY, deltaX: e.deltaX, deltaMode: e.deltaMode, cancelable: true })); }, { passive: false });
+  addEventListener("keydown", e => { if (["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End", " "].includes(e.key)) { e.preventDefault(); parent.dispatchEvent(new KeyboardEvent("keydown", { key: e.key, cancelable: true })); } });
+}
+const sm = u => u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u);
+const seg = (t, a, b) => sm((t - a) / (b - a));
+const lerp = (a, b, u) => a + (b - a) * u;
+const wrap = x => { x = (x + Math.PI) % TAU; return (x < 0 ? x + TAU : x) - Math.PI; };
+
+function dot(x, y, rr, col, a = 1, glow = 8) {            // a soft halo instead of shadowBlur: same look, far cheaper per frame
+  if (a <= 0.01) return; g.save(); g.fillStyle = col;
+  if (glow > 0) { g.globalAlpha = a * 0.16; g.beginPath(); g.arc(x, y, rr + glow * 0.45, 0, TAU); g.fill(); }
+  g.globalAlpha = a; g.beginPath(); g.arc(x, y, rr, 0, TAU); g.fill(); g.restore();
+}
+function ring(x, y, rr, col, a = 1, w = 1.6) { if (a <= 0.01) return; g.save(); g.globalAlpha = a; g.strokeStyle = col; g.lineWidth = w; g.beginPath(); g.arc(x, y, rr, 0, TAU); g.stroke(); g.restore(); }
+function text(s, x, y, { font = `400 26px ${SERIF}`, col = COL.soft, align = "center", a = 1 } = {}) { if (a <= 0.01) return; g.save(); g.globalAlpha = a; g.font = font; g.fillStyle = col; g.textAlign = align; g.fillText(s, x, y); g.restore(); }
+function tag(s, x, y, col = COL.cyan, align = "left", a = 1) { if (a <= 0.01) return; g.save(); g.globalAlpha = a; g.font = `600 15px ${LABEL}`; g.fillStyle = col; g.textAlign = align; g.shadowColor = col; g.shadowBlur = 8; g.fillText([...s.toUpperCase()].join(String.fromCharCode(8202)), x, y); g.restore(); }
+function para(s, x, y, maxW, lh, opts) {                   // a headline, wrapped to the width it may use
+  g.save(); g.font = opts.font; const words = s.split(" "), lines = []; let line = "";
+  words.forEach(w => { const tryL = line ? line + " " + w : w; if (g.measureText(tryL).width > maxW && line) { lines.push(line); line = w; } else line = tryL; });
+  lines.push(line); g.restore(); lines.forEach((l, i) => text(l, x, y + i * lh, opts));
+}
+
+/* ---------- the three-sphere in our space ---------- */
+const stereo = (eta, a, b) => { const x1 = Math.cos(eta) * Math.cos(a), x2 = Math.cos(eta) * Math.sin(a), x3 = Math.sin(eta) * Math.cos(b), x4 = Math.sin(eta) * Math.sin(b), d = 1 - x4; return [x1 / d, x2 / d, x3 / d]; };
+const torusPt = (eta, a1, a2) => { const RR = 1 / Math.cos(eta), rr = Math.tan(eta), w = RR + rr * Math.cos(a2); return [w * Math.cos(a1), w * Math.sin(a1), rr * Math.sin(a2)]; };
+/* a layer as a torus that opens: λ1 opens the long circle, λ2 the short one; at λ1 = λ2 = 1 it is the plane (s1, −r, s2) */
+function bent(R, r, th1, th2, l1, l2) {
+  const s1 = R * th1, s2 = r * th2, k1 = (1 - l1) / R, k2 = (1 - l2) / r;
+  const C = k1 > 1e-6 ? [Math.sin(k1 * s1) / k1, (1 - Math.cos(k1 * s1)) / k1, 0] : [s1, 0, 0];
+  const n = [Math.sin(k1 * s1), -Math.cos(k1 * s1), 0];
+  const u = k2 > 1e-6 ? -(1 - Math.cos(k2 * s2)) / k2 : 0, v = k2 > 1e-6 ? Math.sin(k2 * s2) / k2 : s2;
+  return [C[0] + (r + u) * n[0], C[1] + (r + u) * n[1] - (1 - l1) * R, v];
+}
+function cam(p, yaw, tilt) {
+  const c = Math.cos(yaw), s = Math.sin(yaw), x = p[0] * c - p[1] * s, y = p[0] * s + p[1] * c, z = p[2];
+  const ct = Math.cos(tilt), st = Math.sin(tilt), y2 = y * ct - z * st, z2 = y * st + z * ct;
+  return [x, -z2, y2];                                     // screen x, screen y (down), depth (toward the viewer is negative)
+}
+
+/* ---------- the two layers and their circles ---------- */
+const NF = 12, NP = 72;
+const hue = k => `hsl(${(200 + 360 * k / NF) % 360}, 80%, 70%)`;        // a circle's colour is its longitude under the Hopf map
+const LAY = [
+  { eta: 0.4, col: COL.cyan, name: "inner layer", cx: 450 },
+  { eta: 0.72, col: COL.violet, name: "outer layer", cx: 1470 }
+];
+const FAINT = [0.22, 0.56, 0.95];
+LAY.forEach(L => {
+  L.R = 1 / Math.cos(L.eta); L.r = Math.tan(L.eta); L.z = Math.cos(2 * L.eta);
+  L.pts = [];
+  for (let k = 0; k < NF; k++) for (let j = 0; j < NP; j++) {
+    const b = -Math.PI + TAU * (j + 0.5) / NP, a = b + TAU * k / NF, P = stereo(L.eta, a, b);
+    L.pts.push({ k, a, b, th1: Math.atan2(P[0], -P[1]), th2: Math.atan2(P[2], Math.hypot(P[0], P[1]) - L.R) });
+  }
+  // the walk across the circles, as the pair (z1, z2); its move along the circle is measured from its two ends
+  const A0 = 0.9, B0 = -2.2, sa = -TAU * Math.sin(L.eta) ** 2, sb = TAU * Math.cos(L.eta) ** 2;
+  L.walk = w => [A0 + sa * w, B0 + sb * w];
+  const pair = (a, b) => [Math.cos(L.eta) * Math.cos(a), Math.cos(L.eta) * Math.sin(a), Math.sin(L.eta) * Math.cos(b), Math.sin(L.eta) * Math.sin(b)];
+  const p0 = pair(A0, B0), p1 = pair(...L.walk(1));
+  const re = p0[0] * p1[0] + p0[1] * p1[1] + p0[2] * p1[2] + p0[3] * p1[3], im = p0[0] * p1[1] - p0[1] * p1[0] + p0[2] * p1[3] - p0[3] * p1[2];
+  L.move = Math.abs(Math.atan2(im, re));                   // where the walk ends, compared with where it began: the move along the circle
+  L.A0 = A0; L.B0 = B0;
+});
+const BAND = Math.PI * (LAY[0].z - LAY[1].z);              // half the area between the two circles of latitude
+
+/* ---------- timeline ---------- */
+const T1 = 4.5, T2 = 8.5, T3 = 10.5, T4 = 12.8, T5 = 15.0, T6 = 16.8, T7 = 21.8, T8 = 23.2, P = 37;
+const HEAD = [
+  [0, "A field on the three-sphere, drawn in our space: layers inside layers, each a torus filled with circles."],
+  [T1, "Take two of its layers. The Hopf map sends each circle to one point of a sphere, so each layer becomes one circle on it."],
+  [T2, "Each layer is flat in the three-sphere, so it unrolls with nothing stretched, and its circles become straight lines."],
+  [T6, "Walk straight across every circle of a layer once: you come back to the circle you started on, moved along it."],
+  [T8, "The two moves differ by exactly half the area between the layers’ circles on the sphere, the field between the layers."]
+];
+const scale3 = 100, CY = 560, KFLAT = 66;
+
+function layerXY(L, o, t) {                                // where one point of a layer is on screen at time t
+  const split = seg(t, T2, T3), yaw = t < T2 ? 0.5 + t * 0.12 : (0.5 + T2 * 0.12) * (1 - split), tilt = 0.82 * (1 - split);
+  const cx = lerp(960, L.cx, split), zoom = lerp(1, 0.52, split), l1 = seg(t, T3, T4), l2 = seg(t, T4, T5), u = seg(t, T5, T5 + 1.6);
+  const [x, y, d] = cam(bent(L.R, L.r, o.th1, o.th2, l1, l2), yaw, tilt);
+  const sx = cx + x * scale3 * zoom, sy = CY + y * scale3 * zoom;
+  if (u <= 0) return [sx, sy, d, yaw];
+  const fx = L.cx + KFLAT * Math.cos(L.eta) * o.th1, fy = CY - KFLAT * Math.sin(L.eta) * wrap(Math.PI / 2 - o.b);   // the tube angle of the projection runs the other way from b
+  return [lerp(sx, fx, u), lerp(sy, fy, u), d, yaw];
+}
+const flatXY = (L, a, b) => [L.cx + KFLAT * Math.cos(L.eta) * wrap(a + Math.PI / 2), CY - KFLAT * Math.sin(L.eta) * wrap(Math.PI / 2 - b)];
+function flatPath(L, f, n, col, w, a) {                    // a path on a flat layer, broken where it wraps round an edge
+  g.save(); g.strokeStyle = col; g.lineWidth = w; g.globalAlpha = a; g.lineCap = "round"; g.beginPath();
+  let last = null;
+  for (let i = 0; i <= n; i++) { const [x, y] = flatXY(L, ...f(i / n)); if (last && Math.hypot(x - last[0], y - last[1]) < 60) g.lineTo(x, y); else g.moveTo(x, y); last = [x, y]; }
+  g.stroke(); g.restore();
+}
+
+function draw3D(t, fade) {
+  const split = seg(t, T2, T3), yaw = t < T2 ? 0.5 + t * 0.12 : (0.5 + T2 * 0.12) * (1 - split), tilt = 0.82 * (1 - split);
+  const front = Math.atan2(-Math.cos(yaw), -Math.sin(yaw)), openCut = seg(t, T1, T1 + 1.5);
+  const wire = (eta, col, base, cx, zoom, cutIt) => {
+    if (base <= 0.01) return;
+    const buckets = new Map(), cam2 = p => { const [x, y, d] = cam(p, yaw, tilt); return [cx + x * scale3 * zoom, CY + y * scale3 * zoom, d]; };
+    const seg2 = (A, B) => {
+      const mid = [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2]; let dA = Math.atan2(mid[1], mid[0]) - front; dA = Math.atan2(Math.sin(dA), Math.cos(dA));
+      const cut = cutIt && Math.abs(dA) < 0.85 ? 1 - openCut : 1; if (cut <= 0.01) return;
+      const [x1, y1, d1] = cam2(A), [x2, y2, d2] = cam2(B), depth = Math.max(0.2, Math.min(1, 0.6 - (d1 + d2) * 0.12));
+      const key = Math.round(base * cut * depth * fade * 24); if (key <= 0) return;
+      let b = buckets.get(key); if (!b) buckets.set(key, b = []); b.push(x1, y1, x2, y2);
+    };
+    for (let m = 0; m < 22; m++) { const a1 = TAU * m / 22; for (let q = 0; q < 30; q++) seg2(torusPt(eta, a1, TAU * q / 30), torusPt(eta, a1, TAU * (q + 1) / 30)); }
+    for (let m = 0; m < 6; m++) { const a2 = TAU * m / 6; for (let q = 0; q < 80; q++) seg2(torusPt(eta, TAU * q / 80, a2), torusPt(eta, TAU * (q + 1) / 80, a2)); }
+    g.save(); g.strokeStyle = col; g.lineWidth = 1;
+    buckets.forEach((b, key) => { g.globalAlpha = key / 24; g.beginPath(); for (let k = 0; k < b.length; k += 4) { g.moveTo(b[k], b[k + 1]); g.lineTo(b[k + 2], b[k + 3]); } g.stroke(); });
+    g.restore();
+  };
+  if (t < T3) {
+    FAINT.forEach(eta => wire(eta, COL.ice, 0.4 * (1 - seg(t, T1, T1 + 1.5)), 960, 1, eta > 0.4));
+    LAY.forEach((L, i) => wire(L.eta, L.col, 0.4 * (1 - 0.6 * seg(t, T1, T1 + 1.5)) * (1 - split), lerp(960, L.cx, split), lerp(1, 0.52, split), i === 1));
+  }
+  // the circles of the two layers, as coloured lines; the opened front of the outer layer hides its part of them
+  const show = seg(t, T1 - 0.6, T1 + 0.8), segs = [];
+  if (show > 0.01) LAY.forEach((L, i) => {
+    const xy = L.pts.map(o => {
+      const [x, y, d] = layerXY(L, o, t);
+      let a = 1;
+      if (i === 1 && t < T3) { let dA = o.th1 - Math.PI / 2 - front; dA = Math.atan2(Math.sin(dA), Math.cos(dA)); if (Math.abs(dA) < 0.85) a = 1 - openCut * (1 - split); }
+      return [x, y, d, a];
+    });
+    for (let k = 0; k < NF; k++) for (let j = 0; j < NP; j++) {
+      const A = xy[k * NP + j], B = xy[k * NP + (j + 1) % NP];
+      if (Math.hypot(B[0] - A[0], B[1] - A[1]) > 45) continue;          // where a flat layer wraps round an edge
+      const d = (A[2] + B[2]) / 2, a = Math.min(A[3], B[3]) * show * Math.max(0.3, Math.min(1, 0.72 - d * 0.22));
+      if (a > 0.01) segs.push({ A, B, d, a, col: hue(k) });
+    }
+  });
+  segs.sort((p, q2) => q2.d - p.d).forEach(sg => { g.save(); g.globalAlpha = sg.a * fade; g.strokeStyle = sg.col; g.lineWidth = 2.2; g.lineCap = "round"; g.beginPath(); g.moveTo(sg.A[0], sg.A[1]); g.lineTo(sg.B[0], sg.B[1]); g.stroke(); g.restore(); });
+}
+
+/* ---------- the Hopf map's sphere ---------- */
+function hopfSphere(cx, cy, R, a, t, band) {
+  if (a <= 0.01) return;
+  const TL = 0.5, YW = 0.35 + t * 0.05;
+  const P = v => { const x1 = v[0] * Math.cos(YW) - v[1] * Math.sin(YW), y1 = v[0] * Math.sin(YW) + v[1] * Math.cos(YW), y2 = y1 * Math.cos(TL) - v[2] * Math.sin(TL), z2 = y1 * Math.sin(TL) + v[2] * Math.cos(TL); return [cx + R * x1, cy - R * z2, -y2]; };
+  const lat = (z, k) => { const s = Math.sqrt(1 - z * z), f = TAU * k; return [s * Math.cos(f), s * Math.sin(f), z]; };
+  ring(cx, cy, R, COL.ice, 0.35 * a, 1.4);
+  const circle = (z, col, alpha, w) => { for (let i = 0; i < 90; i++) { const p = P(lat(z, i / 90)), p2 = P(lat(z, (i + 1) / 90)); g.save(); g.globalAlpha = alpha * (p[2] > 0 ? 1 : 0.35); g.strokeStyle = col; g.lineWidth = w; g.beginPath(); g.moveTo(p[0], p[1]); g.lineTo(p2[0], p2[1]); g.stroke(); g.restore(); } };
+  if (band > 0) for (let n = 1; n < 14; n++) circle(lerp(LAY[1].z, LAY[0].z, n / 14), COL.gold, 0.5 * band * a, 1.6);
+  LAY.forEach(L => {
+    circle(L.z, L.col, 0.8 * a, 2);
+    for (let k = 0; k < NF; k++) { const p = P(lat(L.z, k / NF)); dot(p[0], p[1], 4.5, hue(k), a * (p[2] > 0 ? 1 : 0.4), 7); }
+  });
+}
+
+function frame(now) {
+  if (EMBED && FREEZE === null && !hostActive()) { live = false; stopAt = now; return; }
+  let t = FREEZE !== null ? FREEZE : paused ? tP : (now - t0) / 1000;
+  if (!paused) tP = t;
+  t = ((t % P) + P) % P;
+  g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = "#03080b"; g.fillRect(0, 0, cv.width, cv.height); g.restore();
+  const bg = g.createRadialGradient(960, 520, 0, 960, 520, 900); bg.addColorStop(0, "rgba(38,96,112,0.14)"); bg.addColorStop(1, "rgba(3,8,11,0)"); g.fillStyle = bg; g.fillRect(0, 0, VW, VH);
+  const fade = t > P - 1.2 ? (P - t) / 1.2 : Math.min(1, t / 0.6);
+
+  if (!EMBED) tag("Two layers, compared exactly", 60, 66, COL.cyan, "left", fade);
+  let head = HEAD[0][1]; for (const [ts, h] of HEAD) if (t >= ts) head = h;
+  para(head, 60, 116, 1800, 42, { font: `400 34px ${SERIF}`, col: COL.paper, align: "left", a: fade });
+
+  draw3D(t, fade);
+  // the Hopf map's sphere: beside the three-sphere first, then between the two flat layers
+  const early = seg(t, T1, T1 + 1) * (1 - seg(t, T2 - 0.6, T2 + 0.2)), late = seg(t, T5, T5 + 1.2);
+  hopfSphere(1640, 590, 130, early * fade, t, 0);
+  if (early > 0.01) text("each circle of a layer is one point here", 1640, 780, { font: `400 25px ${SERIF}`, a: early * fade });
+  const band = seg(t, T8, T8 + 1.2);
+  hopfSphere(960, 560, 165, late * fade, t, band);
+  text("the Hopf map", 960, 340, { font: `500 27px ${SERIF}`, col: COL.paper, a: late * fade });
+
+  // the flat layers: labels, the walk across the circles, and the move along the circle it ends with
+  const flatA = seg(t, T5 + 0.8, T5 + 1.8) * fade;
+  LAY.forEach(L => {
+    const w2 = KFLAT * Math.cos(L.eta) * Math.PI, h2 = KFLAT * Math.sin(L.eta) * Math.PI;
+    g.save(); g.globalAlpha = 0.5 * flatA; g.strokeStyle = "rgba(160,214,214,0.4)"; g.lineWidth = 1; g.strokeRect(L.cx - w2 - 10, CY - h2 - 10, 2 * w2 + 20, 2 * h2 + 20); g.restore();
+    tag(L.name, L.cx, CY - h2 - 26, L.col, "center", flatA);
+    const go = seg(t, T6, T7 - 0.8);
+    if (go > 0) {
+      flatPath(L, w => L.walk(w * go), 160, COL.gold, 3, 0.95 * fade);
+      const [hx, hy] = flatXY(L, ...L.walk(go)); dot(hx, hy, 6, COL.gold, fade, 14);
+      const [sx, sy] = flatXY(L, L.A0, L.B0); ring(sx, sy, 10, COL.paper, fade, 2);
+    }
+    const mv = seg(t, T7 - 0.6, T7 + 0.4) * fade;
+    if (mv > 0.01) {
+      flatPath(L, c => [L.A0 - L.move * c, L.B0 - L.move * c], 80, COL.gold, 7, 0.55 * mv);   // the move, along the circle it started on
+      text(`moved along its circle by ${L.move.toFixed(2)}`, L.cx, CY + h2 + 58, { font: `italic 400 27px ${SERIF}`, col: COL.gold, a: mv });
+    }
+  });
+  // the comparison
+  const cmp = band * fade;
+  text(`the two moves differ by ${(LAY[1].move - LAY[0].move).toFixed(2)}`, 960, 790, { font: `500 28px ${SERIF}`, col: COL.paper, a: cmp });
+  text(`half the area between the two circles: ${BAND.toFixed(2)}`, 960, 830, { font: `500 28px ${SERIF}`, col: COL.gold, a: cmp });
+  text("with the field left out, this difference is noise", 960, 940, { font: `400 27px ${SERIF}`, col: COL.dim, a: cmp });
+  text("with the field kept, it is computed exactly", 960, 978, { font: `400 27px ${SERIF}`, col: COL.gold, a: cmp });
+  if (FREEZE === null) requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+addEventListener("resize", () => { if (FREEZE !== null) requestAnimationFrame(frame); });
+if (document.fonts) document.fonts.ready.then(() => { if (FREEZE !== null) requestAnimationFrame(frame); });
+</script>
+</body>
+</html>

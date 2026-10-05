@@ -1,0 +1,17 @@
+\begin{tikzpicture}[>=Stealth, every node/.style={font=\small},
+ box/.style={draw=inkblue!60,rounded corners=2pt,minimum height=11mm,
+ text width=27mm,align=center,fill=inkblue!3}]
+\node[box] (x) at (0,0) {Thing\\$x$};
+\node[box] (y) at (3.5,0) {Reading\\$M(x,r)$};
+\node[box] (s) at (7,0) {Sign\\$E(M(x,r),r)$};
+\node[box] (a) at (10.5,0) {Recovered answer\\$D(s)$};
+\draw[->,inkblue,thick] (x)--node[above,font=\footnotesize]{observe}(y);
+\draw[->,inkblue,thick] (y)--node[above,font=\footnotesize]{encode}(s);
+\draw[->,inkblue,thick] (s)--node[above,font=\footnotesize]{interpret}(a);
+\node[align=center,text=inkgreen] (r) at (5.2,1.6)
+ {Reference and context $r$\\\footnotesize units, orientation, calibration};
+\draw[->,inkgreen,dashed] (r.south west)--(y.north);
+\draw[->,inkgreen,dashed] (r.south east)--(a.north);
+\draw[->,inkgreen] (a.south)--++(0,-.85)-|node[pos=.25,below,font=\footnotesize]
+ {action and a new observation check the answer}(x.south);
+\end{tikzpicture}

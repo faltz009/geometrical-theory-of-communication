@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One Object</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+  :root { --night: #03080b; }
+  html, body { margin: 0; height: 100%; background: var(--night); overflow: hidden; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  #play { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); font: 600 18px/1 "Segoe UI", Ubuntu, Roboto, Arial, sans-serif; letter-spacing: 0.14em; text-transform: uppercase;
+          color: #45dcff; background: rgba(3, 8, 11, 0.7); border: 1px solid rgba(69, 220, 255, 0.55); border-radius: 999px; padding: 20px 34px; cursor: pointer; box-shadow: 0 0 30px rgba(69, 220, 255, 0.18); }
+  #play.corner { left: auto; top: 2.2vh; right: 2vw; bottom: auto; transform: none; font-size: 13px; padding: 11px 18px; box-shadow: none; }
+  #play:hover { background: rgba(69, 220, 255, 0.12); }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<button id="play" type="button">Play the fifth</button>
+<script>
+/* One closure, read four ways at once, as one picture. The page opens on one button; pressing it plays two notes at
+   2 : 3, a fifth, and shows everything at once with no frames: in the middle two meshing gears of 36 and 24 teeth,
+   which turn 2 : 3, with each gear's whole turns counted beneath it; on the left the closed curve their two turns
+   draw together; on the right the same two turns wound on a torus, the trefoil; below, the two notes as waves and
+   the sound they make together. Everything lights at the instant both gears are back where they started. Space
+   pauses; ?t=seconds freezes a frame. In the presentation, wheel and keys pass to the deck, the animation runs only
+   while its step is the active one, and leaving the step stops the sound. */
+const cv = document.getElementById("c"), g = cv.getContext("2d");
+const VW = 1920, VH = 1080, T = 9, TAU = Math.PI * 2;
+const COL = { cyan: "#45dcff", ice: "#b8eaf4", brass: "#e3b36e", mint: "#7ae0b0", gold: "#ffde6e", violet: "#b298ff", coral: "#ff9676", paper: "#eef1ea", soft: "#c9d4d0", dim: "#7f9692", line: "rgba(160,214,214,0.16)" };
+const SERIF = '"EB Garamond", Georgia, serif', LABEL = '"Segoe UI", Ubuntu, Roboto, "Helvetica Neue", Arial, sans-serif';
+let scale = 1, ox = 0, oy = 0;
+function resize() {
+  const dpr = Math.min(2, window.devicePixelRatio || 1), w = innerWidth, h = innerHeight;
+  cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+  scale = Math.min(w / VW, h / VH); ox = (w - VW * scale) / 2; oy = (h - VH * scale) / 2;
+  g.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * ox, dpr * oy);
+}
+addEventListener("resize", resize); resize();
+const q = new URLSearchParams(location.search), FREEZE = q.has("t") ? parseFloat(q.get("t")) : null;
+let paused = false, tPause = 0, t0 = performance.now();
+const EMBED = window.parent !== window;
+let live = true, stopAt = 0, started = FREEZE !== null;   // in the deck: run only while the host step is active; nothing shows until play is pressed
+const hostActive = () => { try { const s = window.frameElement && window.frameElement.closest(".step"); return !s || s.classList.contains("is-active"); } catch (e) { return true; } };
+addEventListener("message", e => { if (e.data && e.data.deck === "play" && !live) { live = true; t0 += performance.now() - stopAt; if (started) requestAnimationFrame(frame); } });
+addEventListener("keydown", e => { if (!EMBED && e.code === "Space") { e.preventDefault(); if (paused) { t0 = performance.now() - tPause * 1000; } paused = !paused; } });
+if (EMBED) {
+  addEventListener("wheel", e => { e.preventDefault(); const d = parent.document.getElementById("deck"); if (d) d.dispatchEvent(new WheelEvent("wheel", { deltaY: e.deltaY, deltaX: e.deltaX, deltaMode: e.deltaMode, cancelable: true })); }, { passive: false });
+  addEventListener("keydown", e => { if (["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End"].includes(e.key) || (e.key === " " && e.target === document.body)) { e.preventDefault(); parent.dispatchEvent(new KeyboardEvent("keydown", { key: e.key, cancelable: true })); } });
+}
+
+/* ---------- one picture ---------- */
+const M = 6, CXG = 960, CYG = 520;
+const G1 = { n: 36, col: COL.ice }, G2 = { n: 24, col: COL.brass };
+G1.cx = CXG - (G1.n + G2.n) * M / 4; G2.cx = G1.cx + (G1.n + G2.n) * M / 2; G1.cy = G2.cy = CYG;
+const ang = t => { const phi = TAU * t / T; return { phi, a1: -2 * phi, a2: 3 * phi + Math.PI + Math.PI / G2.n }; };
+const closeness = t => { const c = ((t % T) + T) % T; return Math.max(0, 1 - Math.min(c, T - c) / 0.5); };
+
+function gearPath(cx, cy, n, a0) {
+  const r = n * M / 2, ra = r + M, rd = r - 1.25 * M, pitch = TAU / n;
+  g.beginPath();
+  for (let k = 0; k < n; k++) {
+    const a = a0 + k * pitch;
+    [[rd, a - 0.27 * pitch], [ra, a - 0.15 * pitch], [ra, a + 0.15 * pitch], [rd, a + 0.27 * pitch], [rd, a + 0.73 * pitch]].forEach(([rr, aa], i) => {
+      const x = cx + rr * Math.cos(aa), y = cy - rr * Math.sin(aa); (k === 0 && i === 0) ? g.moveTo(x, y) : g.lineTo(x, y); });
+  }
+  g.closePath();
+}
+function gear(G, a0, glow) {
+  const r = G.n * M / 2;
+  g.save(); gearPath(G.cx, G.cy, G.n, a0);
+  g.fillStyle = "rgba(10, 22, 28, 0.92)"; g.fill();
+  g.strokeStyle = glow > 0 ? COL.gold : G.col; g.lineWidth = 6; g.globalAlpha = 0.16 + 0.3 * glow; g.stroke();
+  g.globalAlpha = 1; g.lineWidth = 1.8; g.stroke();
+  g.strokeStyle = G.col; g.globalAlpha = 0.5; g.lineWidth = 1;
+  for (let s = 0; s < 5; s++) { const a = a0 + s * TAU / 5; g.beginPath(); g.moveTo(G.cx + 0.18 * r * Math.cos(a), G.cy - 0.18 * r * Math.sin(a)); g.lineTo(G.cx + 0.78 * r * Math.cos(a), G.cy - 0.78 * r * Math.sin(a)); g.stroke(); }
+  g.globalAlpha = 1; g.restore();
+  const px = G.cx + 0.62 * r * Math.cos(a0), py = G.cy - 0.62 * r * Math.sin(a0);
+  dot(G.cx, G.cy, 5, G.col, 8); dot(px, py, 7, COL.gold, 14);
+}
+function dot(x, y, r, col, glow = 12, a = 1) { g.save(); g.globalAlpha = a; g.fillStyle = col; g.shadowColor = col; g.shadowBlur = glow; g.beginPath(); g.arc(x, y, r, 0, TAU); g.fill(); g.restore(); }
+function text(s, x, y, { font = `400 22px ${SERIF}`, col = COL.soft, align = "center", base = "alphabetic", a = 1 } = {}) { g.save(); g.globalAlpha = a; g.font = font; g.fillStyle = col; g.textAlign = align; g.textBaseline = base; g.fillText(s, x, y); g.restore(); }
+function tag(s, x, y, col = COL.cyan, align = "left") { g.save(); g.font = `600 13px ${LABEL}`; g.fillStyle = col; g.textAlign = align; g.shadowColor = col; g.shadowBlur = 8; g.fillText([...s.toUpperCase()].join(String.fromCharCode(8202)), x, y); g.restore(); }
+
+function counts(t, glow) {                                 // each gear's whole turns, counted beneath it
+  const cyc = ((t % T) + T) % T;
+  [[G1, 2, 2 * cyc / T], [G2, 3, 3 * cyc / T]].forEach(([G, n, turns]) => {
+    for (let i = 0; i < n; i++) {
+      const x = G.cx + (i - (n - 1) / 2) * 46, y = CYG + G1.n * M / 2 + 58, f = Math.max(0, Math.min(1, turns - i));
+      g.save(); g.strokeStyle = G.col; g.globalAlpha = 0.25; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 15, 0, TAU); g.stroke();
+      g.globalAlpha = 1; g.lineWidth = 3; g.strokeStyle = glow > 0 ? COL.gold : G.col; g.beginPath(); g.arc(x, y, 15, -Math.PI / 2, -Math.PI / 2 + TAU * f); g.stroke(); g.restore();
+      text(String(i + 1), x, y + 6, { font: `500 16px ${SERIF}`, col: f >= 1 ? COL.paper : COL.dim });
+    }
+    text(G === G1 ? "C, 36 teeth: 2 turns" : "G, 24 teeth: 3 turns", G.cx, CYG + G1.n * M / 2 + 108, { font: `400 20px ${SERIF}`, col: G.col });
+  });
+}
+function curve(t, glow) {                                  // the closed curve the two turns draw together
+  const cx = 400, cy = CYG, R = 150, P = tt => { const { a1, a2 } = ang(tt); return [cx + R * Math.cos(a1), cy - R * Math.sin(-a2 + 3 * Math.PI / 4 - Math.PI)]; };
+  g.save(); g.strokeStyle = COL.mint; g.globalAlpha = 0.22; g.lineWidth = 1.4; g.beginPath(); for (let i = 0; i <= 600; i++) { const [x, y] = P(T * i / 600); i ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke();
+  const back = Math.min(Math.max(t, 0), T * 0.95), CH = 36, SUB = 5;
+  for (let c = 0; c < CH; c++) { g.beginPath(); for (let k = 0; k <= SUB; k++) { const [x, y] = P(t - back * (c * SUB + k) / (CH * SUB)); k ? g.lineTo(x, y) : g.moveTo(x, y); }
+    const fall = 1 - c / CH; g.strokeStyle = glow > 0 ? COL.gold : COL.mint; g.lineWidth = 7; g.globalAlpha = 0.14 * fall; g.stroke(); g.lineWidth = 2.6; g.globalAlpha = fall; g.stroke(); }
+  g.restore();
+  const [ex, ey] = P(t); dot(ex, ey, 7, COL.paper, 16);
+  text("drawn by both turns together, a closed curve", cx, cy + R + 64, { font: `400 21px ${SERIF}` });
+}
+function trefoil(t, glow) {                                // the same two turns wound on a torus
+  const cx = 1520, cy0 = CYG, R = 1, r = 0.44, sc = 108, spin = t * 0.2, tau = 0.28, sNow = (((t % T) + T) % T) / T;
+  const P3 = (u, v) => [(R + r * Math.cos(v)) * Math.cos(u), (R + r * Math.cos(v)) * Math.sin(u), r * Math.sin(v)];
+  const view = p => { const c = Math.cos(spin), s2 = Math.sin(spin), x = p[0] * c - p[1] * s2, y = p[0] * s2 + p[1] * c, z = p[2]; return [cx + x * sc, cy0 + (y * Math.cos(tau) - z * Math.sin(tau)) * sc, -(y * Math.sin(tau) + z * Math.cos(tau))]; };
+  const knot = u => P3(TAU * 2 * u, TAU * 3 * u);
+  const N = 360, segs = [];
+  for (let i = 0; i < N; i++) { const A = view(knot(i / N)), B = view(knot((i + 1) / N)); segs.push({ A, B, d: (A[2] + B[2]) / 2, drawn: (i + 1) / N <= sNow || glow > 0 }); }
+  segs.sort((p, q) => q.d - p.d);
+  segs.forEach(sg => { const near = Math.max(0, Math.min(1, 0.5 - sg.d * 0.6)); g.save();
+    if (sg.drawn) { g.lineCap = "butt"; g.strokeStyle = "#03080b"; g.lineWidth = 8; g.beginPath(); g.moveTo(sg.A[0], sg.A[1]); g.lineTo(sg.B[0], sg.B[1]); g.stroke(); }
+    g.lineCap = "round"; g.strokeStyle = glow > 0 ? COL.gold : COL.mint; g.lineWidth = sg.drawn ? 3 : 1.2; g.globalAlpha = sg.drawn ? 0.45 + 0.55 * near : 0.14;
+    g.beginPath(); g.moveTo(sg.A[0], sg.A[1]); g.lineTo(sg.B[0], sg.B[1]); g.stroke(); g.restore(); });
+  const [px, py] = view(knot(sNow)); dot(px, py, 7, COL.paper, 16);
+  text("wound on a torus, the trefoil", cx, cy0 + 214, { font: `400 21px ${SERIF}` });
+}
+function waves(t, glow) {                                  // the two notes, and the sound they make together
+  const x0 = 560, W = 800, span = T * 0.75;
+  const row = (yc, fn, col, lab, amp) => {
+    g.save(); g.strokeStyle = glow > 0 && lab === "together" ? COL.gold : col; g.lineWidth = 2.4; g.beginPath();
+    for (let i = 0; i <= 320; i++) { const tt = t - span + span * i / 320, x = x0 + W * i / 320, y = yc - amp * fn(tt); i ? g.lineTo(x, y) : g.moveTo(x, y); }
+    g.stroke(); g.restore();
+    text(lab, x0 + W + 18, yc + 7, { font: `400 21px ${SERIF}`, col, align: "left" });
+  };
+  row(830, tt => Math.cos(ang(tt).a1), COL.ice, "C", 26);
+  row(900, tt => Math.cos(ang(tt).a2), COL.brass, "G", 26);
+  row(985, tt => (Math.cos(ang(tt).a1) + Math.cos(ang(tt).a2)) / 2, COL.gold, "together", 38);
+}
+
+function frame(now) {
+  if (EMBED && FREEZE === null && !hostActive()) { live = false; stopAt = now; stopSound(); return; }
+  if (!started) { g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = "#03080b"; g.fillRect(0, 0, cv.width, cv.height); g.restore(); return; }
+  const t = FREEZE !== null ? FREEZE : paused ? tPause : (now - t0) / 1000;
+  if (!paused) tPause = t;
+  g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = "#03080b"; g.fillRect(0, 0, cv.width, cv.height); g.restore();
+  const bg = g.createRadialGradient(960, 520, 0, 960, 520, 900); bg.addColorStop(0, "rgba(38,96,112,0.14)"); bg.addColorStop(1, "rgba(3,8,11,0)"); g.fillStyle = bg; g.fillRect(0, 0, VW, VH);
+  const glow = closeness(t);
+  if (!EMBED) tag("One closure, read four ways", 42, 56);
+  text("2 : 3", CXG, 150, { font: `500 100px ${SERIF}`, col: glow > 0 ? COL.gold : COL.paper });
+  text("a fifth: the notes C and G", CXG, 205, { font: `400 28px ${SERIF}` });
+  const { a1, a2 } = ang(t);
+  gear(G1, a1, glow); gear(G2, a2, glow);
+  counts(t, glow); curve(t, glow); trefoil(t, glow); waves(t, glow);
+  if (glow > 0) text("both gears are back where they started", CXG, 372, { font: `600 20px ${SERIF}`, col: COL.gold, a: glow });
+  if (FREEZE === null) requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+addEventListener("resize", () => { if (FREEZE !== null) requestAnimationFrame(frame); });
+if (document.fonts) document.fonts.ready.then(() => { if (FREEZE !== null) requestAnimationFrame(frame); });
+
+/* sound: the fifth, 220 Hz and 330 Hz, the same 2 : 3. The first press starts everything; after that the button
+   moves to the corner and turns the sound on and off. */
+let actx = null, oscs = null;
+const btn = document.getElementById("play");
+function stopSound() { if (oscs) { oscs.forEach(o => o.stop()); oscs = null; } btn.textContent = started ? "Play the fifth" : btn.textContent; }
+function playSound() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  const gain = actx.createGain(); gain.gain.value = 0.06; gain.connect(actx.destination);
+  oscs = [220, 330].map(f => { const o = actx.createOscillator(); o.type = "sine"; o.frequency.value = f; o.connect(gain); o.start(); return o; });
+  btn.textContent = "Stop the sound";
+}
+btn.addEventListener("click", () => {
+  if (!started) { started = true; t0 = performance.now(); btn.classList.add("corner"); playSound(); requestAnimationFrame(frame); return; }
+  if (oscs) stopSound(); else playSound();
+});
+if (started) btn.classList.add("corner");
+</script>
+</body>
+</html>

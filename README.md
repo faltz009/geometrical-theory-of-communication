@@ -3,37 +3,29 @@
 
 Walter Henrique Alves da Silva · ORCID [0009-0001-0857-096X](https://orcid.org/0009-0001-0857-096X)
 
-> **Work in progress.** This is a working draft, shared openly while it is being written. The text, figures and argument will change before the paper goes to a journal.
+Version 1.0, 4 October 2026: an open working manuscript, shared while it is being developed.
 
 ## What this is
 
-Shannon's *A Mathematical Theory of Communication* (1948) gave information a number: the bit, one choice between two alternatives. It measures how much was chosen and leaves aside what the choice was about. Weaver named that second question Level B, the problem of meaning: how precisely do the transmitted symbols convey the desired meaning?
+In 1948 Claude Shannon's *A Mathematical Theory of Communication* showed how to send any message, by agreeing on its symbols beforehand, and Warren Weaver named the two problems it left open: whether the meaning arrives, and whether it has the effect intended. *A Geometrical Theory of Communication* takes up those two problems by putting back what Shannon set aside, the reference a meaning is checked against.
 
-This paper takes up Level B. It starts from a simple observation: to tell a thing is a thing, we compare, and every comparison has to check what changed and what stayed the same. The circle does both at once. Its perpendicular axes keep two directions apart, which gives difference. Its opposite poles are exchanged by a half turn, which gives sameness. A full turn returns every point to where it started, which gives identity, `A = A`. Euler's identity, `e^{iπ} + 1 = 0`, writes all of this in one line.
+Its thesis is that information is invariance over change. The smallest form of that invariance is the circle, made of perpendicularity and symmetry, with Euler's identity checking the return. That check is measured the same way everywhere, so identity can be treated as a physical law. Composed, these comparisons form one object with exactly four layers, and Levels B and C become checks.
 
-The paper calls this unit the **geometric bit**: a distinction together with the reference and the turn that make it recognizable. Shannon's bit sits inside it as the two opposite poles, with the turn between them set aside.
+## The presentation
 
-![Shannon's bit and the geometric bit](figures/shannonvsgeometric.png)
+**[faltz009.github.io/geometrical-theory-of-communication](https://faltz009.github.io/geometrical-theory-of-communication/)**
 
-The argument then follows three questions that together answer what information is: what exists, how we measure and know it, and how we convey it to someone else.
+A scrolling presentation of the argument in seven sections, with a moving figure on every card. It is served from `docs/` and is static HTML with no build step: `index.html` holds the text, `scenes.js` the figures, `engine.js` the particle stage and the deck, and `animations/` the two full-screen animations.
 
-![The circle as the shape of information](figures/identitybit.png)
+## The paper
 
-## Files
+- `main.pdf`: the paper, version 1.0
+- `main.tex` and `figures/`: its LaTeX source and figures. Build from this folder with `latexmk -pdf main.tex`.
+- `scripts/check_formalism.py`: numerical checks of the paper's formal boxes (Python 3 and NumPy); it prints its results as JSON.
 
-- `v1.pdf`: the current reading copy
-- `v1.tex`: its LaTeX source
-- `figures/`: the figures used in the paper and in this page
+## Implementation
 
-Build the PDF from this folder with:
-
-```sh
-latexmk -pdf v1.tex
-```
-
-## Earlier work
-
-This paper continues [*The Geometrical Theory of Communication*](https://doi.org/10.5281/zenodo.15715747) (2025).
+[Closure SDK](https://github.com/faltz009/Closure-SDK) implements the protocol.
 
 ## License
 

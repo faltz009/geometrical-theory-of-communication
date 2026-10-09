@@ -3527,7 +3527,7 @@
     });
     const out = new Array(points.length);
     return {
-      points, stillT: 2.5,
+      points, stillT: 2.5, anchored: true,                  // drawn against the page's boxes, so it moves with the page
       dynamic: t => {
         if (window.GTC.toStage) {
           const ax = axis();
@@ -3717,16 +3717,16 @@
     const NAMES = ["Bak and Tang", "Bohr", "Chomsky", "Darwin", "Einstein", "Euler", "Feynman", "Friston", "Gödel", "Gorard", "Hamilton", "Hawking", "Jung",
       "Kuhn", "Lacan", "Landauer", "Mandelbrot", "von Neumann", "Penrose", "Piaget", "Saussure", "Schrödinger", "Skinner", "Turing", "Wheeler",
       "Wittgenstein", "Wolfram", "Zipf"];
-    const COLS = 5, ROWS = Math.ceil(NAMES.length / COLS);
+    const nar = narrow(), COLS = nar ? 3 : 5, ROWS = Math.ceil(NAMES.length / COLS), DX = nar ? 1.25 : 0.6, DY = nar ? 0.19 : 0.22;
     return {
       points: [],
       labels: [
-        { x: 0, y: 1.1, html: "Most influential references to this work", cls: "role" },
-        { x: 0, y: 0.9, html: "Sam Senchal", cls: "slot c-math" },
-        { x: 0, y: 0.77, html: "the one who contributed the most, my research partner", cls: "example" },
-        { x: -0.45, y: 0.57, html: "Cohl Furey", cls: "slot c-math" },
-        { x: 0.45, y: 0.57, html: "Michael Levin", cls: "slot c-math" },
-        ...NAMES.map((h, k) => ({ x: -1.2 + 0.6 * Math.floor(k / ROWS), y: 0.28 - 0.22 * (k % ROWS), html: h, cls: "slot" }))
+        { x: 0, y: nar ? 1.22 : 1.1, html: "Most influential references to this work", cls: "role" },
+        { x: 0, y: nar ? 1.0 : 0.9, html: "Sam Senchal", cls: "slot c-math" },
+        { x: 0, y: nar ? 0.82 : 0.77, html: "the one who contributed the most, my research partner", cls: "example" },
+        { x: nar ? -0.8 : -0.45, y: nar ? 0.6 : 0.57, html: "Cohl Furey", cls: "slot c-math" },
+        { x: nar ? 0.8 : 0.45, y: nar ? 0.6 : 0.57, html: "Michael Levin", cls: "slot c-math" },
+        ...NAMES.map((h, k) => ({ x: -DX * (COLS - 1) / 2 + DX * Math.floor(k / ROWS), y: 0.28 - DY * (k % ROWS), html: h, cls: "slot" }))
       ]
     };
   };

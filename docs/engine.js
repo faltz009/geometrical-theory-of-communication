@@ -70,14 +70,23 @@
   /* ---------- geometry: where the figure sits for each layout ---------- */
 
   function computeFrame(step) {
-    const compact = step.dataset.fig === "compact", layout = step.dataset.layout;
+    const layout = step.dataset.layout;
     let fx, fy, fw, fh;
-    if (W < NARROW) { fx = 12; fw = W - 24; fy = compact ? 58 : 64; fh = H * (compact ? 0.28 : 0.44); }
+    if (W < NARROW && W > H) { fx = 12; fw = W * 0.46; fy = 60; fh = H - 76; }   // a phone on its side: figure left, words right
+    else if (W < NARROW) { fx = 12; fw = W - 24; fy = 64; fh = figH(); }
     else if (layout === "center") { fx = W * 0.1; fw = W * 0.8; fy = H * 0.1; fh = H * 0.54; }
     else if (layout === "full") { fx = W * 0.08; fw = W * 0.84; fy = H * 0.1; fh = H * 0.8; }
     else { fx = W * 0.4; fw = W * 0.54; fy = H * 0.12; fh = H * 0.76; }
     return { cx: fx + fw / 2, cy: fy + fh / 2, u: Math.min(fw / (W < NARROW ? 3.9 : 3.4), fh / 2.3) };
   }
+  /* phones: one band at the top holds every figure, and the words scroll beneath it; on its side, the
+     figure holds the left half and the words scroll on the right, so only the top bar covers them */
+  const figH = () => Math.min(Math.max(H * 0.36, 160), 300);
+  const figBottom = () => W > H ? 64 : 64 + figH();
+  /* where a step sits when it is the one being read: at the top of the screen, or on phones with its
+     words just below the figure; and the line a step's top must pass to become the active one */
+  const stepTop = i => W < NARROW ? Math.max(0, steps[i].offsetTop - figBottom() - 12) : steps[i].offsetTop;
+  const readLine = () => W < NARROW ? figBottom() + (H - figBottom()) * (W > H ? 0.3 : 0.45) : deck.clientHeight / 2;
   const toX = x => frame.cx + x * frame.u, toY = y => frame.cy - y * frame.u;
   /* screen pixels to stage units, for scenes that sit their figures inside the page's own boxes */
   window.GTC.toStage = (px, py) => [(px - frame.cx) / frame.u, (frame.cy - py) / frame.u];
@@ -89,6 +98,7 @@
     canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const isNarrow = W < NARROW;
+    root.style.setProperty("--fig-bottom", figBottom() + "px");
     if (activeIndex < 0) { wasNarrow = isNarrow; return; }
     frame = computeFrame(steps[activeIndex]);
     if (isNarrow !== wasNarrow) {           // some scenes lay out differently on phones
@@ -107,6 +117,8 @@
   /* Hand the particles to a scene: fixed points first, then flows, the rest dust. */
   function setScene(name) {
     spec = build(name || "dust"); sceneT = 0;
+    root.classList.toggle("anchored", !!spec.anchored);
+    root.classList.toggle("bare", !name || name === "dust");
     const pts = spec.points || [], flows = spec.flows || [];
     let k = 0, f = 0, fk = 0;
     for (let j = 0; j < NP; j++) {
@@ -228,6 +240,8 @@
     const lit = pulse ? Math.floor(sceneT / pulse.period) % pulse.count : -1;
     const tc = STILL && spec.stillT !== undefined ? spec.stillT : spec.period ? sceneT % spec.period : sceneT;
     const dyn = spec.dynamic ? spec.dynamic(tc) : null;
+    /* a scene drawn against the page's own boxes follows its step as the page scrolls */
+    const ay = spec.anchored && activeIndex >= 0 ? steps[activeIndex].getBoundingClientRect().top : 0;
 
     ctx.clearRect(0, 0, W, H);
     ctx.globalCompositeOperation = theme === "light" ? "source-over" : "lighter";
@@ -251,6 +265,7 @@
         const drift = STILL ? 0 : 22;
         gx = hx[i] * W + Math.sin(T * 0.11 + ph[i]) * drift; gy = hy[i] * H + Math.cos(T * 0.09 + ph[i] * 1.3) * drift;
       }
+      if (ay && mode[i] !== 0) gy += ay;
       if (snap) { px[i] = gx; py[i] = gy; vx[i] = vy[i] = 0; }
       else {
         vx[i] = (vx[i] + (gx - px[i]) * spring * k) * damp;
@@ -275,6 +290,8 @@
     }
     ctx.globalCompositeOperation = "source-over";
     if (pulse) labelEls.forEach(el => { if (el.dataset.g !== undefined) el.classList.toggle("pulse-lit", +el.dataset.g === lit); });
+    const lt = ay ? `translateY(${ay.toFixed(1)}px)` : "";
+    if (labelLayer.style.transform !== lt) labelLayer.style.transform = lt;
     labelEls.forEach(el => {
       if (el._live) { const h = el._live(tc); if (h !== el._html) el.innerHTML = el._html = h; }
       if (el._at) { const [x, y] = el._at(tc); el.style.left = toX(x) + "px"; el.style.top = toY(y) + "px"; }
@@ -315,7 +332,7 @@
   }
   function goTo(i) {
     i = Math.max(0, Math.min(steps.length - 1, i));
-    deck.scrollTo({ top: steps[i].offsetTop, behavior: STILL ? "auto" : "smooth" });
+    deck.scrollTo({ top: stepTop(i), behavior: STILL ? "auto" : "smooth" });
   }
   /* one step up or down the deck */
   const step = dir => goTo(activeIndex + dir);
@@ -345,7 +362,7 @@
 
   /* The step under the middle of the screen is active; the ring shows how far through the deck we are. */
   function onScroll() {
-    const middle = deck.scrollTop + deck.clientHeight / 2;
+    const middle = deck.scrollTop + readLine();
     let idx = 0;
     for (let i = 0; i < steps.length; i++) if (steps[i].offsetTop <= middle) idx = i;
     activate(idx);
@@ -382,21 +399,35 @@
     else if (e.key === "Home") { e.preventDefault(); goTo(0); }
     else if (e.key === "End") { e.preventDefault(); goTo(steps.length - 1); }
   });
-  window.addEventListener("resize", () => { resize(); onScroll(); });
+  /* a resize that changes the layout (turning the phone, or crossing the phone width) keeps the step being read */
+  window.addEventListener("resize", () => {
+    const keep = activeIndex, wasN = wasNarrow;
+    resize();
+    if (keep >= 0 && (wasN !== (W < NARROW) || W < NARROW)) deck.scrollTop = stepTop(keep);
+    onScroll();
+  });
 
   /* ---------- start ---------- */
 
   resize();
   const start = steps.findIndex(s => s.id === location.hash.slice(1));
-  if (start > 0) deck.scrollTop = steps[start].offsetTop;
+  if (start > 0) deck.scrollTop = stepTop(start);
   onScroll();
   requestAnimationFrame(tick);
+  /* Unlocked on phones, nothing snaps the page back when the web font changes the text's height, so a
+     linked step is held in place until the font has loaded or the reader moves. */
+  let hold = start > 0 ? start : -1;
+  const release = () => { hold = -1; };
+  ["touchstart", "wheel", "keydown", "pointerdown"].forEach(t => window.addEventListener(t, release, { passive: true, once: true }));
+  const reHold = () => { if (hold > 0) { deck.scrollTop = stepTop(hold); onScroll(); } };
 
   /* Text-shaped figures need the web font; rebuild them once it has loaded. */
   if (document.fonts && document.fonts.load) {
     Promise.all([document.fonts.load('500 240px "EB Garamond"'), document.fonts.ready]).then(() => {
+      reHold();
       clearText(); cache.clear();
       if (activeIndex >= 0) setScene(steps[activeIndex].dataset.scene);
     }).catch(() => {});
   }
+  window.addEventListener("load", reHold);
 })();

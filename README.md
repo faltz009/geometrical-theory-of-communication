@@ -27,6 +27,18 @@ A scrolling presentation of the argument in seven sections, with a moving figure
 
 [Closure SDK](https://github.com/faltz009/Closure-SDK) implements the protocol.
 
+## Support
+
+All of this is independent work done in my own time and released for free. If you find it useful or want to see it continue, any support helps.
+
+| Method | Address |
+|---|---|
+| Ko-fi | [ko-fi.com/waltersilva](https://ko-fi.com/waltersilva) |
+| BTC | `155jaKugGGhdwX2Dp55bfHWpWbWD3Gr3PG` |
+| ETH (ERC-20) | `0x31f0253180b03c16a0aa2d7091311d7363ef22a4` |
+| SOL | `HdGFaL6A8z8AetnyPn6vKPU4QJGaSHBtoqPK32qbe6wV` |
+| PIX (Brazil) | `walter.h057@gmail.com` |
+
 ## License
 
 [CC BY-NC-SA 4.0](LICENSE)

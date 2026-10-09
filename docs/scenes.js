@@ -155,20 +155,60 @@
   ];
   const defOf = a => ({ w: a.w, t: a.t, d: a.d, s: a.s });
 
+  /* An eye drawn in particles, its pupil turned toward (lx, ly): the observer in the opening cards. */
+  function eyeAt(x, y, lx, ly, sc = 1, o = {}) {
+    const w = 0.17 * sc, h = 0.075 * sc, d = Math.hypot(lx - x, ly - y) || 1, ox = (lx - x) / d * 0.04 * sc, oy = (ly - y) / d * 0.025 * sc;
+    const lid = sgn => Array.from({ length: 26 }, (_, k) => { const u = k / 25 * 2 - 1; return { x: x + w * u, y: y + sgn * h * (1 - u * u), c: "ice", a: 0.8, s: 0.8, ...o }; });
+    return [...lid(1), ...lid(-1), ...S.blob(x + ox, y + oy, 0.06 * sc, 0.06 * sc, 18, { c: "paper", a: 0.95, s: 1, ...o })];
+  }
+
+  /* Two things kept apart. On the left, what happens: a tree falls, cause and effect, complete whether
+     anyone is there or not. On the right, what someone knows: a head looking at the tree holds a small copy
+     of it that follows what it sees, standing and then fallen. The look between them is the only link: the
+     information is the event's copy in someone who observed it. The fall repeats every P seconds. */
   SCENES.answers = () => {
-    const points = [];
-    ANSWERS.forEach(a => points.push(...S.blob(a.x, a.y, a.r * 2.2, 0.2, 110, { c: "ice", a: 0.5, s: 0.9 })));
-    return {
-      points,
+    const GY = -0.42, TX = -0.95, TH = 0.7, HX = 1.1, HY = -0.02, HS = 0.95, P = 7, T0 = 1.4, T1 = 2.5, pts = [], meta = [];
+    const add = (m, p) => { meta.push(m); pts.push(p); };
+    for (let q = 0; q < 50; q++) add({ kind: "ground", x: -1.5 + 1.6 * q / 49 }, { x: 0, y: GY, c: "dim", a: 0.45, s: 0.7 });
+    const TREE = [];
+    for (let q = 0; q < 36; q++) TREE.push({ dx: ((q % 2) - 0.5) * 0.03, dy: TH * 0.62 * Math.floor(q / 2) / 17, c: "brass" });
+    for (let q = 0; q < 100; q++) { const r = Math.sqrt(Math.random()), a = Math.random() * TAU; TREE.push({ dx: 0.15 * r * Math.cos(a), dy: TH * 0.8 + 0.19 * r * Math.sin(a), c: "mint" }); }
+    TREE.forEach(p => add({ kind: "tree", ...p }, { x: TX, y: GY, c: p.c, a: 0.85, s: 0.9 }));
+    profileAt(0, 0, HS, 130).forEach(p => add({ kind: "head", x: HX - p.x, y: HY + p.y }, { x: HX - p.x, y: HY + p.y, c: "ice", a: 0.75, s: 0.8 }));   // facing the tree
+    const EX = HX - 0.36 * HS, EY = HY + 0.03 * HS, TOP = [TX + 0.25, GY + TH + 0.22], BOT = [TX + 0.25, GY + 0.02];
+    for (const end of [TOP, BOT]) for (let q = 0; q < 40; q++) { const u = q / 39; add({ kind: "look", x: EX + (end[0] - EX) * u, y: EY + (end[1] - EY) * u }, { x: EX, y: EY, c: "mint", a: 0.35, s: 0.6 }); }
+    TREE.filter((_, k) => k % 2 === 0).forEach(p => add({ kind: "copy", ...p }, { x: HX, y: HY, c: p.c === "mint" ? "gold" : "brass", a: 0.85, s: 0.7 }));
+    const fallAt = (dx, dy, f) => [dx * Math.cos(f) + dy * Math.sin(f), -dx * Math.sin(f) + dy * Math.cos(f)];
+    return tScene({
+      stillT: 4.5,
       labels: [
-        ...ANSWERS.map(a => ({ x: a.x, y: a.y, html: a.w, cls: "word", def: defOf(a) })),
-        { x: 0, y: 1.04, html: "choose a word", cls: "tag" }
-      ]
-    };
+        { x: 0, y: 0.92, html: "If a tree falls in the forest and no one sees it, did it fall?", cls: "example" },
+        { x: TX + 0.2, y: 0.62, html: "what happens", cls: "role" },
+        { x: HX, y: 0.62, html: "what someone knows", cls: "role" },
+        { x: TX + 0.25, y: GY - 0.17, html: "cause → effect", cls: "example" },
+        { x: HX, y: GY - 0.35, html: "information", cls: "example c-math" }
+      ],
+      custom: {
+        points: pts,
+        update: (t, out, o) => {
+          const c = ((t % P) + P) % P, fall = c < T0 ? 0 : 80 / 180 * Math.PI * Math.min(1, ((c - T0) / (T1 - T0)) ** 2);
+          const fade = c > P - 0.6 ? (P - c) / 0.6 : Math.min(1, c / 0.4);
+          meta.forEach((m, i) => {
+            let v;
+            if (m.kind === "ground") v = { x: m.x, y: GY, a: 0.45 };
+            else if (m.kind === "tree") { const [x, y] = fallAt(m.dx, m.dy, fall); v = { x: TX + x, y: Math.max(GY + 0.01, GY + y), a: 0.85 * fade }; }
+            else if (m.kind === "head") v = { x: m.x, y: m.y, a: 0.75 };
+            else if (m.kind === "look") v = { x: m.x, y: m.y, a: 0.32 };
+            else { const [x, y] = fallAt(m.dx, m.dy, fall); v = { x: HX - 0.06 + x * 0.32, y: HY - 0.02 + y * 0.32, a: 0.9 * fade }; }
+            out[o + i] = v;
+          });
+        }
+      }
+    });
   };
 
-  /* The same clouds regrouped by field. Word order matches ANSWERS, so each
-     cloud keeps its particles and travels to its new place. */
+  /* The answers people give to "what is information?", each a cloud placed under the field it comes
+     from, with its definition in a floater. */
   const FIELDS = {
     physics: { name: "physics", c: "cyan", x: -1.2, top: 0.82, ex: [-1.2, 0.04, "a thermometer, a gas cooling"] },
     computing: { name: "computing", c: "brass", x: -0.02, top: 0.82, ex: [-0.02, -0.21, "the storage in your phone"] },
@@ -206,86 +246,116 @@
     ];
   }
 
-  /* A sign and thing, with optional observation above the line and a return
-     below it. Named roles show meaning, identity, information and knowledge. */
-  function relation({ roles = false, fields = false, defined = false, observation = true } = {}) {
-    const g = k => (roles ? { g: k } : {});
-    const points = [
-      ...S.rect(-1.05, 0, 0.95, 0.6, 110, { c: "ice", a: 0.8, ...g(0) }),
-      ...S.rect(1.05, 0, 0.95, 0.6, 110, { c: "ice", a: 0.8, ...g(1) }),
-      ...lighterAt(1.05, 0, 1, g(1)),
-      ...S.line(-0.52, 0, 0.5, 0, 70, { c: "paper", a: 0.55, s: 0.9, ...g(2) }),
-      ...S.head(0.52, 0, 0, 0.09, 10, { c: "paper", a: 0.7, ...g(2) })
-    ];
-    const flows = [{ n: 34, path: u => [-0.52 + 1.02 * u, 0], speed: 0.32, c: "cyan", a: 1, s: 1.5, ...g(2) }];
+  /* One lighter seen by three observers from different sides. Light travels from the lighter to each eye,
+     and behind each eye is a head holding that observer's own lighter, turned the way they saw it: the
+     thing, the observations and the images in each head are three parts of one relation. */
+  SCENES.relation = () => {
+    const LX = 0, LY = -0.08, EYES = [[-1.0, 0.1, -0.35], [0.82, 0.55, 0.25], [0.88, -0.58, 0.6]];
+    const points = [...lighterAt(LX, LY, 1.5)], flows = [];
+    EYES.forEach(([x, y, turn]) => {
+      points.push(...eyeAt(x, y, LX, LY + 0.05));
+      const x0 = LX + (x - LX) * 0.17, y0 = LY + 0.05 + (y - LY - 0.05) * 0.17, x1 = x - (x - LX) * 0.14, y1 = y - (y - LY - 0.05) * 0.14;
+      points.push(...S.line(x0, y0, x1, y1, 40, { c: "dim", a: 0.35, s: 0.6 }));
+      flows.push({ n: 7, path: u => [x0 + (x1 - x0) * u, y0 + (y1 - y0) * u], speed: 0.3, c: "cyan", a: 1, s: 1.2 });
+      const d = Math.hypot(x - LX, y - LY), hx = x + (x - LX) / d * 0.36, hy = y + (y - LY) / d * 0.36;   // the head, behind the eye
+      points.push(...S.arc(hx, hy, 0.2, 0, TAU, 46, { c: "dim", a: 0.5, s: 0.7 }));
+      lighterAt(0, 0, 0.55).forEach(p => points.push({ ...p, x: hx + p.x * Math.cos(turn) - p.y * Math.sin(turn), y: hy + p.x * Math.sin(turn) + p.y * Math.cos(turn), a: (p.a ?? 0.9) * 0.85 }));
+    });
     const labels = [
-      { x: -1.05, y: 0.08, html: "“lighter”", cls: "word" },
-      { x: -1.05, y: -0.12, html: "“igniter”", cls: "word dimmed small" },
-      { x: -1.05, y: -0.42, html: "sign", cls: "tag" },
-      { x: 1.05, y: -0.42, html: "thing", cls: "tag" }
+      { x: LX, y: LY - 0.42, html: "the lighter", cls: "tag" },
+      { x: -0.5, y: 0.2, html: "an observation", cls: "tag" },
+      { x: -1.36, y: 0.47, html: "a lighter in each head", cls: "tag" }
     ];
-    if (observation) {
-      points.push(
-        ...S.line(-0.64, 0.3, -0.06, 0.73, 32, { c: "mint", a: 0.45, ...g(3) }),
-        ...S.line(0.06, 0.73, 0.64, 0.3, 32, { c: "mint", a: 0.45, ...g(3) }),
-        ...S.arc(0, 0.75, 0.055, 0, TAU, 22, { c: "mint", a: 0.85, ...g(3) })
-      );
-      labels.push({ x: 0, y: 0.96, html: "observation · measurement", cls: "role c-mint", ...g(3) });
-    }
-    if (roles) {
-      points.push(
-        ...S.line(-1.5, 0.36, -0.6, 0.36, 44, { c: "cyan", a: 0.9, g: 0 }),
-        ...S.line(0.6, 0.36, 1.5, 0.36, 44, { c: "cyan", a: 0.9, g: 1 }),
-        ...S.bezier([0.72, -0.31], [0.62, -0.98], [-0.62, -0.98], [-0.72, -0.31], 70, { c: "cyan", a: 0.85, s: 1, g: 3 }),
-        ...S.head(-0.72, -0.31, Math.PI / 2 + 0.25, 0.08, 8, { c: "cyan", a: 0.9, g: 3 })
-      );
-      labels.push(
-        { x: -1.05, y: 0.52, html: defined ? "meaning" : "what I say", cls: "role", g: 0 },
-        { x: 1.05, y: 0.52, html: defined ? "identity" : "what we see", cls: "role", g: 1 },
-        { x: 0, y: 0.17, html: defined ? "information" : "points to", cls: "role", g: 2 },
-        { x: 0, y: -0.9, html: defined ? "knowledge" : "what you can check", cls: "role", g: 3 }
-      );
-      if (defined) labels.push({ x: 0, y: -0.5, html: "<i>A</i> = <i>A</i>", cls: "math", g: 3 });
-    }
-    if (fields) labels.push(
-      { x: -1.05, y: 0.68, html: "linguistics", cls: "field c-violet", g: 0 },
-      { x: 1.05, y: 0.68, html: "physics · metaphysics", cls: "field c-cyan", g: 1 },
-      { x: 0, y: 0.31, html: "engineering", cls: "field c-brass", g: 2 },
-      { x: 0, y: -1.04, html: "epistemology", cls: "field c-mint", g: 3 }
-    );
     return { points, flows, labels };
-  }
-  SCENES.relation = () => relation();
-  /* The triad above; below, three signals: all 0s is one 0, all 1s is one 1, and the
-     mixed string carries its 0s, its 1s and the relations between them, arcs where they differ. */
+  };
+  /* Above, the three parts of looking: the observer (a head), the observed (the lighter) and the observation,
+     drawn as what it is, the look connecting them. Below, three signals: all 0s is one 0, all 1s is one 1, and
+     the mixed string carries its 0s, its 1s and the relations between them, arcs where they differ. */
   SCENES.roles = () => {
-    const by = 0.46, rows = [["000000", -0.22, "= 0"], ["111111", -0.52, "= 1"], ["011010", -0.84, ""]];
+    const rows = [["000000", -0.22, "= 0"], ["111111", -0.52, "= 1"], ["011010", -0.84, ""]];
     const X = k => -0.72 + k * 0.24;
     const mixed = rows[2][0], diffs = [];
     for (let k = 0; k < 5; k++) if (mixed[k] !== mixed[k + 1]) diffs.push(k);
+    const HX = -1.0, HY = 0.5, HS = 0.62, EX = HX + 0.34 * HS + 0.03, EY = HY + 0.03 * HS, LX = 1.05, LY = 0.48;
+    const top = [LX - 0.12, LY + 0.2], bot = [LX - 0.12, LY - 0.2];
+    const points = [
+      ...profileAt(HX, HY, HS, 110, { c: "ice", a: 0.75, s: 0.8 }),
+      ...lighterAt(LX, LY, 0.95),
+      ...S.line(EX, EY, top[0], top[1], 44, { c: "mint", a: 0.45, s: 0.65 }),
+      ...S.line(EX, EY, bot[0], bot[1], 44, { c: "mint", a: 0.45, s: 0.65 }),
+      ...diffs.flatMap(k => S.arc((X(k) + X(k + 1)) / 2, rows[2][1] - 0.1, 0.11, Math.PI + 0.25, TAU - 0.25, 18, { c: "cyan", a: 0.95, s: 1 }))
+    ];
+    for (let q = 0; q < 60; q++) { const u = Math.sqrt(Math.random()), v = Math.random(); points.push({ x: EX + (top[0] - EX) * u, y: EY + ((top[1] + (bot[1] - top[1]) * v) - EY) * u, c: "mint", a: 0.14, s: 0.6 }); }
     return {
-      points: [
-        ...S.rect(-1.05, by, 0.8, 0.44, 90, { c: "ice", a: 0.75 }),
-        ...S.rect(1.05, by, 0.8, 0.44, 90, { c: "ice", a: 0.75 }),
-        ...lighterAt(1.05, by, 0.8),
-        ...S.line(-0.6, by, 0.6, by, 60, { c: "paper", a: 0.4 }),
-        ...S.line(-0.66, by + 0.23, -0.06, 0.94, 30, { c: "mint", a: 0.55 }),
-        ...S.line(0.06, 0.94, 0.66, by + 0.23, 30, { c: "mint", a: 0.55 }),
-        ...S.arc(0, 0.96, 0.05, 0, TAU, 20, { c: "mint", a: 0.85 }),
-        ...diffs.flatMap(k => S.arc((X(k) + X(k + 1)) / 2, rows[2][1] - 0.1, 0.11, Math.PI + 0.25, TAU - 0.25, 18, { c: "cyan", a: 0.95, s: 1 }))
-      ],
+      points,
+      flows: [{ n: 8, path: u => [EX + 0.02 + (LX - 0.14 - EX - 0.02) * u, EY + (LY - EY) * u], speed: 0.28, c: "mint", a: 1, s: 1.15 }],
       labels: [
-        { x: 0, y: 1.1, html: "observation", cls: "role c-mint", def: DEFS["peirce-relation"] },
-        { x: -1.05, y: by, html: "you", cls: "word" },
-        { x: -1.05, y: by - 0.34, html: "observer", cls: "tag" },
-        { x: 1.05, y: by - 0.34, html: "observed", cls: "tag" },
+        { x: (EX + LX) / 2, y: LY + 0.36, html: "observation", cls: "role c-mint", def: DEFS["peirce-relation"] },
+        { x: HX, y: HY - 0.46, html: "observer", cls: "tag" },
+        { x: LX, y: HY - 0.46, html: "observed", cls: "tag" },
         ...rows.flatMap(([str, y], r) => [...str].map((ch, k) => ({ x: X(k), y, html: ch, cls: "math" + (r === 2 ? "" : " dimmed") }))),
         ...rows.filter(r => r[2]).map(([, y, eq]) => ({ x: 0.82, y, html: eq, cls: "math left dimmed" })),
         { x: 0.82, y: rows[2][1], html: "0s, 1s and<br>their relations", cls: "example left c-cyan" }
       ]
     };
   };
-  SCENES.fields = () => relation({ roles: true, fields: true });
+  /* A head in profile facing right, sampled evenly along a smooth curve through its outline. */
+  function profileAt(cx, cy, sc, n, o = {}) {
+    const K = [[-0.3, -0.56], [-0.28, -0.3], [-0.38, -0.05], [-0.36, 0.2], [-0.22, 0.38], [0, 0.45], [0.18, 0.4], [0.3, 0.25], [0.33, 0.1],
+      [0.34, 0.02], [0.43, -0.08], [0.35, -0.12], [0.36, -0.18], [0.33, -0.21], [0.35, -0.25], [0.3, -0.33], [0.2, -0.36], [0.12, -0.39], [0.12, -0.56]];
+    const cr = (p0, p1, p2, p3, t) => p1.map((_, i) => 0.5 * (2 * p1[i] + (p2[i] - p0[i]) * t + (2 * p0[i] - 5 * p1[i] + 4 * p2[i] - p3[i]) * t * t + (3 * p1[i] - p0[i] - 3 * p2[i] + p3[i]) * t * t * t));
+    const dense = [];
+    for (let k = 0; k < K.length - 1; k++) for (let q = 0; q < 20; q++) dense.push(cr(K[Math.max(0, k - 1)], K[k], K[k + 1], K[Math.min(K.length - 1, k + 2)], q / 20));
+    dense.push(K[K.length - 1]);
+    const len = [0]; for (let i = 1; i < dense.length; i++) len.push(len[i - 1] + Math.hypot(dense[i][0] - dense[i - 1][0], dense[i][1] - dense[i - 1][1]));
+    const out = [];
+    for (let j = 0, i = 0; j < n; j++) {
+      const d = len[len.length - 1] * j / (n - 1); while (i < len.length - 2 && len[i + 1] < d) i++;
+      const f = (d - len[i]) / ((len[i + 1] - len[i]) || 1), x = dense[i][0] + (dense[i + 1][0] - dense[i][0]) * f, y = dense[i][1] + (dense[i + 1][1] - dense[i][1]) * f;
+      out.push({ x: cx + x * sc, y: cy + y * sc, ...o });
+    }
+    return out;
+  }
+
+  /* Three places on one relation, as one loop: a head with the word for the lighter in it (the sign), the
+     look from its eye to the lighter (the observation) and the lighter itself (the thing). The look goes out
+     from the eye to the thing, which is the measurement; what the thing gives back comes in through the same
+     eye to the word, which is the check. Each part carries its field and, below, its name. */
+  SCENES.fields = () => {
+    const HX = -1.0, HY = 0.0, HS = 1.15, LX = 1.08, LY = -0.04, EX = HX + 0.34 * HS, EY = HY + 0.03 * HS;
+    const points = [
+      ...profileAt(HX, HY, HS, 150, { c: "ice", a: 0.75, s: 0.8 }),
+      ...S.blob(HX - 0.04 * HS, HY + 0.17 * HS, 0.42, 0.28, 80, { c: "brass", a: 0.28, s: 0.9 }),
+      ...lighterAt(LX, LY, 1.5)
+    ];
+    const top = [LX - 0.12, LY + 0.32], bot = [LX - 0.12, LY - 0.3];
+    points.push(...S.line(EX + 0.04, EY, top[0], top[1], 44, { c: "mint", a: 0.4, s: 0.65 }), ...S.line(EX + 0.04, EY, bot[0], bot[1], 44, { c: "mint", a: 0.4, s: 0.65 }));
+    for (let q = 0; q < 70; q++) { const u = Math.sqrt(Math.random()), v = Math.random(); points.push({ x: EX + 0.04 + (top[0] - EX - 0.04) * u, y: EY + ((top[1] + (bot[1] - top[1]) * v) - EY) * u, c: "mint", a: 0.14, s: 0.6 }); }
+    const W = [HX + 0.16, HY + 0.08], C = [[EX + 0.06, EY - 0.03], [EX + 0.36, EY - 0.33], [LX - 0.58, -0.75], [LX - 0.13, LY - 0.36]];
+    const check = [...S.line(W[0], W[1], C[0][0], C[0][1], 12), ...S.bezier(...C, 60)], len = [0];
+    for (let i = 1; i < check.length; i++) len.push(len[i - 1] + Math.hypot(check[i].x - check[i - 1].x, check[i].y - check[i - 1].y));
+    const along = u => { const d = u * len[len.length - 1]; let i = 1; while (i < len.length - 1 && len[i] < d) i++; const f = (d - len[i - 1]) / (len[i] - len[i - 1] || 1); return [check[i - 1].x + (check[i].x - check[i - 1].x) * f, check[i - 1].y + (check[i].y - check[i - 1].y) * f]; };
+    points.push(...check.map(p => ({ ...p, c: "brass", a: 0.5, s: 0.7 })),
+      ...S.head(W[0], W[1], Math.atan2(W[1] - C[0][1], W[0] - C[0][0]), 0.07, 8, { c: "brass", a: 0.85, s: 0.85 }));
+    const flows = [
+      { n: 9, path: u => [EX + 0.06 + (LX - 0.14 - EX - 0.06) * u, EY + (LY + 0.02 - EY) * u], speed: 0.28, c: "mint", a: 1, s: 1.2 },
+      { n: 8, path: u => along(1 - u), speed: 0.2, c: "brass", a: 1, s: 1.1 }
+    ];
+    const mid = S.bezierAt(...C, 0.55), nar = narrow(), ty = nar ? -1.12 : -0.86;
+    const labels = [
+      { x: HX - 0.04 * HS, y: HY + 0.17 * HS, html: "“lighter”", cls: "word" },
+      { x: (EX + LX) / 2, y: EY + 0.12, html: "where you look", cls: "example" },
+      { x: mid[0] + (nar ? 0.08 : 0.16), y: mid[1] + (nar ? -0.15 : 0.13), html: "what you can check", cls: "example" },
+      { x: HX, y: 0.82, html: "linguistics", cls: "field c-violet" },
+      { x: (EX + LX) / 2 - 0.1, y: 0.5, html: "measurement", cls: "field c-mint" },
+      { x: mid[0], y: mid[1] - (nar ? 0.33 : 0.12), html: "epistemology", cls: "field c-brass" },
+      { x: LX + (nar ? -0.25 : 0.05), y: 0.68, html: "physics · metaphysics", cls: "field c-cyan" },
+      { x: HX - (nar ? 0.2 : 0), y: ty, html: "the sign", cls: "tag" },
+      { x: (EX + LX) / 2 - (nar ? 0.12 : 0), y: ty, html: "the observation", cls: "tag" },
+      { x: LX + (nar ? 0.3 : 0), y: ty, html: "the thing", cls: "tag" }
+    ];
+    return { points, flows, labels };
+  };
   /* The answer, from both ends of one relation. Left: the change Shannon counts, a mixed string
      with its differences marked against a fixed reference. Right: the invariance Level B needs,
      two signs arriving at the same lighter. */

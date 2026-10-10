@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=2026-10-09-3">
 </head>
 <body>
 <canvas id="stage" aria-hidden="true"></canvas>
@@ -22,10 +22,16 @@
   </a>
   <div class="actions">
     <button class="small-button" id="theme" type="button" aria-label="Switch to the light theme">Light</button>
+    <button class="small-button" id="phone" type="button" aria-pressed="false">Phone mode</button>
     <a class="small-button" href="https://github.com/faltz009/geometrical-theory-of-communication/blob/main/main.pdf">The paper</a>
   </div>
 </header>
 <nav class="rail" id="rail" aria-label="Chapters"></nav>
+<div class="turn" id="turn">
+  <div class="turn-phone" aria-hidden="true"></div>
+  <p>Turn your phone sideways</p>
+  <button class="small-button" id="turn-exit" type="button">Exit phone mode</button>
+</div>
 
 <main id="deck" tabindex="-1">
 
@@ -1144,7 +1150,7 @@
 
 </main>
 
-<script src="scenes.js"></script>
-<script src="engine.js"></script>
+<script src="scenes.js?v=2026-10-09-3"></script>
+<script src="engine.js?v=2026-10-09-3"></script>
 </body>
 </html>

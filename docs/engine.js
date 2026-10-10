@@ -31,6 +31,7 @@
      the first overshoot, then keep the spring's floating feel */
   const ARRIVE = 1.2;
   const NARROW = 880;                             // below this width, figure on top and words below
+  const small = () => W < NARROW && !document.documentElement.classList.contains("phone-mode");   // phone mode keeps the desktop arrangement
   /* Two palettes under the same names. Night draws light on black and adds light where
      particles overlap; the light theme draws ink and gold on paper and lays them over each other. */
   const PALETTES = {
@@ -72,12 +73,12 @@
   function computeFrame(step) {
     const layout = step.dataset.layout;
     let fx, fy, fw, fh;
-    if (W < NARROW && W > H) { fx = 12; fw = W * 0.46; fy = 60; fh = H - 76; }   // a phone on its side: figure left, words right
-    else if (W < NARROW) { fx = 12; fw = W - 24; fy = 64; fh = figH(); }
+    if (small() && W > H) { fx = 12; fw = W * 0.46; fy = 60; fh = H - 76; }   // a phone on its side: figure left, words right
+    else if (small()) { fx = 12; fw = W - 24; fy = 64; fh = figH(); }
     else if (layout === "center") { fx = W * 0.1; fw = W * 0.8; fy = H * 0.1; fh = H * 0.54; }
     else if (layout === "full") { fx = W * 0.08; fw = W * 0.84; fy = H * 0.1; fh = H * 0.8; }
     else { fx = W * 0.4; fw = W * 0.54; fy = H * 0.12; fh = H * 0.76; }
-    return { cx: fx + fw / 2, cy: fy + fh / 2, u: Math.min(fw / (W < NARROW ? 3.9 : 3.4), fh / 2.3) };
+    return { cx: fx + fw / 2, cy: fy + fh / 2, u: Math.min(fw / (small() ? 3.9 : 3.4), fh / 2.3) };
   }
   /* phones: one band at the top holds every figure, and the words scroll beneath it; on its side, the
      figure holds the left half and the words scroll on the right, so only the top bar covers them */
@@ -85,8 +86,8 @@
   const figBottom = () => W > H ? 64 : 64 + figH();
   /* where a step sits when it is the one being read: at the top of the screen, or on phones with its
      words just below the figure; and the line a step's top must pass to become the active one */
-  const stepTop = i => W < NARROW ? Math.max(0, steps[i].offsetTop - figBottom() - 12) : steps[i].offsetTop;
-  const readLine = () => W < NARROW ? figBottom() + (H - figBottom()) * (W > H ? 0.3 : 0.45) : deck.clientHeight / 2;
+  const stepTop = i => small() ? Math.max(0, steps[i].offsetTop - figBottom() - 12) : steps[i].offsetTop;
+  const readLine = () => small() ? figBottom() + (H - figBottom()) * (W > H ? 0.3 : 0.45) : deck.clientHeight / 2;
   const toX = x => frame.cx + x * frame.u, toY = y => frame.cy - y * frame.u;
   /* screen pixels to stage units, for scenes that sit their figures inside the page's own boxes */
   window.GTC.toStage = (px, py) => [(px - frame.cx) / frame.u, (frame.cy - py) / frame.u];
@@ -97,7 +98,7 @@
     W = window.innerWidth; H = window.innerHeight;
     canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const isNarrow = W < NARROW;
+    const isNarrow = small();
     root.style.setProperty("--fig-bottom", figBottom() + "px");
     if (activeIndex < 0) { wasNarrow = isNarrow; return; }
     frame = computeFrame(steps[activeIndex]);
@@ -399,13 +400,57 @@
     else if (e.key === "Home") { e.preventDefault(); goTo(0); }
     else if (e.key === "End") { e.preventDefault(); goTo(steps.length - 1); }
   });
-  /* a resize that changes the layout (turning the phone, or crossing the phone width) keeps the step being read */
+  /* A resize that changes the layout (turning the phone, entering phone mode, crossing the phone width)
+     keeps the step being read; turns and mode changes hold it while their resizes settle. */
+  let holdIdx = -1, holdUntil = 0;
+  function holdStep() { holdIdx = activeIndex; holdUntil = performance.now() + 1500; }
+  window.addEventListener("orientationchange", holdStep);
   window.addEventListener("resize", () => {
-    const keep = activeIndex, wasN = wasNarrow;
+    const held = performance.now() < holdUntil, keep = held ? holdIdx : activeIndex, wasN = wasNarrow;
     resize();
-    if (keep >= 0 && (wasN !== (W < NARROW) || W < NARROW)) deck.scrollTop = stepTop(keep);
-    onScroll();
+    if (keep >= 0 && (held || wasN !== small() || small())) {
+      deck.scrollTop = stepTop(keep);
+      if (held) holdUntil = performance.now() + 800;
+    }
+    onScroll(); markOverflow();
   });
+
+  /* Phone mode: the desktop arrangement, full screen and on its side, which is how the deck reads best on
+     a phone, with the words set smaller to fit; turning back upright shows a prompt to turn the phone again.
+     (A desktop-width viewport would be simpler, but browsers ignore it in full screen.) */
+  const phoneButton = document.getElementById("phone");
+  let phoneMode = false, wentFull = false;
+  function setPhoneMode(on) {
+    if (on === phoneMode) return;
+    phoneMode = on; holdStep();
+    root.classList.toggle("phone-mode", on);
+    phoneButton.textContent = on ? "Exit phone mode" : "Phone mode";
+    phoneButton.setAttribute("aria-pressed", String(on));
+    const el = document.documentElement;
+    if (on) {
+      const req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (req) Promise.resolve(req.call(el)).then(() => {
+        wentFull = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        if (screen.orientation && screen.orientation.lock) return screen.orientation.lock("landscape");
+      }).catch(() => {});
+    } else {
+      try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (e) {}
+      const exit = document.exitFullscreen || document.webkitExitFullscreen;
+      if ((document.fullscreenElement || document.webkitFullscreenElement) && exit) Promise.resolve(exit.call(document)).catch(() => {});
+      wentFull = false;
+    }
+    window.dispatchEvent(new Event("resize"));                   // re-lay the deck in the other arrangement
+  }
+  phoneButton.addEventListener("click", () => setPhoneMode(!phoneMode));
+  document.getElementById("turn-exit").addEventListener("click", () => setPhoneMode(false));
+  ["fullscreenchange", "webkitfullscreenchange"].forEach(t => document.addEventListener(t, () => {
+    if (wentFull && !(document.fullscreenElement || document.webkitFullscreenElement)) setPhoneMode(false);   // left full screen with the back gesture
+  }));
+  /* a card taller than the screen in phone mode scrolls inside itself, fading at the bottom while there is more */
+  const copies = [...document.querySelectorAll(".copy")];
+  const more = c => c.classList.toggle("more", phoneMode && c.scrollHeight - c.scrollTop - c.clientHeight > 4);
+  function markOverflow() { copies.forEach(more); }
+  copies.forEach(c => c.addEventListener("scroll", () => more(c), { passive: true }));
 
   /* ---------- start ---------- */
 
@@ -424,7 +469,7 @@
   /* Text-shaped figures need the web font; rebuild them once it has loaded. */
   if (document.fonts && document.fonts.load) {
     Promise.all([document.fonts.load('500 240px "EB Garamond"'), document.fonts.ready]).then(() => {
-      reHold();
+      reHold(); markOverflow();
       clearText(); cache.clear();
       if (activeIndex >= 0) setScene(steps[activeIndex].dataset.scene);
     }).catch(() => {});

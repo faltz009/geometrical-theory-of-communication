@@ -23,7 +23,7 @@
   "use strict";
   const TAU = Math.PI * 2;
   const gauss = () => { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(TAU * v); };
-  const narrow = () => window.innerWidth < 880;
+  const narrow = () => window.innerWidth < 880 && !document.documentElement.classList.contains("phone-mode");
 
   /* ---------------- shape helpers: each returns a list of points ---------------- */
 
@@ -263,8 +263,8 @@
     });
     const labels = [
       { x: LX, y: LY - 0.42, html: "the lighter", cls: "tag" },
-      { x: -0.5, y: 0.2, html: "an observation", cls: "tag" },
-      { x: -1.36, y: 0.47, html: "a lighter in each head", cls: "tag" }
+      { x: narrow() ? -0.62 : -0.5, y: narrow() ? -0.12 : 0.2, html: "an observation", cls: "tag" },
+      { x: narrow() ? -0.95 : -1.36, y: narrow() ? 0.5 : 0.47, html: "a lighter in each head", cls: "tag" }
     ];
     return { points, flows, labels };
   };

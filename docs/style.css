@@ -276,69 +276,93 @@ h1.intro-title { font-size: clamp(64px, 8.6vw, 140px); }
 /* ---------- phones: figure on top, words over a fade below ---------- */
 @property --mask-top { syntax: "<length>"; inherits: true; initial-value: 0px; }
 @media (max-width: 879px) {
-  .rail { display: none; }
-  .brand small { display: none; }
-  /* the cards are unlocked: the figure holds the top of the screen and the words scroll freely beneath it,
-     fading out as they pass under the figure (--fig-bottom is set by the engine) */
-  #deck {
+  :root:not(.phone-mode) .rail { display: none; }
+  :root:not(.phone-mode) .brand small { display: none; }
+  @media (orientation: portrait) { :root:not(.phone-mode) .brand > span:last-child { display: none; } }
+  :root:not(.phone-mode) .actions { gap: 6px; }
+  :root:not(.phone-mode) .small-button { font-size: 12px; padding: 7px 9px; letter-spacing: 0.02em; }
+  /* the cards are unlocked: the figure holds the top of the screen and the words scroll freely beneath it, fading out as they pass under the figure (--fig-bottom is set by the engine) */
+  :root:not(.phone-mode) #deck {
     scroll-snap-type: none; padding-top: var(--fig-bottom, 42svh);
     --mask-top: var(--fig-bottom, 42svh); transition: --mask-top 0.7s ease;
     -webkit-mask-image: linear-gradient(transparent calc(var(--mask-top) - 36px), #000 calc(var(--mask-top) + 10px));
     mask-image: linear-gradient(transparent calc(var(--mask-top) - 36px), #000 calc(var(--mask-top) + 10px));
   }
-  .bare #deck { --mask-top: 100px; }            /* a step with no figure: the words may rise to the top */
-  .anchored #deck { -webkit-mask-image: none; mask-image: none; }
-  .step, .step[data-layout] { height: auto; padding: 0 16px 16svh; scroll-snap-align: none; scroll-snap-stop: normal; }
-  .step:last-child { padding-bottom: calc(100svh - var(--fig-bottom, 42svh)); }
-  #deck .step .copy, #deck .step.is-active .copy, #deck .step[data-layout] .copy, #deck .step[data-layout].is-active .copy {
+  :root:not(.phone-mode).bare #deck { --mask-top: 100px; }            /* a step with no figure: the words may rise to the top */
+  :root:not(.phone-mode).anchored #deck { -webkit-mask-image: none; mask-image: none; }
+  :root:not(.phone-mode) .step, :root:not(.phone-mode) .step[data-layout] { height: auto; padding: 0 16px 16svh; scroll-snap-align: none; scroll-snap-stop: normal; }
+  :root:not(.phone-mode) .step:last-child { padding-bottom: calc(100svh - var(--fig-bottom, 42svh)); }
+  :root:not(.phone-mode) #deck .step .copy, :root:not(.phone-mode) #deck .step.is-active .copy, :root:not(.phone-mode) #deck .step[data-layout] .copy, :root:not(.phone-mode) #deck .step[data-layout].is-active .copy {
     position: relative; left: auto; right: auto; top: auto; bottom: auto; width: auto; transform: none;
   }
   /* the two bits side by side, narrowed to a phone */
-  #mirror .cmp { grid-template-columns: 1fr 74px 1fr; }
-  #mirror .cmp .c { padding: 0 3px; }
-  #mirror .cmp .L { padding-right: 2px; } #mirror .cmp .R { padding-left: 6px; }
-  #mirror .cmp .L, #mirror .cmp .R, #mirror .cmp .meas span { font-size: 14px; line-height: 1.3; }
-  #mirror .cmp .head { flex-direction: column; align-items: flex-start; gap: 6px; }
-  #mirror .cmp h3 { font-size: 21px; white-space: normal; }
-  #mirror .cmp .bsub { font-size: 9.5px !important; letter-spacing: 0.08em; margin-top: 5px !important; }
-  #mirror .cmp .hfig { width: 100%; max-width: 150px; height: auto; }
-  #mirror .cmp .band { font-size: 9.5px; letter-spacing: 0.08em; gap: 6px; padding-top: 12px; }
-  #mirror .cmp .M { margin: 0 2px; }
-  #mirror .cmp .M.ax { font-size: 8.5px; letter-spacing: 0.04em; }
-  #mirror .cmp .row { gap: 4px; min-height: 30px; }
-  #mirror .cmp .mk { font-size: 12px; width: 0.9em; }
-  #mirror .cmp .fig { flex-direction: column; height: auto; gap: 4px; padding: 6px 0; }
-  #mirror .cmp .fig .slot { width: 120px; height: 96px; }
-  #mirror .cmp .fig p { font-size: 18px !important; }
-  #mirror .cmp .meas b { font-size: 21px; }
-  .copy h1.intro-title, .copy h1.intro-title.long { font-size: min(64px, 12vw); }
-  #deck .step .copy { opacity: 0.35; }
-  #deck .step.is-active .copy { opacity: 1; }
-  .copy, .step[data-layout="center"] .copy { text-align: left; }
-  .copy p { font-size: 18px; }
-  .copy h2 { font-size: 32px; }
-  .copy.dense p { font-size: 16.5px; }
-  .copy.dense h2 { font-size: 26px; margin-bottom: 12px; }
-  .def { margin: 16px 0; padding: 10px 0 10px 14px; }
-  .copy .def .def-main { font-size: 17px; }
-  .copy .def .def-eq { font-size: 26px; }
-  .copy .def .def-note { font-size: 14px; }
-  #gbit .copy.dense > p, #geometric .copy.dense > p, #alphabet .copy.dense > p, #entropy .copy.dense > p { font-size: 15px; line-height: 1.45; }
-  .terms li { grid-template-columns: 6.6em 1fr; font-size: 15px; }
-  .hotlist li { font-size: 15px; }
-  .lbl.example { font-size: 14px; }
-  .lbl.role, .lbl.field { font-size: 10.5px; }
-  .lv-head b, .lv-head span { font-size: 10px; }
-  .lv-q { font-size: 13.5px; }
-  .lbl.level { gap: 3px; }
+  :root:not(.phone-mode) #mirror .cmp { grid-template-columns: 1fr 74px 1fr; }
+  :root:not(.phone-mode) #mirror .cmp .c { padding: 0 3px; }
+  :root:not(.phone-mode) #mirror .cmp .L { padding-right: 2px; } :root:not(.phone-mode) #mirror .cmp .R { padding-left: 6px; }
+  :root:not(.phone-mode) #mirror .cmp .L, :root:not(.phone-mode) #mirror .cmp .R, :root:not(.phone-mode) #mirror .cmp .meas span { font-size: 14px; line-height: 1.3; }
+  :root:not(.phone-mode) #mirror .cmp .head { flex-direction: column; align-items: flex-start; gap: 6px; }
+  :root:not(.phone-mode) #mirror .cmp h3 { font-size: 21px; white-space: normal; }
+  :root:not(.phone-mode) #mirror .cmp .bsub { font-size: 9.5px !important; letter-spacing: 0.08em; margin-top: 5px !important; }
+  :root:not(.phone-mode) #mirror .cmp .hfig { width: 100%; max-width: 150px; height: auto; }
+  :root:not(.phone-mode) #mirror .cmp .band { font-size: 9.5px; letter-spacing: 0.08em; gap: 6px; padding-top: 12px; }
+  :root:not(.phone-mode) #mirror .cmp .M { margin: 0 2px; }
+  :root:not(.phone-mode) #mirror .cmp .M.ax { font-size: 8.5px; letter-spacing: 0.04em; }
+  :root:not(.phone-mode) #mirror .cmp .row { gap: 4px; min-height: 30px; }
+  :root:not(.phone-mode) #mirror .cmp .mk { font-size: 12px; width: 0.9em; }
+  :root:not(.phone-mode) #mirror .cmp .fig { flex-direction: column; height: auto; gap: 4px; padding: 6px 0; }
+  :root:not(.phone-mode) #mirror .cmp .fig .slot { width: 120px; height: 96px; }
+  :root:not(.phone-mode) #mirror .cmp .fig p { font-size: 18px !important; }
+  :root:not(.phone-mode) #mirror .cmp .meas b { font-size: 21px; }
+  :root:not(.phone-mode) .copy h1.intro-title, :root:not(.phone-mode) .copy h1.intro-title.long { font-size: min(64px, 12vw); }
+  :root:not(.phone-mode) #deck .step .copy { opacity: 0.35; }
+  :root:not(.phone-mode) #deck .step.is-active .copy { opacity: 1; }
+  :root:not(.phone-mode) .copy, :root:not(.phone-mode) .step[data-layout="center"] .copy { text-align: left; }
+  :root:not(.phone-mode) .copy p { font-size: 18px; }
+  :root:not(.phone-mode) .copy h2 { font-size: 32px; }
+  :root:not(.phone-mode) .copy.dense p { font-size: 16.5px; }
+  :root:not(.phone-mode) .copy.dense h2 { font-size: 26px; margin-bottom: 12px; }
+  :root:not(.phone-mode) .def { margin: 16px 0; padding: 10px 0 10px 14px; }
+  :root:not(.phone-mode) .copy .def .def-main { font-size: 17px; }
+  :root:not(.phone-mode) .copy .def .def-eq { font-size: 26px; }
+  :root:not(.phone-mode) .copy .def .def-note { font-size: 14px; }
+  :root:not(.phone-mode) #gbit .copy.dense > p, :root:not(.phone-mode) #geometric .copy.dense > p, :root:not(.phone-mode) #alphabet .copy.dense > p, :root:not(.phone-mode) #entropy .copy.dense > p { font-size: 15px; line-height: 1.45; }
+  :root:not(.phone-mode) .terms li { grid-template-columns: 6.6em 1fr; font-size: 15px; }
+  :root:not(.phone-mode) .hotlist li { font-size: 15px; }
+  :root:not(.phone-mode) .lbl.example { font-size: 14px; }
+  :root:not(.phone-mode) .lbl.role, :root:not(.phone-mode) .lbl.field { font-size: 10.5px; }
+  :root:not(.phone-mode) .lv-head b, :root:not(.phone-mode) .lv-head span { font-size: 10px; }
+  :root:not(.phone-mode) .lv-q { font-size: 13.5px; }
+  :root:not(.phone-mode) .lbl.level { gap: 3px; }
 }
 
 /* a phone on its side: the figure holds the left half and the words scroll on the right */
 @media (max-width: 879px) and (orientation: landscape) {
-  .step, .step[data-layout] { padding-left: calc(48vw + 12px); padding-right: 20px; }
-  .step[data-scene="dust"], #mirror { padding-left: 24px; padding-right: 24px; }   /* no figure beside them: the full width */
-  .copy h1.intro-title, .copy h1.intro-title.long { font-size: min(52px, 6.4vw); }
+  :root:not(.phone-mode) .step, :root:not(.phone-mode) .step[data-layout] { padding-left: calc(48vw + 12px); padding-right: 20px; }
+  :root:not(.phone-mode) .step[data-scene="dust"], :root:not(.phone-mode) #mirror { padding-left: 24px; padding-right: 24px; }   /* no figure beside them: the full width */
+  :root:not(.phone-mode) .copy h1.intro-title, :root:not(.phone-mode) .copy h1.intro-title.long { font-size: min(52px, 6.4vw); }
 }
+
+/* Phone mode: the desktop layout on a phone on its side, full screen. A card taller than the screen
+   scrolls inside itself, fading at the bottom while there is more to read. */
+@media (min-width: 880px) and (pointer: fine) { :root:not(.phone-mode) #phone { display: none; } }
+.phone-mode .copy { zoom: 0.78; max-height: calc((100svh - 104px) / 0.78); overflow-x: hidden; overflow-y: auto; scrollbar-width: none; }
+.phone-mode .copy::-webkit-scrollbar { display: none; }
+.phone-mode .step[data-layout="center"] .copy { max-height: calc(34svh / 0.78 - 12px); }
+.phone-mode .copy.more { -webkit-mask-image: linear-gradient(#000 calc(100% - 40px), transparent); mask-image: linear-gradient(#000 calc(100% - 40px), transparent); }
+.phone-mode .topbar { zoom: 0.8; }
+.phone-mode #mirror .copy, .phone-mode #names .copy { width: calc(94vw / 0.78); }
+.phone-mode .lbl { scale: 0.8; }
+.turn { display: none; }
+@media (orientation: portrait) {
+  .phone-mode .turn {
+    position: fixed; inset: 0; z-index: 9; display: grid; place-content: center; justify-items: center; gap: 44px;
+    background: var(--night); text-align: center;
+  }
+  .phone-mode .turn p { margin: 0; font: 400 28px/1.2 var(--serif); color: var(--paper); }
+  .phone-mode .turn .small-button { font-size: 15px; padding: 10px 18px; }
+}
+.turn-phone { width: 64px; height: 112px; border: 4px solid var(--cyan); border-radius: 14px; animation: turn-phone 2.6s ease-in-out infinite; }
+@keyframes turn-phone { 0%, 22% { transform: rotate(0); } 50%, 82% { transform: rotate(-90deg); } 100% { transform: rotate(0); } }
 
 /* ---------- reduced motion, and ?still for screenshots ---------- */
 @media (prefers-reduced-motion: reduce) {
